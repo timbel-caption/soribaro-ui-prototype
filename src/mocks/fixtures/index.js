@@ -199,6 +199,28 @@ export function projectRows(count = 6) {
   });
 }
 
+/**
+ * 연수 작업툴(목업) 더미 자막.
+ * public/mock/sample-voice.wav 의 음성 구간(amplitude burst)과 시간을 맞춰
+ * 파형·미디어·자막이 한 화면에서 자연스럽게 보이도록 구성했습니다.
+ */
+export function mockWorktoolSubtitles() {
+  const rows = [
+    [0.5, 2.3, '안녕하세요, 오늘 회의를 시작하겠습니다.', 1],
+    [2.8, 5.0, '먼저 지난주 진행 상황부터 공유드릴게요.', 2],
+    [5.6, 7.4, '이번 분기 목표는 거의 달성했습니다.', 1],
+    [8.0, 9.8, '다음 안건으로 넘어가겠습니다.', 2],
+    [10.2, 11.6, '질문 있으시면 말씀해 주세요.', 1],
+  ];
+  return rows.map(([startTime, endTime, text, speakerId], i) => ({
+    id: `mock-sub-${i + 1}`,
+    startTime,
+    endTime,
+    text,
+    speakerId,
+  }));
+}
+
 /** 공지사항 행 */
 export function noticeRows(count = 8) {
   return Array.from({ length: count }, (_, i) => {

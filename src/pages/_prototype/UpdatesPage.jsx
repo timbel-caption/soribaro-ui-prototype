@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-15',
     author: 'jybae',
+    title: '연수 작업툴 목업 데이터 표시',
+    description:
+      '연수 작업툴 실행 화면을 목업 전용으로 전환해, 샘플 음성·파형·더미 자막이 함께 보이도록 처리했습니다.',
+  },
+  {
+    date: '2026-06-15',
+    author: 'jybae',
     title: 'GitHub Pages 새 창 작업툴 404 수정',
     description:
       '배포 환경(하위 경로)에서 작업툴을 새 창으로 열 때 404가 나던 문제를 수정했습니다. (base 경로 반영)',

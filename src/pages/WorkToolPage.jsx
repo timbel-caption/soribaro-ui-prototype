@@ -26,6 +26,7 @@ import {
   normalizeWorkStat,
 } from '../utils/workStatUtils';
 import { isValidWorkCategory } from '../utils/worktoolRoute';
+import { mockWorktoolSubtitles } from '../mocks/fixtures/index.js';
 import Toolbar from '../components/worktool/common/Toolbar';
 import WidgetLayout from '../components/worktool/common/WidgetLayout';
 import ConfirmModal from '../components/worktool/common/ConfirmModal';
@@ -65,6 +66,7 @@ export default function WorkToolPage() {
   const setServerWaveformOverrideUrl = useSubtitleStore(
     (state) => state.setServerWaveformOverrideUrl,
   );
+  const setSubtitles = useSubtitleStore((state) => state.setSubtitles);
   const setSplitRange = useSubtitleStore((state) => state.setSplitRange);
   const splitStartSec = useSubtitleStore((state) => state.splitStartSec);
   const splitEndSec = useSubtitleStore((state) => state.splitEndSec);
@@ -366,6 +368,29 @@ export default function WorkToolPage() {
     setMediaUrl,
     setFileId,
     setServerWaveformOverrideUrl,
+  ]);
+
+  // 연수(Training) START 목업 모드: trainingFileId 없이 사이드바에서 그냥 띄운 경우
+  // (mode=training&role=START&popup=true) 는 더 이상 실데이터를 받지 않는 "목업 화면"이다.
+  // 파형/미디어/자막이 비어 보이지 않도록 번들된 샘플 음성 + 더미 자막을 주입한다.
+  useEffect(() => {
+    if (!isTrainingMode || trainingSubRole !== 'START') return;
+    if (trainingFileId) return; // 실제 연수 파일이 지정된 경우는 위 effect 가 처리
+
+    // 로컬 모드로 두어 WaveformViewer 가 mediaUrl 에서 직접 파형을 생성하게 한다.
+    setServerMode(false);
+    setServerFileError(null);
+    const sampleUrl = `${import.meta.env.BASE_URL}mock/sample-voice.wav`;
+    setMediaUrl(sampleUrl, 'audio', 'sample-voice.wav');
+    setSubtitles(mockWorktoolSubtitles());
+  }, [
+    isTrainingMode,
+    trainingSubRole,
+    trainingFileId,
+    setServerMode,
+    setServerFileError,
+    setMediaUrl,
+    setSubtitles,
   ]);
 
   // URL 파라미터 출력 및 파일 다운로드 URL 조회
