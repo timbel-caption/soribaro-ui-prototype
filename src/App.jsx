@@ -66,6 +66,8 @@ import { ToastContainer } from './components/common/Toast';
 import ScreenIndexPage from './pages/_prototype/ScreenIndexPage';
 // [프로토타입] README 뷰어
 import ReadmePage from './pages/_prototype/ReadmePage';
+// [프로토타입] 업데이트 내역
+import UpdatesPage from './pages/_prototype/UpdatesPage';
 import './App.css';
 
 /**
@@ -230,6 +232,9 @@ function AppRoutes() {
 
         {/* [프로토타입] README 뷰어 */}
         <Route path="readme" element={<ReadmePage />} />
+
+        {/* [프로토타입] 업데이트 내역 */}
+        <Route path="updates" element={<UpdatesPage />} />
 
         {/* 소리바로 - 마이페이지 */}
         <Route path="soribaro/mypage" element={<MyPage />} />

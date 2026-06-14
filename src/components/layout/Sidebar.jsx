@@ -59,6 +59,12 @@ const menuData = [
     path: "/readme",
   },
   {
+    // [프로토타입] 업데이트 내역
+    id: "updates",
+    label: "🆕 Updates",
+    path: "/updates",
+  },
+  {
     id: "soribaro",
     labelKey: "sidebar.soribaro",
     icon: "Mic",
