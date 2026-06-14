@@ -81,7 +81,7 @@ import {
   isReviewStartBlockedStatus,
 } from "../../../utils/projectStatusUtils";
 import { getLanguageDisplayName } from "../../../utils/languageUtils";
-import { buildWorktoolPath } from "../../../utils/worktoolRoute";
+import { buildWorktoolPath, toAppUrl } from "../../../utils/worktoolRoute";
 import { useTranslation } from "react-i18next";
 import "flag-icons/css/flag-icons.min.css";
 import "../../../styles/notion-list.css";
@@ -2363,7 +2363,7 @@ export default function TranslationWorkDetailPage() {
         popup: true,
         workCategory: "translation",
       });
-      window.open(path, `worktool_${pFile.id}`, "popup,width=1400,height=900");
+      window.open(toAppUrl(path), `worktool_${pFile.id}`, "popup,width=1400,height=900");
       if (!isWorkerBlocked) {
         updateProjectFileStatus(project.id, pFile.id, "STANDBY", "WORKING");
         updateProjectFileStatus(
@@ -2396,7 +2396,7 @@ export default function TranslationWorkDetailPage() {
         popup: true,
         workCategory: "translation",
       });
-      window.open(path, `worktool_${pFile.id}`, "popup,width=1400,height=900");
+      window.open(toAppUrl(path), `worktool_${pFile.id}`, "popup,width=1400,height=900");
       updateProjectFileStatus(project.id, pFile.id, "WORK_DONE", "REVIEWING");
     },
     [servCd, fileMap, updateProjectFileStatus],

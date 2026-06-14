@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { toAppUrl } from '../../utils/worktoolRoute';
 import './ScreenIndexPage.css';
 
 /**
@@ -114,7 +115,7 @@ export default function ScreenIndexPage() {
                 link.newWindow ? (
                   <li key={link.to}>
                     <a
-                      href={link.to}
+                      href={toAppUrl(link.to)}
                       target="_blank"
                       rel="noreferrer"
                       className="screen-index-link"

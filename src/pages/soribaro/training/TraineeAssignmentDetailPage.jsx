@@ -12,6 +12,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getMyAssignment } from '../../../api/v9/training/trainee';
 import { toast } from '../../../stores/toastStore';
+import { toAppUrl } from '../../../utils/worktoolRoute';
 import '../../../styles/notion-list.css';
 
 /**
@@ -71,7 +72,7 @@ export default function TraineeAssignmentDetailPage() {
       `/worktool?mode=training&role=STUDENT&popup=true` +
       `&assignmentStudentId=${encodeURIComponent(asid)}` +
       tfidParam;
-    window.open(url, `worktool_student_${asid}`, 'popup,width=1400,height=900');
+    window.open(toAppUrl(url), `worktool_student_${asid}`, 'popup,width=1400,height=900');
   }, []);
 
   return (

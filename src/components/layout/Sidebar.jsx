@@ -22,6 +22,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import "flag-icons/css/flag-icons.min.css";
+import { toAppUrl } from "../../utils/worktoolRoute";
 import "./Sidebar.css";
 
 // lucide 아이콘 매핑
@@ -236,7 +237,7 @@ function MenuItem({
     } else if (item.path) {
       if (item.openInNewWindow) {
         window.open(
-          item.path,
+          toAppUrl(item.path),
           `worktool_${item.id}`,
           "popup,width=1400,height=900",
         );

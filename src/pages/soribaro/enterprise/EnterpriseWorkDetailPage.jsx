@@ -104,6 +104,7 @@ import { getLanguageDisplayName } from "../../../utils/languageUtils";
 import {
   buildWorktoolPath,
   resolveWorkCategoryFromPathname,
+  toAppUrl,
 } from "../../../utils/worktoolRoute";
 import "flag-icons/css/flag-icons.min.css";
 import "../../../styles/notion-list.css";
@@ -1263,7 +1264,7 @@ export default function EnterpriseWorkDetailPage({
     const left = Math.round((screen.width - w) / 2);
     const top = Math.round((screen.height - h) / 2);
     window.open(
-      `/worktool?mode=merge&servCd=${servCd}&popup=true`,
+      toAppUrl(`/worktool?mode=merge&servCd=${servCd}&popup=true`),
       "mergeReview",
       `width=${w},height=${h},left=${left},top=${top}`,
     );
@@ -1633,7 +1634,7 @@ export default function EnterpriseWorkDetailPage({
       const left = Math.round((screen.width - w) / 2);
       const top = Math.round((screen.height - h) / 2);
       window.open(
-        `/worktool?mode=merge&servCd=${servCd}&popup=true`,
+        toAppUrl(`/worktool?mode=merge&servCd=${servCd}&popup=true`),
         "mergeReview",
         `width=${w},height=${h},left=${left},top=${top}`,
       );
@@ -2600,7 +2601,7 @@ export default function EnterpriseWorkDetailPage({
         popup: true,
         workCategory,
       });
-      window.open(path, `worktool_${pFile.id}`, "popup,width=1400,height=900");
+      window.open(toAppUrl(path), `worktool_${pFile.id}`, "popup,width=1400,height=900");
       if (!isWorkerBlocked) {
         updateProjectFileStatus(project.id, pFile.id, "STANDBY", "WORKING");
         updateProjectFileStatus(
@@ -2631,7 +2632,7 @@ export default function EnterpriseWorkDetailPage({
         popup: true,
         workCategory,
       });
-      window.open(path, `worktool_${pFile.id}`, "popup,width=1400,height=900");
+      window.open(toAppUrl(path), `worktool_${pFile.id}`, "popup,width=1400,height=900");
       updateProjectFileStatus(project.id, pFile.id, "WORK_DONE", "REVIEWING");
     },
     [servCd, fileMap, updateProjectFileStatus, workCategory],

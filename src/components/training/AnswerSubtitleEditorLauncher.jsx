@@ -12,6 +12,7 @@
  */
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toAppUrl } from '../../utils/worktoolRoute';
 
 export default function AnswerSubtitleEditorLauncher({
   assignmentId,
@@ -29,7 +30,7 @@ export default function AnswerSubtitleEditorLauncher({
       `&assignmentId=${encodeURIComponent(assignmentId)}` +
       `&trainingFileId=${encodeURIComponent(trainingFileId)}`;
     window.open(
-      url,
+      toAppUrl(url),
       `worktool_answer_${assignmentId}_${trainingFileId}`,
       'popup,width=1400,height=900',
     );

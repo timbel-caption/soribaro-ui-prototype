@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../stores/userStore';
 import { getMyProjects, getSettlementsByStatus, getMySettlementMonthlySummary } from '../../../api/v9';
 import { isWorkStartBlockedStatus, isReviewStartBlockedStatus } from '../../../utils/projectStatusUtils';
+import { toAppUrl } from '../../../utils/worktoolRoute';
 import {
   Building2, Users, CreditCard, Tags,
   UserCog, Star, Megaphone,
@@ -230,7 +231,7 @@ export default function DashboardTab({ onTabChange }) {
     if (['vod', 'meeting', 'record', 'translation'].includes(workCategory)) {
       path += `&workCategory=${workCategory}`;
     }
-    window.open(path, `worktool_${projectFileId}`, 'popup,width=1400,height=900');
+    window.open(toAppUrl(path), `worktool_${projectFileId}`, 'popup,width=1400,height=900');
   }, [isWorkStartDisabled]);
 
   return (

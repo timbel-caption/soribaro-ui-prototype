@@ -15,6 +15,7 @@ import {
 } from '../../../api/v9/training';
 import { useUserStore } from '../../../stores/userStore';
 import { toast } from '../../../stores/toastStore';
+import { toAppUrl } from '../../../utils/worktoolRoute';
 import TrainingFileUploadModal from './TrainingFileUploadModal';
 import '../../../styles/notion-list.css';
 import './TrainingFilesPage.css';
@@ -88,7 +89,7 @@ export default function TrainingFilesPage() {
     if (!id) return;
     // 연수 파일 단위 정답지 작성 모드 — assignmentId 는 사용하지 않음 (정답지는 trainingFileId 단위).
     const url = `/worktool?mode=training&role=ANSWER&popup=true&trainingFileId=${encodeURIComponent(id)}`;
-    window.open(url, `worktool_answer_${id}`, 'popup,width=1400,height=900');
+    window.open(toAppUrl(url), `worktool_answer_${id}`, 'popup,width=1400,height=900');
   }, []);
 
   const fetchData = useCallback(

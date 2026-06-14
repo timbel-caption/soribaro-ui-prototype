@@ -26,6 +26,7 @@ import AssignmentStudentBulkPickerModal from '../../../components/training/Assig
 import AnswerSubtitleEditorLauncher from '../../../components/training/AnswerSubtitleEditorLauncher';
 import ScoreTable from '../../../components/training/ScoreTable';
 import TrainingAccuracyModal from '../../../components/training/TrainingAccuracyModal';
+import { toAppUrl } from '../../../utils/worktoolRoute';
 import '../../../styles/notion-list.css';
 import './TrainingAssignmentsPage.css';
 
@@ -600,7 +601,7 @@ export default function TrainingAssignmentDetailPage() {
                 + `&assignmentStudentId=${encodeURIComponent(asid)}`
                 + (tfid ? `&trainingFileId=${encodeURIComponent(tfid)}` : '');
               window.open(
-                url,
+                toAppUrl(url),
                 `worktool_review_${asid}`,
                 'popup,width=1400,height=900',
               );
