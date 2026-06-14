@@ -1,0 +1,124 @@
+/* [프로토타입] README 뷰어 — 테마 CSS 변수를 최대한 재사용 */
+.readme-page {
+  padding: 24px 28px 48px;
+  color: var(--text-primary, #fff);
+}
+
+.readme-content {
+  max-width: 880px;
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.readme-content h1,
+.readme-content h2,
+.readme-content h3,
+.readme-content h4 {
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1.6em 0 0.6em;
+}
+
+.readme-content h1 {
+  font-size: 26px;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+}
+
+.readme-content h2 {
+  font-size: 21px;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+}
+
+.readme-content h3 {
+  font-size: 17px;
+}
+
+.readme-content h4 {
+  font-size: 15px;
+}
+
+.readme-content p,
+.readme-content ul,
+.readme-content ol {
+  margin: 0.6em 0;
+}
+
+.readme-content ul,
+.readme-content ol {
+  padding-left: 1.6em;
+}
+
+.readme-content li {
+  margin: 0.25em 0;
+}
+
+.readme-content a {
+  color: var(--accent, #00d9ff);
+  text-decoration: none;
+}
+
+.readme-content a:hover {
+  text-decoration: underline;
+}
+
+.readme-content code {
+  background: var(--surface, rgba(255, 255, 255, 0.08));
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.88em;
+}
+
+.readme-content pre {
+  background: var(--surface, #1e1e3a);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+
+.readme-content pre code {
+  background: none;
+  padding: 0;
+  font-size: 13px;
+}
+
+.readme-content blockquote {
+  margin: 0.8em 0;
+  padding: 0.2em 1em;
+  border-left: 3px solid var(--accent, #00d9ff);
+  opacity: 0.85;
+}
+
+.readme-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8em 0;
+  font-size: 13px;
+}
+
+.readme-content th,
+.readme-content td {
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.readme-content th {
+  background: var(--surface, rgba(255, 255, 255, 0.05));
+  font-weight: 600;
+}
+
+.readme-content hr {
+  border: none;
+  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  margin: 1.6em 0;
+}
+
+.readme-content img {
+  max-width: 100%;
+}

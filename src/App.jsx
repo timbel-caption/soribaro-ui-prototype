@@ -64,6 +64,8 @@ import VideoWorkPage from './pages/clipdesk/VideoWorkPage';
 import { ToastContainer } from './components/common/Toast';
 // [프로토타입] 화면 카탈로그
 import ScreenIndexPage from './pages/_prototype/ScreenIndexPage';
+// [프로토타입] README 뷰어
+import ReadmePage from './pages/_prototype/ReadmePage';
 import './App.css';
 
 /**
@@ -225,6 +227,9 @@ function AppRoutes() {
 
         {/* [프로토타입] 화면 카탈로그 */}
         <Route path="screens" element={<ScreenIndexPage />} />
+
+        {/* [프로토타입] README 뷰어 */}
+        <Route path="readme" element={<ReadmePage />} />
 
         {/* 소리바로 - 마이페이지 */}
         <Route path="soribaro/mypage" element={<MyPage />} />

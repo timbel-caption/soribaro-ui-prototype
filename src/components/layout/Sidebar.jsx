@@ -52,6 +52,12 @@ const menuData = [
     path: "/screens",
   },
   {
+    // [프로토타입] README.md 뷰어
+    id: "readme",
+    label: "📄 Readme",
+    path: "/readme",
+  },
+  {
     id: "soribaro",
     labelKey: "sidebar.soribaro",
     icon: "Mic",
