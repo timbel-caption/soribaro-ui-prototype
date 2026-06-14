@@ -1,0 +1,20 @@
+@import './SettlementIssueModal.css';
+
+.sbc-footer {
+  gap: 8px;
+}
+
+.sbc-footer .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@keyframes sbc-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.sbc-spinner {
+  animation: sbc-spin 0.8s linear infinite;
+}

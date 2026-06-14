@@ -1,0 +1,169 @@
+/* ============================================
+   ManageEnterpriseDetailPage — Notion 스타일 (심플)
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+.manage-enterprise-detail-page {
+  overflow: auto;
+}
+
+/* ── 로딩 / 에러 ── */
+.manage-enterprise-detail-page .loading-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 200px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.manage-enterprise-detail-page .error-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 200px;
+  color: var(--accent-secondary);
+  font-size: 14px;
+}
+
+/* ── 뒤로가기 ── */
+.manage-enterprise-detail-page .btn-back {
+  align-self: flex-start;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: color 0.15s;
+}
+
+.manage-enterprise-detail-page .btn-back:hover {
+  color: var(--text-primary);
+}
+
+/* ── 헤더 ── */
+.manage-enterprise-detail-page .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.manage-enterprise-detail-page .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.manage-enterprise-detail-page .ent-no-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 3px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+/* ── Prop List (2열) ── */
+.manage-enterprise-detail-page .prop-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.manage-enterprise-detail-page .prop-item {
+  display: flex;
+  align-items: center;
+  padding: 7px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  min-height: 38px;
+}
+
+.manage-enterprise-detail-page .prop-item--wide {
+  grid-column: 1 / -1;
+}
+
+.manage-enterprise-detail-page .prop-label {
+  width: 140px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.manage-enterprise-detail-page .prop-value {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* ── Prop Value 내 입력 필드 ── */
+.manage-enterprise-detail-page .prop-value input[type="text"],
+.manage-enterprise-detail-page .prop-value select {
+  height: 30px;
+  padding: 0 8px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+  max-width: 280px;
+  transition: border-color 0.15s ease;
+}
+
+.manage-enterprise-detail-page .prop-value textarea {
+  padding: 6px 8px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+
+.manage-enterprise-detail-page .prop-value input:hover,
+.manage-enterprise-detail-page .prop-value select:hover,
+.manage-enterprise-detail-page .prop-value textarea:hover {
+  border-color: var(--text-muted);
+}
+
+.manage-enterprise-detail-page .prop-value input:focus,
+.manage-enterprise-detail-page .prop-value select:focus,
+.manage-enterprise-detail-page .prop-value textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+/* wide 행의 textarea용 정렬 */
+.manage-enterprise-detail-page .prop-item--wide {
+  align-items: flex-start;
+  padding-top: 9px;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .manage-enterprise-detail-page .prop-list {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-enterprise-detail-page .prop-label {
+    width: 110px;
+  }
+
+  .manage-enterprise-detail-page .page-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

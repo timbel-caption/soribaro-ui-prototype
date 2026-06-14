@@ -1,0 +1,285 @@
+/* ============================================
+   DashboardTab — Linear-style 대시보드
+   ============================================ */
+
+.dashboard-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-bottom: 32px;
+}
+
+/* ── 인사 헤더 ── */
+
+.dash-header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dash-greeting {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.dash-header-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.dash-meta-dot {
+  margin: 0 5px;
+  opacity: 0.4;
+}
+
+/* ── 섹션 ── */
+
+.dash-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dash-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dash-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── 2열 레이아웃 ── */
+
+.dash-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* ── 이번달 작업 요약 (스탯 카드) ── */
+
+.dash-month-badge {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.dash-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.dash-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-hover);
+}
+
+.dash-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.dash-stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .dash-stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 관리자 바로가기 그리드 ── */
+
+.dash-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.dash-quick-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease;
+  text-align: left;
+}
+
+.dash-quick-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dash-quick-item svg {
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+.dash-quick-item:hover svg {
+  opacity: 0.85;
+}
+
+/* ── 줄 리스트 (Linear list items) ── */
+
+.dash-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.dash-list-item:hover {
+  background: var(--bg-hover);
+}
+
+.dash-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.dash-list-item:hover .dash-dot {
+  opacity: 1;
+}
+
+.dash-list-label {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.dash-list-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-count-loading {
+  display: inline-block;
+  width: 18px;
+  height: 12px;
+  background: var(--border-color);
+  border-radius: 3px;
+  animation: dashPulse 1.2s ease-in-out infinite;
+}
+
+/* ── 전체보기 ── */
+
+.dash-view-all {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.15s ease;
+}
+
+.dash-view-all:hover {
+  color: var(--text-primary);
+}
+
+/* ── 테이블 ── */
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dash-table thead th {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.dash-table tbody td {
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.dash-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.dash-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.dash-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dash-cell-type {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── 빈 상태 ── */
+
+.dash-empty {
+  margin: 0;
+  padding: 28px 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── 애니메이션 ── */
+
+@keyframes dashPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}

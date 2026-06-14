@@ -1,0 +1,410 @@
+.toolbar {
+  background: var(--toolbar-gradient);
+  border-bottom: 1px solid var(--border-color);
+  padding: 6px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-title .logo {
+  font-size: 28px;
+}
+
+.app-title h1 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent-color) 0%, #ff6b6b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.toolbar-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-right: 1px solid var(--border-color);
+}
+
+.toolbar-group:last-child {
+  border-right: none;
+}
+
+.toolbar button {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.toolbar button:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.btn-media {
+  background: linear-gradient(135deg, var(--accent-color) 0%, #0099cc 100%) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.btn-media:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+}
+
+.btn-import {
+  background: var(--surface-light) !important;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #4ecdc4 0%, #2d9a94 100%) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.btn-export:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+}
+
+.btn-history {
+  background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.btn-history:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+}
+
+.btn-reset-layout {
+  background: var(--surface-light) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+.btn-reset-layout:hover {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: white !important;
+}
+
+.btn-new {
+  background: transparent !important;
+  border-color: var(--border-color) !important;
+}
+
+.btn-new:hover {
+  background: rgba(255, 107, 107, 0.2) !important;
+  border-color: #ff6b6b !important;
+}
+
+.btn-stt {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.btn-stt:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-translate {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.btn-translate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-settings {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-secondary) !important;
+  padding: 4px !important;
+  font-size: 16px;
+}
+
+.btn-settings:hover {
+  color: var(--accent-color) !important;
+  background: transparent !important;
+  transform: scale(1.1);
+}
+
+.btn-test {
+  background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.btn-test:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.framerate-group label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.framerate-group select {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.framerate-group select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 역할 선택자 */
+.role-selector {
+  position: relative;
+}
+
+.btn-role-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-light) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  height: 28px;
+  padding: 0 10px !important;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-role-toggle:hover {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.btn-role-toggle .role-icon {
+  font-size: 13px;
+}
+
+.btn-role-toggle .role-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* 역할 드롭다운 */
+.role-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  padding-top: 8px;
+  background: transparent;
+  z-index: 1000;
+  min-width: 160px;
+}
+
+.role-dropdown::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.role-dropdown-inner {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.role-option:hover {
+  background: var(--surface-light) !important;
+  color: var(--text-primary) !important;
+}
+
+.role-option.active {
+  background: var(--accent-bg-subtle) !important;
+  color: var(--accent-color) !important;
+}
+
+.role-option .role-icon {
+  font-size: 16px;
+}
+
+.role-option .role-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 테마 선택자 */
+.theme-selector {
+  position: relative;
+}
+
+.btn-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-light) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  width: 28px;
+  height: 28px;
+  padding: 0 !important;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-theme-toggle:hover {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  transform: scale(1.05);
+}
+
+.btn-theme-toggle .theme-icon {
+  font-size: 14px;
+}
+
+/* 테마 드롭다운 */
+.theme-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 100px;
+}
+
+.theme-selector:hover .theme-dropdown,
+.theme-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.theme-option:hover {
+  background: var(--surface-light) !important;
+  transform: scale(1.1);
+}
+
+.theme-option.active {
+  background: var(--accent-bg-subtle) !important;
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.theme-option .theme-icon {
+  font-size: 16px;
+}
+
+.theme-option .theme-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .toolbar-center {
+    flex-wrap: wrap;
+  }
+
+  .toolbar-group {
+    padding: 0 8px;
+  }
+}
+

@@ -1,0 +1,210 @@
+/* 컬럼 설정 모달 */
+.column-settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.column-settings-modal {
+  background: var(--bg-primary, #1e1e1e);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color, #333);
+}
+
+.column-settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #333);
+}
+
+.column-settings-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary, #fff);
+}
+
+.column-settings-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #888);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.column-settings-modal-close:hover {
+  background: var(--bg-hover, #333);
+  color: var(--text-primary, #fff);
+}
+
+.column-settings-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.column-settings-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.column-settings-section-title + .column-settings-actions {
+  margin-top: 0;
+}
+
+.column-settings-list + .column-settings-section-title {
+  margin-top: 16px;
+}
+
+/* 액션 버튼 영역 */
+.column-settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #333);
+}
+
+.column-settings-action-btn {
+  background: var(--bg-secondary, #333);
+  color: var(--text-secondary, #aaa);
+  border: 1px solid var(--border-color, #444);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.column-settings-action-btn:hover {
+  background: var(--bg-hover, #444);
+  color: var(--text-primary, #fff);
+}
+
+.column-settings-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-tertiary, #666);
+}
+
+/* 체크박스 목록 */
+.column-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.column-settings-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-secondary, #252525);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.column-settings-item:hover {
+  background: var(--bg-hover, #2a2a2a);
+}
+
+.column-settings-item.checked {
+  border-color: var(--accent-color, #4ECDC4);
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.column-settings-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color, #4ECDC4);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.column-settings-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.column-settings-item-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #fff);
+}
+
+.column-settings-item-desc {
+  font-size: 12px;
+  color: var(--text-tertiary, #666);
+}
+
+/* 푸터 */
+.column-settings-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color, #333);
+}
+
+.column-settings-modal-footer .footer-hint {
+  font-size: 12px;
+  color: var(--text-tertiary, #666);
+}
+
+.column-settings-modal-footer .btn-close {
+  background: var(--bg-secondary, #333);
+  color: var(--text-primary, #fff);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.column-settings-modal-footer .btn-close:hover {
+  background: var(--bg-hover, #444);
+}
+
+/* 스크롤바 스타일 */
+.column-settings-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.column-settings-modal-content::-webkit-scrollbar-track {
+  background: var(--bg-tertiary, #1a1a1a);
+  border-radius: 3px;
+}
+
+.column-settings-modal-content::-webkit-scrollbar-thumb {
+  background: var(--border-color, #444);
+  border-radius: 3px;
+}
+
+.column-settings-modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary, #555);
+}

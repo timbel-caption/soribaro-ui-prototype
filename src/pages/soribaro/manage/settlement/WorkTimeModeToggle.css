@@ -1,0 +1,31 @@
+/* 작업시간 표시 모드 세그먼트 토글 */
+.wt-toggle {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.wt-toggle-opt {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.wt-toggle-opt:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.wt-toggle-opt.is-active {
+  background: var(--accent-color);
+  color: #fff;
+}

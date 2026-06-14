@@ -1,0 +1,41 @@
+/* ============================================
+   ManageEnterprisePage — 페이지 고유 스타일
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+/* 헤더: 타이틀 + 액션 분할 */
+.manage-enterprise-page .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.manage-enterprise-page .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* 사용여부 배지 */
+.manage-enterprise-page .use-yn-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 10px;
+  line-height: 1.6;
+  border: 1px solid;
+  background: transparent;
+}
+
+.manage-enterprise-page .use-yn-badge.active {
+  color: #2e7d32;
+  border-color: #81c784;
+}
+
+.manage-enterprise-page .use-yn-badge.inactive {
+  color: #c62828;
+  border-color: #ef9a9a;
+}

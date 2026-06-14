@@ -1,0 +1,375 @@
+/* 모달 오버레이 */
+.process-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+/* 모달 컨테이너 */
+.process-modal {
+  background: var(--surface-dark, #1a1a2e);
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 헤더 */
+.process-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+.process-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.process-modal-title h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 0;
+}
+
+.process-modal-icon {
+  font-size: 24px;
+}
+
+.process-modal-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.process-modal-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 217, 255, 0.2);
+  border-top-color: var(--accent-color, #00d9ff);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.process-modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #888);
+  font-size: 24px;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.process-modal-close:hover:not(:disabled) {
+  background: var(--surface-light, #2a2a4a);
+  color: var(--text-primary, #ffffff);
+}
+
+.process-modal-close:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 서브타이틀 */
+.process-modal-subtitle {
+  padding: 12px 24px;
+  font-size: 14px;
+  color: var(--text-secondary, #aaa);
+  border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+/* 테스트 모드 뱃지 */
+.process-modal-subtitle .test-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  color: #ffc107;
+  font-weight: 500;
+}
+
+/* 단계 표시 */
+.process-steps {
+  display: flex;
+  align-items: flex-start;
+  padding: 24px;
+  gap: 0;
+}
+
+.process-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.process-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.process-step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-light, #2a2a4a);
+  border: 2px solid var(--border-color, #3a3a5a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted, #888);
+  transition: all 0.25s ease;
+}
+
+.process-step-dot.done {
+  background: var(--accent-color, #00d9ff);
+  border-color: var(--accent-color, #00d9ff);
+  color: var(--bg-primary, #0a0a1a);
+}
+
+.process-step-dot.current {
+  border-color: var(--accent-color, #00d9ff);
+  color: var(--accent-color, #00d9ff);
+  box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.2);
+}
+
+.process-step-dot.failed {
+  background: var(--error-color, #ff6b6b);
+  border-color: var(--error-color, #ff6b6b);
+  color: var(--bg-primary, #0a0a1a);
+}
+
+.process-step-label {
+  font-size: 11px;
+  color: var(--text-muted, #888);
+  text-align: center;
+  max-width: 70px;
+}
+
+.process-step-label.current {
+  color: var(--text-primary, #ffffff);
+  font-weight: 500;
+}
+
+.process-step-connector {
+  flex: 1;
+  min-width: 16px;
+  height: 2px;
+  background: var(--border-color, #3a3a5a);
+  align-self: center;
+  margin: 0 4px;
+  margin-bottom: 20px;
+  transition: background 0.25s ease;
+}
+
+.process-step-connector.done {
+  background: var(--accent-color, #00d9ff);
+}
+
+/* 진행률 */
+.process-progress {
+  padding: 0 24px 24px;
+}
+
+.process-progress-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 12px;
+}
+
+.process-progress-bar-wrap {
+  height: 10px;
+  background: var(--surface-light, #2a2a4a);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.process-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-color, #00d9ff), #4ecdc4);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.process-progress-bar.failed {
+  background: linear-gradient(90deg, var(--error-color, #ff6b6b), #ff8787);
+}
+
+.process-progress-meta {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-secondary, #aaa);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.process-progress-percent {
+  font-weight: 600;
+  color: var(--accent-color, #00d9ff);
+}
+
+.process-progress-detail {
+  font-size: 12px;
+  color: var(--text-muted, #888);
+}
+
+/* 에러 박스 */
+.process-modal-error {
+  margin: 0 24px 24px;
+  padding: 16px;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid var(--error-color, #ff6b6b);
+  border-radius: 12px;
+}
+
+.process-modal-error h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--error-color, #ff6b6b);
+  margin: 0 0 8px;
+}
+
+.process-modal-error p {
+  font-size: 13px;
+  color: var(--error-color, #ff6b6b);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 성공 박스 */
+.process-modal-success {
+  margin: 0 24px 24px;
+  padding: 16px;
+  background: rgba(81, 207, 102, 0.1);
+  border: 1px solid var(--success-color, #51cf66);
+  border-radius: 12px;
+}
+
+.process-modal-success p {
+  font-size: 13px;
+  color: var(--success-color, #51cf66);
+  margin: 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* 액션 버튼 */
+.process-modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 24px;
+  justify-content: center;
+}
+
+.process-modal-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 8px;
+  background: var(--surface-light, #2a2a4a);
+  color: var(--text-secondary, #aaa);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.process-modal-btn:hover {
+  color: var(--text-primary, #ffffff);
+  border-color: var(--accent-color, #00d9ff);
+}
+
+.process-modal-btn.primary {
+  background: var(--accent-color, #00d9ff);
+  border-color: var(--accent-color, #00d9ff);
+  color: var(--bg-primary, #0a0a1a);
+}
+
+.process-modal-btn.primary:hover {
+  background: var(--accent-hover, #00c4e6);
+  border-color: var(--accent-hover, #00c4e6);
+}
+
+.process-modal-btn.cancel {
+  width: 100%;
+  border-color: transparent;
+  background: transparent;
+}
+
+.process-modal-btn.cancel:hover {
+  color: var(--error-color, #ff6b6b);
+  border-color: var(--error-color, #ff6b6b);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .process-modal {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .process-steps {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .process-step-connector {
+    display: none;
+  }
+
+  .process-step-item {
+    flex: 0 0 auto;
+    width: calc(50% - 6px);
+  }
+}

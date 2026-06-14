@@ -1,0 +1,236 @@
+/* ============================================
+   TranslationWorkPage — 페이지 고유 스타일
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+/* ── 날짜 필터 ── */
+.translation-work-page .filter-date {
+  height: 32px;
+  padding: 0 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.translation-work-page .filter-date:hover {
+  border-color: var(--text-muted);
+}
+
+.translation-work-page .filter-date:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.translation-work-page .filter-date-separator {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── 그리드 + 상세 패널 분할 레이아웃 ── */
+.translation-work-page .grid-and-detail-container {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.translation-work-page .grid-and-detail-container .grid-container {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 상태/취소 배지: index.css 공통 스타일 사용 */
+
+/* ── 취소된 항목 (disabled) ── */
+.translation-work-page .grid-container .ag-row.row-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.translation-work-page .grid-container .ag-row.row-disabled .ag-cell {
+  color: var(--text-muted) !important;
+}
+
+/* ── 오른쪽 상세 패널 ── */
+.detail-side-panel {
+  width: 480px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.detail-side-panel.detail-side-empty {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 20px;
+}
+
+.detail-side-empty .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.detail-side-empty p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.detail-side-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-side-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.detail-side-header .serv-cd {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.detail-side-actions {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-side-actions a {
+  text-decoration: none;
+}
+
+.detail-side-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.detail-loading-state,
+.detail-error-state,
+.detail-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.detail-loading-state {
+  color: var(--text-secondary);
+}
+
+.detail-error-state {
+  color: var(--accent-secondary);
+}
+
+.detail-empty-state {
+  color: var(--text-muted);
+}
+
+/* ── 상세 파일 목록 ── */
+.detail-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.detail-file-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.detail-file-item:hover {
+  border-color: var(--accent-color);
+  background: var(--accent-bg-subtle);
+}
+
+.file-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-ord {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.file-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* ── 파일 상태 테이블 ── */
+.file-status-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.file-status-table thead th {
+  text-align: center;
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface-dark);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.file-status-table thead th:first-child {
+  border-radius: 4px 0 0 0;
+  width: 50px;
+}
+
+.file-status-table thead th:last-child {
+  border-radius: 0 4px 0 0;
+}
+
+.file-status-table tbody td {
+  padding: 8px 10px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.file-status-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.file-status-table tbody tr:hover {
+  background: var(--accent-bg-subtle);
+}

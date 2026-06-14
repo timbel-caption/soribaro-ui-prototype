@@ -1,0 +1,312 @@
+/* STT 설정 모달 오버레이 */
+.stt-config-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: sttFadeIn 0.2s ease;
+}
+
+@keyframes sttFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 모달 컨테이너 */
+.stt-config-modal {
+  background: var(--surface-dark, #1a1b26);
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-color, #2a2b3d);
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: sttSlideUp 0.25s ease;
+}
+
+@keyframes sttSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 모달 헤더 */
+.stt-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color, #2a2b3d);
+  background: var(--surface-light, #24253a);
+  border-radius: 16px 16px 0 0;
+}
+
+.stt-config-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary, #c0caf5);
+}
+
+.stt-config-header .close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-secondary, #565f89);
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.stt-config-header .close-btn:hover {
+  background: var(--surface-hover, #2a2b3d);
+  color: var(--text-primary, #c0caf5);
+}
+
+/* 모달 본문 */
+.stt-config-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  background: var(--surface-dark, #1a1b26);
+}
+
+/* 설정 섹션 */
+.stt-config-section {
+  margin-bottom: 24px;
+}
+
+.stt-config-section:last-child {
+  margin-bottom: 0;
+}
+
+.stt-config-section h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary, #c0caf5);
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color, #2a2b3d);
+}
+
+/* 폼 그룹 */
+.stt-config-modal .form-group {
+  margin-bottom: 16px;
+}
+
+.stt-config-modal .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.stt-config-modal .form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary, #c0caf5);
+  margin-bottom: 6px;
+}
+
+.stt-config-modal .form-hint {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-secondary, #565f89);
+  margin-top: 2px;
+}
+
+.stt-config-modal .form-select,
+.stt-config-modal .form-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border-color, #2a2b3d);
+  border-radius: 8px;
+  background: var(--surface-light, #24253a);
+  color: var(--text-primary, #c0caf5);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.stt-config-modal .form-select {
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  height: 44px;
+  box-sizing: border-box;
+}
+
+.stt-config-modal .form-select:focus,
+.stt-config-modal .form-input:focus {
+  outline: none;
+  border-color: var(--primary, #7aa2f7);
+  box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.2);
+}
+
+.stt-config-modal .form-select:hover,
+.stt-config-modal .form-input:hover {
+  border-color: var(--border-hover, #414868);
+}
+
+/* 모달 푸터 */
+.stt-config-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color, #2a2b3d);
+  background: var(--surface-light, #24253a);
+  border-radius: 0 0 16px 16px;
+}
+
+.stt-config-footer .btn-cancel,
+.stt-config-footer .btn-start {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stt-config-footer .btn-cancel {
+  background: var(--surface-dark, #1a1b26);
+  border: 1px solid var(--border-color, #2a2b3d);
+  color: var(--text-primary, #c0caf5);
+}
+
+.stt-config-footer .btn-cancel:hover {
+  background: var(--surface-hover, #2a2b3d);
+  border-color: var(--border-hover, #414868);
+}
+
+.stt-config-footer .btn-start {
+  background: var(--primary, #7aa2f7);
+  border: 1px solid var(--primary, #7aa2f7);
+  color: var(--bg-primary);
+}
+
+.stt-config-footer .btn-start:hover {
+  background: var(--primary-hover, #89b4fa);
+  border-color: var(--primary-hover, #89b4fa);
+}
+
+.stt-config-footer .btn-start:active {
+  transform: scale(0.98);
+}
+
+/* 섹션 헤더 (제목 + 토글) */
+.stt-config-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color, #2a2b3d);
+}
+
+.stt-config-section-header h3 {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* 토글 스위치 — notion-list 톤 */
+.stt-config-toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 9px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.stt-config-toggle:hover {
+  border-color: var(--text-muted);
+}
+
+.stt-config-toggle--active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.stt-config-toggle--active:hover {
+  opacity: 0.85;
+}
+
+.stt-config-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: all 0.15s ease;
+}
+
+.stt-config-toggle--active .stt-config-toggle__thumb {
+  transform: translateX(16px);
+}
+
+/* 읽기 전용 입력 필드 */
+.stt-config-modal .form-input.readonly,
+.stt-config-modal .form-input:disabled {
+  background-color: var(--surface-dark, #2a2a2a);
+  color: var(--text-secondary, #888);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .stt-config-modal {
+    width: 95%;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+
+  .stt-config-header {
+    padding: 16px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .stt-config-body {
+    padding: 16px;
+  }
+
+  .stt-config-footer {
+    padding: 16px;
+    flex-direction: column;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .stt-config-footer .btn-cancel,
+  .stt-config-footer .btn-start {
+    width: 100%;
+  }
+}

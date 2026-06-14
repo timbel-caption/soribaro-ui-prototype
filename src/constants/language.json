@@ -1,0 +1,338 @@
+[
+  {
+    "code": "gn",
+    "name": "과라니어",
+    "enName": "Guarani",
+    "country": "PY",
+    "flag": "🇵🇾",
+    "legacyCode": "TRN0014"
+  },
+  {
+    "code": "gu",
+    "name": "구자라트어",
+    "enName": "Gujarati",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0015"
+  },
+  {
+    "code": "el",
+    "name": "그리스어",
+    "enName": "Greek",
+    "country": "GR",
+    "flag": "🇬🇷",
+    "legacyCode": "TRN0013"
+  },
+  {
+    "code": "nl",
+    "name": "네덜란드어",
+    "enName": "Dutch",
+    "country": "NL",
+    "flag": "🇳🇱",
+    "legacyCode": "TRN0007"
+  },
+  {
+    "code": "ne",
+    "name": "네팔어",
+    "enName": "Nepali",
+    "country": "NP",
+    "flag": "🇳🇵",
+    "legacyCode": "TRN0029"
+  },
+  {
+    "code": "da",
+    "name": "덴마크어",
+    "enName": "Danish",
+    "country": "DK",
+    "flag": "🇩🇰",
+    "legacyCode": "TRN0006"
+  },
+  {
+    "code": "de",
+    "name": "독일어",
+    "enName": "German",
+    "country": "DE",
+    "flag": "🇩🇪",
+    "legacyCode": "TRN0012"
+  },
+  {
+    "code": "ru",
+    "name": "러시아어",
+    "enName": "Russian",
+    "country": "RU",
+    "flag": "🇷🇺",
+    "legacyCode": "TRN0033"
+  },
+  {
+    "code": "mr",
+    "name": "마라티어",
+    "enName": "Marathi",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0027"
+  },
+  {
+    "code": "ml",
+    "name": "말라얄람어",
+    "enName": "Malayalam",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0026"
+  },
+  {
+    "code": "ms",
+    "name": "말레이어",
+    "enName": "Malay",
+    "country": "MY",
+    "flag": "🇲🇾",
+    "legacyCode": "TRN0025"
+  },
+  {
+    "code": "mn",
+    "name": "몽골어",
+    "enName": "Mongolian",
+    "country": "MN",
+    "flag": "🇲🇳",
+    "legacyCode": "TRN0028"
+  },
+  {
+    "code": "vi",
+    "name": "베트남어",
+    "enName": "Vietnamese",
+    "country": "VN",
+    "flag": "🇻🇳",
+    "legacyCode": "TRN0042"
+  },
+  {
+    "code": "bn",
+    "name": "벵골어",
+    "enName": "Bengali",
+    "country": "BD",
+    "flag": "🇧🇩",
+    "legacyCode": "TRN0002"
+  },
+  {
+    "code": "sv",
+    "name": "스웨덴어",
+    "enName": "Swedish",
+    "country": "SE",
+    "flag": "🇸🇪",
+    "legacyCode": "TRN0035"
+  },
+  {
+    "code": "es",
+    "name": "스페인어",
+    "enName": "Spanish",
+    "country": "ES",
+    "flag": "🇪🇸",
+    "legacyCode": "TRN0034"
+  },
+  {
+    "code": "ar",
+    "name": "아랍어",
+    "enName": "Arabic",
+    "country": "SA",
+    "flag": "🇸🇦",
+    "legacyCode": "TRN0001"
+  },
+  {
+    "code": "en",
+    "name": "영어",
+    "enName": "English",
+    "country": "US",
+    "flag": "🇺🇸",
+    "legacyCode": "TRN0008"
+  },
+  {
+    "code": "ur",
+    "name": "우르두어",
+    "enName": "Urdu",
+    "country": "PK",
+    "flag": "🇵🇰",
+    "legacyCode": "TRN0040"
+  },
+  {
+    "code": "uz",
+    "name": "우즈벡어",
+    "enName": "Uzbek",
+    "country": "UZ",
+    "flag": "🇺🇿",
+    "legacyCode": "TRN0041"
+  },
+  {
+    "code": "it",
+    "name": "이탈리아어",
+    "enName": "Italian",
+    "country": "IT",
+    "flag": "🇮🇹",
+    "legacyCode": "TRN0019"
+  },
+  {
+    "code": "id",
+    "name": "인도네시아어",
+    "enName": "Indonesian",
+    "country": "ID",
+    "flag": "🇮🇩",
+    "legacyCode": "TRN0018"
+  },
+  {
+    "code": "ja",
+    "name": "일본어",
+    "enName": "Japanese",
+    "country": "JP",
+    "flag": "🇯🇵",
+    "legacyCode": "TRN0020"
+  },
+  {
+    "code": "zh",
+    "name": "중국어(간체)",
+    "enName": "Chinese (Simplified)",
+    "country": "CN",
+    "flag": "🇨🇳",
+    "legacyCode": "TRN0003"
+  },
+  {
+    "code": "zh-TW",
+    "name": "중국어(번체)",
+    "enName": "Chinese (Traditional)",
+    "country": "TW",
+    "flag": "🇹🇼",
+    "legacyCode": "TRN0004"
+  },
+  {
+    "code": "cs",
+    "name": "체코어",
+    "enName": "Czech",
+    "country": "CZ",
+    "flag": "🇨🇿",
+    "legacyCode": "TRN0005"
+  },
+  {
+    "code": "kk",
+    "name": "카자흐어",
+    "enName": "Kazakh",
+    "country": "KZ",
+    "flag": "🇰🇿",
+    "legacyCode": "TRN0022"
+  },
+  {
+    "code": "kn",
+    "name": "칸나다어",
+    "enName": "Kannada",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0021"
+  },
+  {
+    "code": "km",
+    "name": "크메르어",
+    "enName": "Khmer",
+    "country": "KH",
+    "flag": "🇰🇭",
+    "legacyCode": "TRN0023"
+  },
+  {
+    "code": "ta",
+    "name": "타밀어",
+    "enName": "Tamil",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0036"
+  },
+  {
+    "code": "th",
+    "name": "태국어",
+    "enName": "Thai",
+    "country": "TH",
+    "flag": "🇹🇭",
+    "legacyCode": "TRN0038"
+  },
+  {
+    "code": "tr",
+    "name": "터키어",
+    "enName": "Turkish",
+    "country": "TR",
+    "flag": "🇹🇷",
+    "legacyCode": "TRN0039"
+  },
+  {
+    "code": "te",
+    "name": "텔루구어",
+    "enName": "Telugu",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0037"
+  },
+  {
+    "code": "pa",
+    "name": "펀자브어",
+    "enName": "Punjabi",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0032"
+  },
+  {
+    "code": "pt",
+    "name": "포르투갈어",
+    "enName": "Portuguese",
+    "country": "PT",
+    "flag": "🇵🇹",
+    "legacyCode": "TRN0031"
+  },
+  {
+    "code": "pl",
+    "name": "폴란드어",
+    "enName": "Polish",
+    "country": "PL",
+    "flag": "🇵🇱",
+    "legacyCode": "TRN0030"
+  },
+  {
+    "code": "fr",
+    "name": "프랑스어",
+    "enName": "French",
+    "country": "FR",
+    "flag": "🇫🇷",
+    "legacyCode": "TRN0011"
+  },
+  {
+    "code": "fi",
+    "name": "핀란드어",
+    "enName": "Finnish",
+    "country": "FI",
+    "flag": "🇫🇮",
+    "legacyCode": "TRN0010"
+  },
+  {
+    "code": "fil",
+    "name": "필리핀어",
+    "enName": "Filipino",
+    "country": "PH",
+    "flag": "🇵🇭",
+    "legacyCode": "TRN0009"
+  },
+  {
+    "code": "ko",
+    "name": "한국어",
+    "enName": "Korean",
+    "country": "KR",
+    "flag": "🇰🇷",
+    "legacyCode": "TRN0024"
+  },
+  {
+    "code": "hu",
+    "name": "헝가리어",
+    "enName": "Hungarian",
+    "country": "HU",
+    "flag": "🇭🇺",
+    "legacyCode": "TRN0017"
+  },
+  {
+    "code": "hi",
+    "name": "힌디어",
+    "enName": "Hindi",
+    "country": "IN",
+    "flag": "🇮🇳",
+    "legacyCode": "TRN0016"
+  }
+]

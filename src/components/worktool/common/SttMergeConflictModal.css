@@ -1,0 +1,328 @@
+.stt-merge-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: sttFadeIn 0.2s ease;
+}
+
+.stt-merge-modal {
+  background: var(--surface-dark, #1a1b26);
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-color, #2a2b3d);
+  width: 90%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: sttSlideUp 0.25s ease;
+}
+
+.stt-merge-modal--wide {
+  max-width: 640px;
+}
+
+.stt-merge-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #2a2b3d);
+  background: var(--surface-light, #24253a);
+  border-radius: 16px 16px 0 0;
+}
+
+.stt-merge-modal__header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary, #c0caf5);
+}
+
+.stt-merge-modal__close {
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  cursor: pointer;
+  color: var(--text-secondary, #565f89);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.stt-merge-modal__close:hover {
+  background: var(--surface-hover, #2a2b3d);
+  color: var(--text-primary, #c0caf5);
+}
+
+.stt-merge-modal__body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.stt-merge-modal__desc {
+  margin: 0 0 14px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #565f89);
+}
+
+.stt-merge-modal__no-overlap {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #565f89);
+  padding: 24px 0;
+}
+
+.stt-merge-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stt-merge-modal__item {
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface-light, #24253a);
+  border: 1px solid var(--border-color, #2a2b3d);
+}
+
+.stt-merge-modal__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stt-merge-modal__item-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary, #7aa2f7);
+}
+
+.stt-merge-modal__item-overlap {
+  font-size: 0.72rem;
+  color: #f7768e;
+  background: rgba(247, 118, 142, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.stt-merge-modal__subtitles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.stt-merge-modal__sub {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--surface-dark, #1a1b26);
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.stt-merge-modal__sub--clickable {
+  cursor: pointer;
+}
+
+.stt-merge-modal__sub--clickable:hover {
+  border-color: var(--border-hover, #414868);
+}
+
+.stt-merge-modal__sub--selected {
+  border-color: var(--primary, #7aa2f7);
+}
+
+.stt-merge-modal__sub-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary, #7aa2f7);
+  margin-bottom: 2px;
+}
+
+.stt-merge-modal__sub-time {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #565f89);
+  margin-bottom: 4px;
+  font-family: monospace;
+}
+
+.stt-merge-modal__sub-text {
+  font-size: 0.82rem;
+  color: var(--text-primary, #c0caf5);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.stt-merge-modal__options {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stt-merge-modal__option {
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--surface-dark, #1a1b26);
+  border: 1px solid var(--border-color, #2a2b3d);
+  color: var(--text-secondary, #565f89);
+}
+
+.stt-merge-modal__option:hover {
+  border-color: var(--border-hover, #414868);
+  color: var(--text-primary, #c0caf5);
+}
+
+.stt-merge-modal__option--active {
+  color: var(--bg-primary, #1a1b26);
+  font-weight: 600;
+}
+
+.stt-merge-modal__option--keepA.stt-merge-modal__option--active,
+.stt-merge-modal__option--keepB.stt-merge-modal__option--active {
+  background: var(--primary, #7aa2f7);
+  border-color: var(--primary, #7aa2f7);
+}
+
+.stt-merge-modal__option--merge.stt-merge-modal__option--active {
+  background: #9ece6a;
+  border-color: #9ece6a;
+}
+
+.stt-merge-modal__option--keepBoth.stt-merge-modal__option--active {
+  background: #e0af68;
+  border-color: #e0af68;
+}
+
+/* 시간 편집 */
+.stt-merge-modal__time-row {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 6px 0;
+}
+
+.stt-merge-modal__time-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.stt-merge-modal__time-field-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary, #565f89);
+  min-width: 30px;
+}
+
+.stt-merge-modal__time-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: var(--text-primary, #c0caf5);
+  background: var(--surface-dark, #1a1b26);
+  border: 1px solid var(--border-color, #2a2b3d);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.stt-merge-modal__time-input:focus {
+  outline: none;
+  border-color: var(--primary, #7aa2f7);
+  box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.18);
+}
+
+.stt-merge-modal__time-field--merge .stt-merge-modal__time-input {
+  border-color: rgba(158, 206, 106, 0.3);
+}
+
+.stt-merge-modal__time-field--merge .stt-merge-modal__time-input:focus {
+  border-color: #9ece6a;
+  box-shadow: 0 0 0 2px rgba(158, 206, 106, 0.15);
+}
+
+/* 병합 미리보기 카드 */
+.stt-merge-modal__sub--merge-preview {
+  border-color: #9ece6a;
+  background: rgba(158, 206, 106, 0.08);
+}
+
+.stt-merge-modal__sub--merge-preview .stt-merge-modal__sub-label {
+  color: #9ece6a;
+}
+
+.stt-merge-modal__merge-textarea {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-primary, #c0caf5);
+  background: var(--surface-dark, #1a1b26);
+  border: 1px solid rgba(158, 206, 106, 0.3);
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+.stt-merge-modal__merge-textarea:focus {
+  outline: none;
+  border-color: #9ece6a;
+  box-shadow: 0 0 0 2px rgba(158, 206, 106, 0.15);
+}
+
+.stt-merge-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-color, #2a2b3d);
+  background: var(--surface-light, #24253a);
+  border-radius: 0 0 16px 16px;
+}
+
+.stt-merge-modal__btn {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stt-merge-modal__btn--secondary {
+  background: var(--surface-dark, #1a1b26);
+  border: 1px solid var(--border-color, #2a2b3d);
+  color: var(--text-primary, #c0caf5);
+}
+
+.stt-merge-modal__btn--secondary:hover {
+  background: var(--surface-hover, #2a2b3d);
+}
+
+.stt-merge-modal__btn--primary {
+  background: var(--primary, #7aa2f7);
+  border: 1px solid var(--primary, #7aa2f7);
+  color: var(--bg-primary, #1a1b26);
+}
+
+.stt-merge-modal__btn--primary:hover {
+  background: var(--primary-hover, #89b4fa);
+}

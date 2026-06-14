@@ -1,0 +1,914 @@
+/* ============================================
+   notion-list.css — Notion-style 리스트 페이지 공통 스타일
+   사용법: 루트 <div className="notion-page [페이지전용클래스]">
+   ============================================ */
+
+/* ── Page Layout ── */
+.notion-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 32px 40px;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.notion-page .page-header {
+  flex-shrink: 0;
+  margin-bottom: 24px;
+}
+
+.notion-page .page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.notion-page .page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.notion-page .page-description {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ── Filter Bar ── */
+.notion-page .filter-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.notion-page .filter-select {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 7px 30px 7px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a6a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  min-width: 90px;
+}
+
+.notion-page .filter-select:hover {
+  border-color: var(--text-muted);
+}
+
+.notion-page .filter-select:focus {
+  border-color: var(--accent-color);
+}
+
+.notion-page .filter-select option {
+  background: var(--surface-light);
+  color: var(--text-primary);
+}
+
+.notion-page .filter-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.notion-page .search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.notion-page .filter-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 7px 12px 7px 32px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.notion-page .filter-input::placeholder {
+  color: var(--text-muted);
+}
+
+.notion-page .filter-input:hover {
+  border-color: var(--text-muted);
+}
+
+.notion-page .filter-input:focus {
+  border-color: var(--accent-color);
+}
+
+.notion-page .filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* ── Buttons ── */
+.notion-page .btn-ghost,
+.notion-page .btn-primary,
+.notion-page .btn-danger {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notion-page .btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.notion-page .btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--text-muted);
+}
+
+.notion-page .btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.notion-page .btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.notion-page .btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.notion-page .btn-danger {
+  background: #dc3545;
+  color: #fff;
+}
+
+.notion-page .btn-danger:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.notion-page .btn-danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Error Banner ── */
+.notion-page .error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.15);
+  border-radius: 6px;
+  color: var(--accent-secondary);
+  font-size: 13px;
+}
+
+.notion-page .error-banner button {
+  background: transparent;
+  border: none;
+  color: var(--accent-secondary);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 14px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.notion-page .error-banner button:hover {
+  opacity: 1;
+}
+
+/* ── Table Toolbar ── */
+.notion-page .table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.notion-page .table-toolbar .btn-primary,
+.notion-page .table-toolbar .btn-ghost {
+  margin-left: auto;
+}
+
+/* 액션 버튼이 여러 개일 때: 한 묶음으로 우측 정렬하고 버튼끼리는 붙여 배치 */
+.notion-page .table-toolbar .toolbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notion-page .table-toolbar .toolbar-actions .btn-primary,
+.notion-page .table-toolbar .toolbar-actions .btn-ghost {
+  margin-left: 0;
+}
+
+.notion-page .record-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.notion-page .selected-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+/* ── AG Grid — Notion Table ── */
+.notion-page .grid-container {
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.notion-page .grid-container .ag-root-wrapper {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+}
+
+.notion-page .grid-container .ag-body-viewport,
+.notion-page .grid-container .ag-center-cols-viewport,
+.notion-page .grid-container .ag-body-horizontal-scroll-viewport {
+  background: var(--bg-primary);
+}
+
+.notion-page .grid-container .ag-center-cols-container {
+  min-width: 100%;
+}
+
+.notion-page .grid-container .ag-header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notion-page .grid-container .ag-header-cell {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+.notion-page .grid-container .ag-row {
+  background: var(--bg-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.notion-page .grid-container .ag-row:hover {
+  background: var(--bg-hover);
+}
+
+.notion-page .grid-container .ag-row-selected {
+  background: var(--accent-bg-subtle) !important;
+}
+
+.notion-page .grid-container .ag-row-selected:hover {
+  background: var(--accent-bg-subtle) !important;
+}
+
+.notion-page .grid-container .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+.notion-page .grid-container .text-center {
+  justify-content: center;
+}
+
+.notion-page .grid-container .ag-header-cell.text-center .ag-header-cell-label {
+  justify-content: center;
+}
+
+.notion-page .grid-container .ag-overlay-loading-center,
+.notion-page .grid-container .ag-overlay-no-rows-center {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Pagination ── */
+.notion-page .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 0 4px;
+  flex-shrink: 0;
+}
+
+.notion-page .pagination-size select {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text-muted);
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px 24px 4px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+  background-image: url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a6a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+}
+
+.notion-page .pagination-size select:hover {
+  border-color: var(--text-muted);
+}
+
+.notion-page .pagination-size select option {
+  background: var(--surface-light);
+  color: var(--text-primary);
+}
+
+.notion-page .pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.notion-page .pagination-pages button {
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notion-page .pagination-pages button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.notion-page .pagination-pages button.active {
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.notion-page .pagination-pages button:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.notion-page .pagination-info {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Modal (Notion-style) ── */
+.notion-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.notion-modal {
+  width: 480px;
+  max-height: 90vh;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.notion-modal.notion-modal-lg {
+  width: 560px;
+}
+
+.notion-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notion-modal-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.notion-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.notion-modal-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.notion-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.notion-modal-body p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.notion-modal-body .text-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.notion-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.notion-modal-footer .btn-ghost,
+.notion-modal-footer .btn-primary,
+.notion-modal-footer .btn-danger {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notion-modal-footer .btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.notion-modal-footer .btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--text-muted);
+}
+
+.notion-modal-footer .btn-ghost:disabled,
+.notion-modal-footer .btn-primary:disabled,
+.notion-modal-footer .btn-danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.notion-modal-footer .btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.notion-modal-footer .btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.notion-modal-footer .btn-danger {
+  background: #dc3545;
+  color: #fff;
+}
+
+.notion-modal-footer .btn-danger:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.notion-modal-footer .btn-secondary {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  background: #f9a825;
+  color: #fff;
+}
+
+.notion-modal-footer .btn-secondary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.notion-modal-footer .btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Modal form fields */
+.notion-modal-body .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.notion-modal-body .form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.notion-modal-body .form-group input[type="text"],
+.notion-modal-body .form-group input[type="password"],
+.notion-modal-body .form-group input[type="number"],
+.notion-modal-body .form-group input[type="datetime-local"],
+.notion-modal-body .form-group select {
+  height: 36px;
+  padding: 0 12px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.notion-modal-body .form-group textarea {
+  padding: 10px 12px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+
+.notion-modal-body .form-group input:hover,
+.notion-modal-body .form-group select:hover,
+.notion-modal-body .form-group textarea:hover {
+  border-color: var(--text-muted);
+}
+
+.notion-modal-body .form-group input:focus,
+.notion-modal-body .form-group select:focus,
+.notion-modal-body .form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.notion-modal-body .form-group input::placeholder,
+.notion-modal-body .form-group textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.notion-modal-body .form-row {
+  display: flex;
+  gap: 12px;
+}
+
+/* ── Cards (페이지 내부 섹션 박스) ── */
+.notion-page .notion-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.notion-page .notion-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.notion-page .notion-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.notion-page .notion-card-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.notion-page .notion-section-header {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Tabs ── */
+.notion-page .notion-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.notion-page .notion-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  font-weight: 400;
+  font-size: 13px;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.notion-page .notion-tab-btn:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.notion-page .notion-tab-btn.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* ── Status pill ──
+   배경/보더는 디자인 시스템 색을 살짝 채워 (반투명) 가독성을 확보.
+   글자색은 var(--text-primary) 로 통일해 chip 간 톤을 맞춘다. */
+.notion-page .status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+}
+.notion-page .status-pill.ASSIGNED    { background: rgba(148, 163, 184, 0.22); border-color: rgba(148, 163, 184, 0.45); }
+.notion-page .status-pill.IN_PROGRESS { background: rgba(251, 191, 36, 0.22);  border-color: rgba(251, 191, 36, 0.55); }
+.notion-page .status-pill.SUBMITTED   { background: rgba(96, 165, 250, 0.22);  border-color: rgba(96, 165, 250, 0.55); }
+.notion-page .status-pill.SCORED      { background: rgba(52, 211, 153, 0.22);  border-color: rgba(52, 211, 153, 0.55); }
+.notion-page .status-pill.OPEN        { background: rgba(52, 211, 153, 0.22);  border-color: rgba(52, 211, 153, 0.55); }
+.notion-page .status-pill.CLOSED      { background: rgba(148, 163, 184, 0.22); border-color: rgba(148, 163, 184, 0.45); }
+
+/* ── Simple table (AG Grid 없이 쓰는 단순 테이블) ── */
+.notion-page .notion-simple-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.notion-page .notion-simple-table thead th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+.notion-page .notion-simple-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.notion-page .notion-simple-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+.notion-page .notion-simple-table .text-center { text-align: center; }
+.notion-page .notion-simple-table .text-right  { text-align: right; }
+.notion-page .notion-simple-table .empty-row td {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ── Page-level form groups (모달 외부) ── */
+.notion-page .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.notion-page .form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.notion-page .form-group input[type="text"],
+.notion-page .form-group input[type="email"],
+.notion-page .form-group input[type="number"],
+.notion-page .form-group input[type="password"],
+.notion-page .form-group select {
+  height: 34px;
+  padding: 0 12px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.notion-page .form-group textarea {
+  padding: 10px 12px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+.notion-page .form-group input:focus,
+.notion-page .form-group textarea:focus,
+.notion-page .form-group select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+.notion-page .form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+/* ── Empty state ── */
+.notion-page .notion-empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Small button variant ── */
+.notion-page .btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  height: auto;
+}
+
+/* ── Score cell (수강생 채점 결과 표시) ── */
+.notion-page .notion-score-cell {
+  min-width: 120px;
+}
+.notion-page .notion-score-cell .label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.notion-page .notion-score-cell .value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Notice / info bar (안내문 박스) ── */
+.notion-page .notion-info-bar {
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── List as cards (수강생 본인 목록 같은 카드 그리드) ── */
+.notion-page .notion-list-cards {
+  display: grid;
+  gap: 8px;
+}
+.notion-page .notion-list-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.notion-page .notion-list-card:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-muted);
+}
+.notion-page .notion-list-card .title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.notion-page .notion-list-card .sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.notion-page .notion-list-card .meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.notion-page .notion-list-card .actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .notion-page {
+    padding: 20px 16px;
+  }
+
+  .notion-page .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .notion-page .filter-search {
+    max-width: none;
+  }
+
+  .notion-page .filter-actions {
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+}

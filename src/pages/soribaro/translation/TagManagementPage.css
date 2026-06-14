@@ -1,0 +1,334 @@
+.tag-management-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* 헤더 */
+.tag-management-page .page-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tag-management-page .page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.tag-management-page .page-icon {
+  font-size: 28px;
+}
+
+.tag-management-page .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 검색 필터 */
+.tag-management-page .search-filters {
+  flex-shrink: 0;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.tag-management-page .filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tag-management-page .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tag-management-page .filter-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.tag-management-page .filter-keyword {
+  flex: 1;
+  min-width: 250px;
+}
+
+.tag-management-page .filter-keyword .MuiInputBase-root {
+  background: var(--surface-light);
+}
+
+.tag-management-page .filter-keyword .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color);
+}
+
+.tag-management-page .filter-keyword .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-color);
+}
+
+.tag-management-page .filter-keyword .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-color);
+}
+
+.tag-management-page .filter-keyword .MuiInputBase-input {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.tag-management-page .filter-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.tag-management-page .btn-reset,
+.tag-management-page .btn-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-management-page .btn-reset {
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.tag-management-page .btn-reset:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
+.tag-management-page .btn-search {
+  background: var(--accent-color);
+  color: var(--bg-primary);
+}
+
+.tag-management-page .btn-search:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.tag-management-page .btn-search:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 에러 메시지 */
+.tag-management-page .error-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  color: var(--accent-secondary);
+  font-size: 14px;
+}
+
+.tag-management-page .error-message button {
+  background: transparent;
+  border: none;
+  color: var(--accent-secondary);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+}
+
+/* 결과 정보 */
+.tag-management-page .result-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.tag-management-page .total-count {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.tag-management-page .total-count strong {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.tag-management-page .selected-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.tag-management-page .selected-info strong {
+  color: var(--accent-color);
+}
+
+/* AG Grid 컨테이너 */
+.tag-management-page .grid-container {
+  flex: 1;
+  min-height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* AG Grid 테마 커스터마이징 */
+.tag-management-page .grid-container .ag-root-wrapper {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-light);
+}
+
+.tag-management-page .grid-container .ag-body-viewport,
+.tag-management-page .grid-container .ag-center-cols-viewport,
+.tag-management-page .grid-container .ag-body-horizontal-scroll-viewport {
+  background: var(--surface-light);
+}
+
+.tag-management-page .grid-container .ag-center-cols-container {
+  min-width: 100%;
+}
+
+.tag-management-page .grid-container .ag-header {
+  background: var(--surface-dark);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tag-management-page .grid-container .ag-header-cell {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tag-management-page .grid-container .ag-row {
+  background: var(--surface-light);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.tag-management-page .grid-container .ag-row:hover {
+  background: var(--accent-bg-subtle);
+}
+
+.tag-management-page .grid-container .ag-row-selected {
+  background: var(--accent-bg-subtle) !important;
+}
+
+.tag-management-page .grid-container .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+.tag-management-page .grid-container .text-center {
+  justify-content: center;
+}
+
+.tag-management-page .grid-container .ag-overlay-loading-center,
+.tag-management-page .grid-container .ag-overlay-no-rows-center {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* 다크 테마 - 선택된 행 스타일 강화 */
+[data-theme="dark"] .tag-management-page .grid-container .ag-row-selected,
+[data-theme="default"] .tag-management-page .grid-container .ag-row-selected {
+  background: #1a3a4a !important;
+  border-left: 3px solid var(--accent-color);
+}
+
+[data-theme="dark"] .tag-management-page .grid-container .ag-row:hover,
+[data-theme="default"] .tag-management-page .grid-container .ag-row:hover {
+  background: #1e2d3d;
+}
+
+[data-theme="dark"] .tag-management-page .grid-container .ag-row-selected:hover,
+[data-theme="default"] .tag-management-page .grid-container .ag-row-selected:hover {
+  background: #1f4a5f !important;
+}
+
+/* 라이트 테마 - 선택된 행 스타일 */
+[data-theme="light"] .tag-management-page .grid-container .ag-row-selected {
+  background: #e0f2fe !important;
+  border-left: 3px solid var(--accent-color);
+}
+
+[data-theme="light"] .tag-management-page .grid-container .ag-row:hover {
+  background: #f0f9ff;
+}
+
+[data-theme="light"] .tag-management-page .grid-container .ag-row-selected:hover {
+  background: #bae6fd !important;
+}
+
+/* 페이지네이션 */
+.tag-management-page .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 0;
+  flex-shrink: 0;
+}
+
+.tag-management-page .pagination .page-info {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .tag-management-page {
+    padding: 16px;
+  }
+
+  .tag-management-page .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .tag-management-page .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tag-management-page .filter-group {
+    width: 100%;
+  }
+
+  .tag-management-page .filter-keyword {
+    min-width: 100%;
+  }
+
+  .tag-management-page .filter-actions {
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .tag-management-page .result-info {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}

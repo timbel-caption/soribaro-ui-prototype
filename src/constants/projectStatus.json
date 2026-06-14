@@ -1,0 +1,9 @@
+[
+    {"status": "STANDBY", "name": "작업대기", "color": "#757575"},
+    {"status": "WORKING", "name": "작업중", "color": "#f9a825"},
+    {"status": "WORK_DONE", "name": "작업완료", "color": "#43a047"},
+    {"status": "REVIEWING", "name": "검수중", "color": "#1976d2"},
+    {"status": "REVIEW_REJECT", "name": "검수반려", "color": "#d32f2f"},
+    {"status": "REVIEW_DONE", "name": "검수완료", "color": "#7b1fa2"},
+    {"status": "READONLY", "name": "검수완료", "color": "#7b1fa2"}
+]

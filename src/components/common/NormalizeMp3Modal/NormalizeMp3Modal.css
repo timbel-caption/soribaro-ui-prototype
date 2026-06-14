@@ -1,0 +1,41 @@
+.normalize-mp3-modal__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.normalize-mp3-modal__status {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--bg-secondary, #f5f5f5);
+  border-radius: 4px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.normalize-mp3-modal__path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 12px;
+  color: var(--text-secondary, #555);
+  word-break: break-all;
+}
+
+.normalize-mp3-modal__phase {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.normalize-mp3-modal__progress {
+  margin-top: 8px;
+}
+
+.normalize-mp3-modal__progress-text {
+  font-size: 12px;
+  color: var(--text-secondary, #666);
+  margin-top: 4px;
+  text-align: right;
+}

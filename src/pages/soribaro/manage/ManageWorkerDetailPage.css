@@ -1,0 +1,435 @@
+/* ============================================
+   ManageWorkerDetailPage — Notion 스타일 (심플)
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+.manage-worker-detail-page {
+  overflow-y: auto;
+}
+
+/* ── 로딩 / 에러 ── */
+.manage-worker-detail-page .loading-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 200px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.manage-worker-detail-page .error-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 200px;
+  color: var(--accent-secondary);
+  font-size: 14px;
+}
+
+/* ── 뒤로가기 ── */
+.manage-worker-detail-page .btn-back {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: color 0.15s;
+}
+
+.manage-worker-detail-page .btn-back:hover {
+  color: var(--text-primary);
+}
+
+/* ── 헤더 ── */
+.manage-worker-detail-page .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.manage-worker-detail-page .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.manage-worker-detail-page .memb-no-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 3px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+/* ── Prop List (보기 모드, 2열) ── */
+.manage-worker-detail-page .prop-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 24px;
+}
+
+.manage-worker-detail-page .prop-item {
+  display: flex;
+  align-items: center;
+  padding: 7px 4px;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 40%, transparent);
+  min-height: 38px;
+}
+
+.manage-worker-detail-page .prop-item--wide {
+  grid-column: 1 / -1;
+}
+
+.manage-worker-detail-page .prop-label {
+  width: 140px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.manage-worker-detail-page .prop-value {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* ── Prop Value 내 입력 필드 (수정 모드) ── */
+.manage-worker-detail-page .prop-value input[type="text"],
+.manage-worker-detail-page .prop-value select {
+  height: 30px;
+  padding: 0 8px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+  max-width: 280px;
+  transition: border-color 0.15s ease;
+}
+
+.manage-worker-detail-page .prop-value input:hover,
+.manage-worker-detail-page .prop-value select:hover {
+  border-color: var(--text-muted);
+}
+
+.manage-worker-detail-page .prop-value input:focus,
+.manage-worker-detail-page .prop-value select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.manage-worker-detail-page .prop-value input:disabled {
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  cursor: not-allowed;
+}
+
+/* 주소 행: 3개 input 가로 배치 */
+.manage-worker-detail-page .prop-addr-inputs {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.manage-worker-detail-page .prop-addr-inputs input {
+  max-width: none;
+  flex: 1;
+}
+
+.manage-worker-detail-page .prop-addr-inputs input:first-child {
+  flex: 0 0 100px;
+}
+
+/* ── 탭 영역 ── */
+.manage-worker-detail-page .detail-tabs-area {
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.manage-worker-detail-page .worker-detail-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.manage-worker-detail-page .worker-detail-tab {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.manage-worker-detail-page .worker-detail-tab:hover {
+  color: var(--text-primary);
+}
+
+.manage-worker-detail-page .worker-detail-tab.active {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom-color: var(--text-primary);
+}
+
+.manage-worker-detail-page .worker-detail-tab-panel {
+  display: flex;
+  flex-direction: column;
+  padding-top: 16px;
+}
+
+.manage-worker-detail-page .tab-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  min-height: 180px;
+}
+
+/* ── 작업자 등급 다중 선택 ── */
+.manage-worker-detail-page .wl-multi-select {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+}
+
+.manage-worker-detail-page .wl-chips-area {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 30px;
+  padding: 3px 28px 3px 8px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s ease;
+}
+
+.manage-worker-detail-page .wl-chips-area:hover {
+  border-color: var(--text-muted);
+}
+
+.manage-worker-detail-page .wl-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.manage-worker-detail-page .wl-placeholder {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.manage-worker-detail-page .wl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--accent-bg-subtle, color-mix(in srgb, var(--accent-color) 12%, transparent));
+  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.manage-worker-detail-page .wl-chip-type {
+  font-weight: 600;
+  color: var(--accent-color);
+  font-size: 11px;
+}
+
+.manage-worker-detail-page .wl-chip-table {
+  font-size: 10px;
+  color: var(--text-muted);
+  border-left: 1px solid var(--border-color);
+  padding-left: 4px;
+  margin-left: 2px;
+}
+
+.manage-worker-detail-page .wl-chip-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 0 2px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.manage-worker-detail-page .wl-chip-remove:hover {
+  color: var(--accent-secondary, #dc3545);
+}
+
+.manage-worker-detail-page .wl-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+
+.manage-worker-detail-page .wl-dropdown-empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.manage-worker-detail-page .wl-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.manage-worker-detail-page .wl-dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+.manage-worker-detail-page .wl-dropdown-item--checked {
+  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+}
+
+.manage-worker-detail-page .wl-dropdown-item input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.manage-worker-detail-page .wl-dropdown-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.manage-worker-detail-page .wl-dropdown-item-main {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.manage-worker-detail-page .wl-dropdown-item-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.manage-worker-detail-page .wl-dropdown-item-table {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 뷰 모드 칩 */
+.manage-worker-detail-page .wl-view-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.manage-worker-detail-page .wl-view-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.manage-worker-detail-page .wl-view-chip-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 3px;
+}
+
+.manage-worker-detail-page .wl-view-chip-name {
+  font-weight: 500;
+}
+
+.manage-worker-detail-page .wl-view-chip-table {
+  font-size: 11px;
+  color: var(--text-muted);
+  border-left: 1px solid var(--border-color);
+  padding-left: 6px;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .manage-worker-detail-page .prop-list {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-worker-detail-page .prop-label {
+    width: 110px;
+  }
+
+  .manage-worker-detail-page .prop-addr-inputs {
+    flex-direction: column;
+  }
+
+  .manage-worker-detail-page .prop-addr-inputs input:first-child {
+    flex: 1;
+  }
+}

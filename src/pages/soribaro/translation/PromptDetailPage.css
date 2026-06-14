@@ -1,0 +1,420 @@
+/* ============================================
+   PromptDetailPage — Notion 스타일 (상세/편집)
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+.prompt-detail-page {
+  overflow: auto;
+}
+
+/* ── 로딩 / 에러 ── */
+.prompt-detail-page .loading-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 200px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.prompt-detail-page .spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--text-muted);
+  border-radius: 50%;
+  animation: prompt-detail-spin 0.6s linear infinite;
+}
+
+@keyframes prompt-detail-spin {
+  to { transform: rotate(360deg); }
+}
+
+.prompt-detail-page .error-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 200px;
+  color: var(--accent-secondary);
+  font-size: 14px;
+}
+
+/* ── 뒤로가기 ── */
+.prompt-detail-page .btn-back {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: color 0.15s;
+  align-self: flex-start;
+}
+
+.prompt-detail-page .btn-back:hover {
+  color: var(--text-primary);
+}
+
+/* ── 헤더 ── */
+.prompt-detail-page .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.prompt-detail-page .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.prompt-detail-page .prompt-id-badge {
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Consolas', 'Monaco', monospace;
+  color: var(--text-muted);
+  padding: 3px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+/* danger 버튼 */
+.prompt-detail-page .btn-danger {
+  font-family: inherit;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  color: var(--accent-secondary);
+}
+
+.prompt-detail-page .btn-danger:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: var(--accent-secondary);
+}
+
+.prompt-detail-page .btn-danger:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── 폼 컨테이너 ── */
+.prompt-detail-page .form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── 폼 섹션 ── */
+.prompt-detail-page .form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prompt-detail-page .section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+  letter-spacing: -0.01em;
+}
+
+/* ── 폼 카드 ── */
+.prompt-detail-page .form-card {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── 폼 행 ── */
+.prompt-detail-page .form-row {
+  display: grid;
+  gap: 14px;
+}
+
+.prompt-detail-page .form-row.two-cols {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* ── MUI TextField 커스터마이징 ── */
+.prompt-detail-page .MuiTextField-root .MuiOutlinedInput-root {
+  background: var(--surface-light);
+  color: var(--text-primary);
+}
+
+.prompt-detail-page .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color);
+}
+
+.prompt-detail-page .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--text-muted);
+}
+
+.prompt-detail-page .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-color);
+}
+
+.prompt-detail-page .MuiTextField-root .MuiInputLabel-root {
+  color: var(--text-secondary);
+}
+
+.prompt-detail-page .MuiTextField-root .MuiInputLabel-root.Mui-focused {
+  color: var(--accent-color);
+}
+
+.prompt-detail-page .MuiTextField-root .MuiOutlinedInput-input {
+  color: var(--text-primary);
+}
+
+.prompt-detail-page .MuiTextField-root .Mui-disabled {
+  -webkit-text-fill-color: var(--text-muted) !important;
+}
+
+.prompt-detail-page .MuiTextField-root .Mui-disabled .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color) !important;
+}
+
+.prompt-detail-page .MuiSelect-icon {
+  color: var(--text-secondary);
+}
+
+.prompt-detail-page .MuiFormHelperText-root {
+  color: #9ca3af;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* ── 프로바이더 정보 ── */
+.prompt-detail-page .provider-info {
+  padding: 8px 12px;
+  background: var(--accent-bg-subtle);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── 파라미터 섹션 ── */
+.prompt-detail-page .params-section {
+  margin-top: 4px;
+  padding: 14px;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.prompt-detail-page .params-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.prompt-detail-page .params-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.prompt-detail-page .param-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prompt-detail-page .param-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prompt-detail-page .param-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.prompt-detail-page .param-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.prompt-detail-page .param-help:hover {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  background: var(--accent-bg-subtle);
+}
+
+.prompt-detail-page .param-item .Mui-disabled {
+  opacity: 0.5;
+}
+
+/* ── 프롬프트 텍스트 필드 ── */
+.prompt-detail-page .prompt-text-field .MuiOutlinedInput-root {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── 테스트 버튼 ── */
+.prompt-detail-page .test-button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ── 테스트 에러 ── */
+.prompt-detail-page .test-error-container {
+  margin-top: 12px;
+  padding: 14px;
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.15);
+  border-radius: 6px;
+}
+
+.prompt-detail-page .test-error-container h3 {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-secondary);
+}
+
+.prompt-detail-page .test-error-container p {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: var(--accent-secondary);
+  line-height: 1.5;
+}
+
+/* ── 테스트 결과 ── */
+.prompt-detail-page .test-result-container {
+  margin-top: 12px;
+  background: var(--surface-dark);
+  border: 1px solid var(--success-color, #51cf66);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.prompt-detail-page .test-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(81, 207, 102, 0.08);
+  border-bottom: 1px solid var(--success-color, #51cf66);
+}
+
+.prompt-detail-page .test-result-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--success-color, #51cf66);
+}
+
+.prompt-detail-page .test-result-content {
+  margin: 0;
+  padding: 14px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* ── small 버튼 ── */
+.prompt-detail-page .btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* ── Prop List (등록 정보) ── */
+.prompt-detail-page .prop-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.prompt-detail-page .prop-item {
+  display: flex;
+  align-items: center;
+  padding: 7px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  min-height: 38px;
+}
+
+.prompt-detail-page .prop-label {
+  width: 120px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.prompt-detail-page .prop-value {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* ── 반응형 ── */
+@media (max-width: 1024px) {
+  .prompt-detail-page .params-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .prompt-detail-page .form-row.two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .prompt-detail-page .params-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prompt-detail-page .prop-list {
+    grid-template-columns: 1fr;
+  }
+
+  .prompt-detail-page .page-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .prompt-detail-page .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

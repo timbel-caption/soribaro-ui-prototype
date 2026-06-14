@@ -1,0 +1,74 @@
+.user-error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  background: var(--bg-primary);
+  padding: 40px;
+}
+
+.user-error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 48px 32px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.user-error-icon {
+  font-size: 56px;
+  line-height: 1;
+}
+
+.user-error-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.user-error-description {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.user-error-detail {
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.1));
+  padding: 10px 16px;
+  border-radius: 8px;
+  width: 100%;
+  word-break: break-word;
+}
+
+.user-error-detail-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.user-error-retry-btn {
+  margin-top: 8px;
+  padding: 10px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary, #00d9ff);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.user-error-retry-btn:hover {
+  opacity: 0.85;
+}

@@ -1,0 +1,226 @@
+/* ============================================
+   NoticeFormModal — 공지사항 폼 모달 고유 스타일
+   공통 모달 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+.notice-form-modal {
+  width: 640px;
+}
+
+.notice-form-modal--view {
+  width: 720px;
+}
+
+.notice-form-modal .form-separator {
+  border-top: 1px solid var(--border-color);
+  margin: 4px 0;
+}
+
+/* ── View Mode: 아티클 스타일 ── */
+.notice-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* 메타 배지 한 줄 */
+.notice-view-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.notice-view-badges .nv-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 10px;
+  line-height: 1.6;
+  border: 1px solid;
+}
+
+.notice-view-badges .badge-type {
+  color: #5c6bc0;
+  border-color: #c5cae9;
+  background: rgba(92, 107, 192, 0.06);
+}
+
+.notice-view-badges .badge-lang {
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+  background: transparent;
+}
+
+.notice-view-badges .badge-location {
+  color: #6d4c41;
+  border-color: #d7ccc8;
+  background: rgba(109, 76, 65, 0.05);
+}
+
+.notice-view-badges .badge-pinned {
+  color: #1565c0;
+  border-color: #90caf9;
+  background: rgba(21, 101, 192, 0.06);
+}
+
+.notice-view-badges .badge-popup {
+  color: #2e7d32;
+  border-color: #a5d6a7;
+  background: rgba(46, 125, 50, 0.06);
+}
+
+/* 큰 제목 */
+.notice-view-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+/* 작성자 / 일시 / 조회수 한 줄 */
+.notice-view-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.notice-view-meta .meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* 구분선 */
+.notice-view-divider {
+  border-top: 1px solid var(--border-color);
+  margin: 14px 0;
+}
+
+/* 본문 콘텐츠 */
+.notice-view-content {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  min-height: 180px;
+  max-height: 60vh;
+  overflow-y: auto;
+  word-break: break-word;
+  padding: 4px 0;
+}
+
+.notice-view-content p {
+  margin: 0 0 10px;
+}
+
+.notice-view-content img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+/* 하단: 수정 정보 + 첨부파일 */
+.notice-view-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notice-view-footer .nv-footer-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.notice-view-modified {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* date input 스타일 */
+.notice-form-modal input[type="date"] {
+  height: 36px;
+  padding: 0 12px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.notice-form-modal input[type="date"]:hover {
+  border-color: var(--text-muted);
+}
+
+.notice-form-modal input[type="date"]:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+/* Checkbox 스타일 */
+.notice-form-modal .checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  padding: 6px 0;
+  user-select: none;
+}
+
+.notice-form-modal .checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-color, #2563eb);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* 첨부파일 리스트 */
+.notice-form-modal .notice-file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notice-form-modal .notice-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.notice-form-modal .file-name {
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.notice-form-modal .file-size {
+  color: var(--text-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}

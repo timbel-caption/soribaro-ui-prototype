@@ -1,0 +1,197 @@
+/* ============================================
+   ManageEnterpriseCustomerDetailPage — Notion 스타일
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+.manage-ent-customer-detail-page {
+  overflow: auto;
+}
+
+/* ── 로딩 / 에러 ── */
+.manage-ent-customer-detail-page .loading-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 200px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.manage-ent-customer-detail-page .error-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 200px;
+  color: var(--accent-secondary);
+  font-size: 14px;
+}
+
+/* ── 뒤로가기 ── */
+.manage-ent-customer-detail-page .btn-back {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: color 0.15s;
+}
+
+.manage-ent-customer-detail-page .btn-back:hover {
+  color: var(--text-primary);
+}
+
+/* ── 헤더 ── */
+.manage-ent-customer-detail-page .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.manage-ent-customer-detail-page .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.manage-ent-customer-detail-page .ent-no-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 3px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+/* ── Prop List (2열) ── */
+.manage-ent-customer-detail-page .prop-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.manage-ent-customer-detail-page .prop-item {
+  display: flex;
+  align-items: center;
+  padding: 7px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  min-height: 38px;
+}
+
+.manage-ent-customer-detail-page .prop-item--wide {
+  grid-column: 1 / -1;
+}
+
+.manage-ent-customer-detail-page .prop-label {
+  width: 140px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.manage-ent-customer-detail-page .prop-value {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* ── Prop Value 내 입력 필드 ── */
+.manage-ent-customer-detail-page .prop-value input[type="text"] {
+  height: 30px;
+  padding: 0 8px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+  max-width: 280px;
+  transition: border-color 0.15s ease;
+}
+
+.manage-ent-customer-detail-page .prop-value input:hover {
+  border-color: var(--text-muted);
+}
+
+.manage-ent-customer-detail-page .prop-value input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+/* 주소 행: 3개 input 가로 배치 */
+.manage-ent-customer-detail-page .prop-addr-inputs {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.manage-ent-customer-detail-page .prop-addr-inputs input {
+  max-width: none;
+  flex: 1;
+}
+
+.manage-ent-customer-detail-page .prop-addr-inputs input:first-child {
+  flex: 0 0 100px;
+}
+
+/* 상태 배지 */
+.manage-ent-customer-detail-page .customer-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 10px;
+  line-height: 1.6;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.manage-ent-customer-detail-page .customer-status-badge.active {
+  color: #388e3c;
+  border-color: #81c784;
+}
+
+.manage-ent-customer-detail-page .customer-status-badge.pending {
+  color: #f57c00;
+  border-color: #ffb74d;
+}
+
+.manage-ent-customer-detail-page .customer-status-badge.withdrawn {
+  color: #c62828;
+  border-color: #ef9a9a;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .manage-ent-customer-detail-page .prop-list {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-ent-customer-detail-page .prop-label {
+    width: 110px;
+  }
+
+  .manage-ent-customer-detail-page .prop-addr-inputs {
+    flex-direction: column;
+  }
+
+  .manage-ent-customer-detail-page .prop-addr-inputs input:first-child {
+    flex: 1;
+  }
+
+  .manage-ent-customer-detail-page .page-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

@@ -1,0 +1,489 @@
+/* Netflix QC Modal Styles */
+
+.netflix-qc-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.netflix-qc-modal {
+  background: var(--bg-primary);
+  border-radius: 4px;
+  width: 95%;
+  max-width: 1400px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+/* Header */
+.netflix-qc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.netflix-qc-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.netflix-qc-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.netflix-qc-header .close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Rules Section */
+.netflix-qc-rules {
+  padding: 12px 16px;
+  background: var(--surface-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.rules-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.rules-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.language-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-select label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.language-select select {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--surface-light);
+  color: var(--text-primary);
+}
+
+.toggle-settings-btn {
+  margin-left: auto;
+  padding: 4px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.toggle-settings-btn:hover {
+  background: var(--bg-hover);
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.rule-item input[type="checkbox"] {
+  margin-top: 2px;
+}
+
+.rule-item .rule-label {
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 120px;
+}
+
+.rule-item .rule-desc {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+/* Actions Section */
+.netflix-qc-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.start-btn,
+.restart-btn {
+  padding: 8px 24px;
+  background: #4CAF50;
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.start-btn:hover,
+.restart-btn:hover {
+  background: #45a049;
+}
+
+.export-btn {
+  padding: 8px 16px;
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  background: var(--accent-hover);
+}
+
+/* Progress */
+.progress-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  width: 200px;
+  height: 20px;
+  background: var(--bg-hover);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent-color, #4CAF50);
+  transition: width 0.2s ease;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Filters */
+.filter-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.filter-btn {
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  background: var(--bg-hover);
+}
+
+.filter-btn.active {
+  background: var(--surface-dark);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.filter-btn.filter-error.active {
+  background: #f44336;
+  border-color: #f44336;
+  color: var(--bg-primary);
+}
+
+.filter-btn.filter-warning.active {
+  background: #ff9800;
+  border-color: #ff9800;
+  color: var(--bg-primary);
+}
+
+/* Results Table */
+.netflix-qc-results {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--surface-light);
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.results-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 10;
+}
+
+.results-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.results-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+.col-line {
+  width: 60px;
+  text-align: center;
+}
+
+.col-function {
+  width: 180px;
+}
+
+.col-time {
+  width: 220px;
+  white-space: nowrap;
+}
+
+.col-text {
+  min-width: 250px;
+}
+
+.col-fix {
+  width: 350px;
+  min-width: 300px;
+}
+
+.col-actions {
+  width: 60px;
+  text-align: center;
+}
+
+/* Row Severity */
+.qc-result-row.severity-error {
+  background: rgba(244, 67, 54, 0.08);
+}
+
+.qc-result-row.severity-error:hover {
+  background: rgba(244, 67, 54, 0.15);
+}
+
+.qc-result-row.severity-warning {
+  background: rgba(255, 152, 0, 0.08);
+}
+
+.qc-result-row.severity-warning:hover {
+  background: rgba(255, 152, 0, 0.15);
+}
+
+.qc-result-row td:first-child {
+  font-weight: 600;
+}
+
+.qc-result-row.severity-error td:first-child {
+  color: #d32f2f;
+}
+
+.qc-result-row.severity-warning td:first-child {
+  color: #f57c00;
+}
+
+/* Text column */
+.timeCode {
+  color: var(--text-secondary);
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.time-arrow {
+  color: var(--text-muted);
+  margin: 0 4px;
+}
+
+.text-content {
+  color: var(--text-primary);
+  word-break: break-word;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+/* Suggested fix */
+.suggested-fix {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.fix-preview {
+  font-size: 12px;
+  color: var(--text-secondary);
+  word-break: break-word;
+  white-space: pre-wrap;
+  flex: 1;
+  max-height: 80px;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+
+.fix-preview.fix-disabled {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.fix-disabled-icon {
+  cursor: help;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.apply-fix-btn {
+  padding: 2px 8px;
+  background: #4CAF50;
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.apply-fix-btn:hover {
+  background: #45a049;
+}
+
+.no-fix {
+  color: var(--text-muted);
+}
+
+/* Action buttons in table */
+.goto-btn {
+  padding: 4px 8px;
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 3px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.goto-btn:hover {
+  background: var(--accent-hover);
+}
+
+/* Empty states */
+.no-issues {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #4CAF50;
+}
+
+.no-issues .success-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.no-issues p {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.start-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-secondary);
+}
+
+.start-prompt p {
+  margin: 8px 0;
+}
+
+.start-prompt .subtitle-count {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Footer */
+.netflix-qc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+}
+
+.issue-count {
+  color: var(--accent-color);
+  cursor: pointer;
+}
+
+.last-check {
+  color: var(--text-secondary);
+}

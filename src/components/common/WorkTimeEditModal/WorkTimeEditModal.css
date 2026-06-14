@@ -1,0 +1,114 @@
+.work-time-edit-modal {
+  width: 440px;
+  max-width: 92vw;
+}
+
+.work-time-edit-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.work-time-edit-file-name {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-time-edit-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-hover, #f7f7f5);
+  border-radius: 6px;
+}
+
+.work-time-edit-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.work-time-edit-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.work-time-edit-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.work-time-edit-hms {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.work-time-edit-hms input {
+  width: 56px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color, #e0e0de);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-light, #fff);
+  color: var(--text-primary);
+}
+
+.work-time-edit-hms input:focus {
+  outline: none;
+  border-color: var(--accent, #2e6ef7);
+}
+
+.work-time-edit-hms input:disabled {
+  background: var(--bg-hover);
+  cursor: not-allowed;
+}
+
+.work-time-edit-hms span {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.work-time-edit-unit {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.work-time-edit-notice {
+  padding: 8px 12px;
+  background: rgba(46, 110, 247, 0.08);
+  border-left: 3px solid var(--accent, #2e6ef7);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.work-time-edit-help {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.spin {
+  animation: work-time-edit-spin 0.9s linear infinite;
+  margin-right: 4px;
+}
+
+@keyframes work-time-edit-spin {
+  to { transform: rotate(360deg); }
+}

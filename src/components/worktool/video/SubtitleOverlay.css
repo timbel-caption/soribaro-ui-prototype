@@ -1,0 +1,114 @@
+.subtitle-overlay {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  width: 90%;
+  display: flex;
+}
+
+.subtitle-text {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.4;
+  max-width: 100%;
+  white-space: pre-wrap;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  border: none;
+}
+
+/* Top Row */
+.subtitle-overlay.position-topLeft {
+  top: 20px;
+  left: 5%;
+  justify-content: flex-start;
+}
+.subtitle-overlay.position-topLeft .subtitle-text {
+  text-align: left;
+}
+
+.subtitle-overlay.position-topCenter {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  justify-content: center;
+}
+.subtitle-overlay.position-topCenter .subtitle-text {
+  text-align: center;
+}
+
+.subtitle-overlay.position-topRight {
+  top: 20px;
+  right: 5%;
+  left: auto;
+  justify-content: flex-end;
+}
+.subtitle-overlay.position-topRight .subtitle-text {
+  text-align: right;
+}
+
+/* Middle Row */
+.subtitle-overlay.position-middleLeft {
+  top: 50%;
+  left: 5%;
+  transform: translateY(-50%);
+  justify-content: flex-start;
+}
+.subtitle-overlay.position-middleLeft .subtitle-text {
+  text-align: left;
+}
+
+.subtitle-overlay.position-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  justify-content: center;
+}
+.subtitle-overlay.position-center .subtitle-text {
+  text-align: center;
+}
+
+.subtitle-overlay.position-middleRight {
+  top: 50%;
+  right: 5%;
+  left: auto;
+  transform: translateY(-50%);
+  justify-content: flex-end;
+}
+.subtitle-overlay.position-middleRight .subtitle-text {
+  text-align: right;
+}
+
+/* Bottom Row */
+.subtitle-overlay.position-bottomLeft {
+  bottom: 20px;
+  left: 5%;
+  justify-content: flex-start;
+}
+.subtitle-overlay.position-bottomLeft .subtitle-text {
+  text-align: left;
+}
+
+.subtitle-overlay.position-bottomCenter {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  justify-content: center;
+}
+.subtitle-overlay.position-bottomCenter .subtitle-text {
+  text-align: center;
+}
+
+.subtitle-overlay.position-bottomRight {
+  bottom: 20px;
+  right: 5%;
+  left: auto;
+  justify-content: flex-end;
+}
+.subtitle-overlay.position-bottomRight .subtitle-text {
+  text-align: right;
+}
+

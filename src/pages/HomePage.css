@@ -1,0 +1,141 @@
+.home-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  max-width: 900px;
+  width: 100%;
+}
+
+/* 헤더 */
+.home-header {
+  text-align: center;
+}
+
+.home-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.title-icon {
+  font-size: 56px;
+}
+
+.home-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+/* 퀵 링크 카드 */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+.quick-link-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.quick-link-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-accent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.quick-link-card:hover {
+  border-color: var(--card-accent);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.quick-link-card:hover::before {
+  transform: scaleX(1);
+}
+
+.card-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.card-arrow {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  font-size: 18px;
+  color: var(--text-muted);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.3s ease;
+}
+
+.quick-link-card:hover .card-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--card-accent);
+}
+
+/* 푸터 */
+.home-footer {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .quick-links {
+    grid-template-columns: 1fr;
+  }
+
+  .home-title {
+    font-size: 36px;
+  }
+
+  .title-icon {
+    font-size: 40px;
+  }
+}

@@ -1,0 +1,14 @@
+/**
+ * 연수 과제 목록 페이지 — TrainingFilesPage 의 .training-files-page 패턴을 따른다.
+ * chip / 액션 버튼은 notion-list.css 의 .status-pill / .btn-ghost / .btn-danger 사용.
+ */
+.training-assignments-page .grid-container {
+  height: 60vh;
+  min-height: 400px;
+}
+
+.training-assignments-page .assignment-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}

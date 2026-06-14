@@ -1,0 +1,238 @@
+/* ============================================
+   ManageSettlementPage — 페이지 고유 스타일
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+/* ── 탭 ── */
+.manage-settlement-page .settlement-tabs-container {
+  flex-shrink: 0;
+}
+
+.manage-settlement-page .settlement-tab-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── 상세 검색 토글 버튼 ── */
+.manage-settlement-page .filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  height: 34px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.manage-settlement-page .filter-toggle:hover,
+.manage-settlement-page .filter-toggle.open {
+  color: var(--accent-color);
+}
+
+/* ── 상세 필터 (접기/펼치기) ── */
+.manage-settlement-page .filter-advanced {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease, margin-bottom 0.25s ease;
+  margin-bottom: 0;
+}
+
+.manage-settlement-page .filter-advanced.open {
+  max-height: 200px;
+  opacity: 1;
+  margin-bottom: 12px;
+}
+
+.manage-settlement-page .filter-advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 12px;
+}
+
+.manage-settlement-page .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manage-settlement-page .filter-field label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.manage-settlement-page .filter-field input,
+.manage-settlement-page .filter-field select {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.manage-settlement-page .filter-field input::placeholder {
+  color: var(--text-muted);
+}
+
+.manage-settlement-page .filter-field input:hover,
+.manage-settlement-page .filter-field select:hover {
+  border-color: var(--text-muted);
+}
+
+.manage-settlement-page .filter-field input:focus,
+.manage-settlement-page .filter-field select:focus {
+  border-color: var(--accent-color);
+}
+
+.manage-settlement-page .filter-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a6a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.manage-settlement-page .filter-field select option {
+  background: var(--surface-light);
+  color: var(--text-primary);
+}
+
+/* ── table-toolbar: 정산서 발행 버튼 포함 ── */
+.manage-settlement-page .table-toolbar {
+  justify-content: space-between;
+}
+
+/* ── 정산서 발행 버튼 ── */
+.manage-settlement-page .btn-issue {
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: var(--accent-color);
+  color: var(--bg-primary);
+}
+
+.manage-settlement-page .btn-issue:hover {
+  opacity: 0.85;
+}
+
+/* 상태 배지: index.css 공통 스타일 사용 */
+
+/* ── 검색창 폭 축소 (날짜 그룹 + 월 버튼 공간 확보) ── */
+.manage-settlement-page .filter-search {
+  flex: 0 1 260px;
+  max-width: 260px;
+}
+
+/* ── 이번달/저번달 빠른 조회 버튼 ── */
+.manage-settlement-page .filter-month-btn {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.manage-settlement-page .filter-month-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* ── 날짜 필터 그룹 (상태별 탭) ── */
+.manage-settlement-page .filter-date-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.manage-settlement-page .filter-date-input {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  width: 150px;
+}
+
+.manage-settlement-page .filter-date-input:hover {
+  border-color: var(--text-muted);
+}
+
+.manage-settlement-page .filter-date-input:focus {
+  border-color: var(--accent-color);
+}
+
+.manage-settlement-page .filter-date-sep {
+  color: var(--text-muted);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ── 집계 상세 드릴다운 섹션 ── */
+.manage-settlement-page .aggregation-detail-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  /* 메인 그리드(flex:1)와 1:1 비율을 유지하는 세부 영역(flex:1) */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .manage-settlement-page .filter-advanced-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-settlement-page .filter-date-group {
+    flex-wrap: wrap;
+  }
+
+  .manage-settlement-page .filter-date-input {
+    width: 100%;
+  }
+}

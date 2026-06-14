@@ -1,0 +1,653 @@
+/* ============================================================ */
+/* RequestRegisterModal                                         */
+/* ============================================================ */
+
+.req-register-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.req-register-modal {
+  position: relative;
+  width: 620px;
+  max-height: 90vh;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 헤더 */
+.req-register-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-dark);
+}
+
+.req-register-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.req-register-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.req-type-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.req-modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.req-modal-close-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.req-modal-close-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 본문 */
+.req-register-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 폼 행 */
+.req-form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.req-form-row.two-cols > .req-form-group {
+  flex: 1;
+}
+
+/* 폼 그룹 */
+.req-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.req-form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 라벨 행 (라벨 + 토글 버튼) */
+.req-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.req-toggle-mode-btn {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  color: var(--accent-color);
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+}
+
+.req-toggle-mode-btn:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.req-toggle-mode-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.req-form-group input[type="text"],
+.req-form-group input[type="date"],
+.req-form-group input[type="email"],
+.req-form-group select {
+  padding: 8px 10px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.req-form-group input:focus,
+.req-form-group select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.req-form-group input::placeholder {
+  color: var(--text-muted);
+}
+
+.req-form-group input:disabled,
+.req-form-group select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 언어 선택 래퍼 (국기 아이콘 포함) */
+.req-lang-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.req-lang-select-wrapper .fi {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.req-lang-select-wrapper select {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.req-lang-select-wrapper select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+/* 도착어 다수 선택 영역 */
+.req-target-lang-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.req-target-lang-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.req-target-lang-input-row .req-lang-select-wrapper {
+  flex: 1;
+}
+
+.req-add-lang-btn {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.req-add-lang-btn:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.req-add-lang-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.req-lang-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.req-lang-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+
+.req-lang-chip .fi {
+  font-size: 12px;
+}
+
+.req-chip-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 1px;
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.req-chip-remove:hover:not(:disabled) {
+  color: #ef5350;
+  background: rgba(239, 83, 80, 0.1);
+}
+
+/* 푸터 버튼 - notion-list.css 스타일 차용 */
+.req-register-footer .btn-ghost,
+.req-register-footer .btn-primary {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.req-register-footer .btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.req-register-footer .btn-ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--text-muted);
+}
+
+.req-register-footer .btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.req-register-footer .btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.req-register-footer .btn-ghost:disabled,
+.req-register-footer .btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 섹션 */
+.req-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.req-section-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 파일 업로드 영역 */
+.req-file-upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 16px;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--surface-dark);
+}
+
+.req-file-upload-area:hover:not(.disabled) {
+  border-color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-color) 5%, var(--surface-dark));
+}
+
+.req-file-upload-area.drag-over {
+  border-color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-color) 10%, var(--surface-dark));
+}
+
+.req-file-upload-area.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.req-file-upload-area .upload-icon {
+  color: var(--text-muted);
+}
+
+.req-file-upload-area .upload-main-text {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.req-file-upload-area .upload-sub-text {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.req-file-upload-area .upload-file-count {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+/* 파일 목록 */
+.req-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.req-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.req-file-item.done {
+  border-color: #81c784;
+}
+
+.req-file-item.error {
+  border-color: #ef5350;
+}
+
+.req-file-item .file-type-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.req-file-item .file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.req-file-item .file-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.req-file-item .file-size {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.req-file-item .file-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.req-file-item .status-icon {
+  color: var(--accent-color);
+}
+
+.req-file-item .status-icon.spinning {
+  animation: req-spin 1s linear infinite;
+}
+
+.req-file-item .status-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.req-file-item .status-progress {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.req-file-item .file-error-msg {
+  font-size: 11px;
+  color: #ef5350;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.req-file-item .file-remove-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.req-file-item .file-remove-btn:hover {
+  color: #ef5350;
+  border-color: #ef5350;
+  background: rgba(239, 83, 80, 0.08);
+}
+
+@keyframes req-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 푸터 */
+.req-register-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+/* ============================================================ */
+/* UploadProgressOverlay                                        */
+/* ============================================================ */
+
+.req-upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 12px;
+}
+
+.req-upload-progress-container {
+  width: 85%;
+  max-width: 420px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.req-upload-progress-container .progress-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.progress-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--surface-dark);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-percent {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.progress-file-info {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.current-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--surface-dark);
+  border-radius: 6px;
+}
+
+.current-file-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.step-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.step-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--surface-light);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.step-badge.active {
+  background: color-mix(in srgb, var(--accent-color) 15%, var(--surface-light));
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  font-weight: 600;
+}
+
+.step-badge.done {
+  background: color-mix(in srgb, #81c784 15%, var(--surface-light));
+  color: #388e3c;
+  border-color: #81c784;
+}
+
+.step-badge .step-progress {
+  font-weight: 600;
+}
+
+.progress-error-info {
+  margin: 0;
+  font-size: 12px;
+  color: #ef5350;
+  font-weight: 500;
+}
+
+.progress-cancel-btn {
+  align-self: center;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.progress-cancel-btn:hover {
+  color: #ef5350;
+  border-color: #ef5350;
+  background: rgba(239, 83, 80, 0.05);
+}

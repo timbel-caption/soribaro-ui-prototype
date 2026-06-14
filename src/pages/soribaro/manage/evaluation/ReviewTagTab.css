@@ -1,0 +1,139 @@
+/* ============================================
+   ReviewTagTab — 검수 태그 관리 컴포넌트 스타일
+   페이지 비종속적으로 어디서든 사용 가능
+   ============================================ */
+
+/* ── 2단 레이아웃 (그룹 패널 + 태그 목록) ── */
+.review-tag-layout {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  overflow: hidden;
+  min-height: 0;
+  padding-top: 12px;
+}
+
+/* ── 좌측: 그룹 패널 ── */
+.review-tag-layout .group-panel {
+  width: 220px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.review-tag-layout .group-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.review-tag-layout .group-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.review-tag-layout .group-panel-header .btn-primary {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.review-tag-layout .group-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.review-tag-layout .group-empty {
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.review-tag-layout .group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+.review-tag-layout .group-item:hover {
+  background: var(--bg-hover);
+}
+
+.review-tag-layout .group-item.active {
+  background: var(--accent-bg-subtle);
+  border-left: 3px solid var(--accent-color);
+  padding-left: 9px;
+}
+
+.review-tag-layout .group-item-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-tag-layout .group-item.active .group-item-name {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.review-tag-layout .group-item-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 1px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.review-tag-layout .group-panel-actions {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.review-tag-layout .group-panel-actions .btn-ghost {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ── 우측: 태그 목록 ── */
+.review-tag-layout .tag-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .review-tag-layout {
+    flex-direction: column;
+  }
+
+  .review-tag-layout .group-panel {
+    width: 100%;
+    min-width: 0;
+    max-height: 200px;
+  }
+}

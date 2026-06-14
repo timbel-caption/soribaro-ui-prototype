@@ -1,0 +1,145 @@
+.widget {
+  background: var(--surface-dark);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.widget:hover {
+  border-color: var(--accent-color);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--widget-header-bg);
+  border-bottom: 1px solid var(--border-color);
+  cursor: grab;
+  user-select: none;
+}
+
+.widget-header:active {
+  cursor: grabbing;
+}
+
+.widget-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.widget-icon {
+  font-size: 16px;
+}
+
+.widget-title h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.widget-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.widget-minimize-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.widget-minimize-btn:hover {
+  background: var(--accent-bg-subtle);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.drag-hint {
+  color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 2px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.widget-header:hover .drag-hint {
+  opacity: 1;
+  color: var(--accent-color);
+}
+
+.widget-content {
+  flex: 1;
+  overflow: hidden; /* 내부 컴포넌트가 자체 스크롤 처리 */
+  padding: 12px;
+  min-height: 0; /* flexbox 스크롤 허용 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 위젯 내부 컴포넌트 스타일 오버라이드 */
+.widget-content .media-player,
+.widget-content .waveform-viewer,
+.widget-content .subtitle-editor,
+.widget-content .subtitle-list {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.widget-content .media-player-placeholder,
+.widget-content .waveform-viewer-placeholder {
+  background: transparent;
+  border: none;
+  min-height: auto;
+  height: 100%;
+}
+
+/* 리사이즈 핸들 스타일 */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+
+.react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.widget:hover .react-resizable-handle::after {
+  opacity: 1;
+  border-color: var(--accent-color);
+}
+

@@ -1,0 +1,115 @@
+/* BulkMemberUploadModal — 회원 일괄 등록 모달 */
+
+.bulk-member-modal {
+  max-width: 720px;
+  width: 90vw;
+}
+
+.bulk-member-modal .bulk-template-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.bulk-member-modal .btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.bulk-dropzone {
+  border: 1.5px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  background: var(--surface-color, transparent);
+}
+
+.bulk-dropzone:hover,
+.bulk-dropzone.is-dragover {
+  border-color: var(--accent-color);
+  background: var(--surface-dark);
+}
+
+.bulk-dropzone.has-file {
+  border-style: solid;
+  cursor: default;
+}
+
+.bulk-dropzone-empty > div + div {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.bulk-dropzone-file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bulk-dropzone-file strong {
+  word-break: break-all;
+}
+
+.bulk-result {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-dark);
+}
+
+.bulk-result-summary {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.bulk-success {
+  color: var(--success-color, #16a34a);
+}
+
+.bulk-fail {
+  color: var(--danger-color, #dc2626);
+}
+
+.bulk-failure-table-wrap {
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.bulk-failure-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.bulk-failure-table th,
+.bulk-failure-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.bulk-failure-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-color);
+  font-weight: 600;
+  z-index: 1;
+}
+
+.bulk-failure-table tbody tr:last-child td {
+  border-bottom: none;
+}

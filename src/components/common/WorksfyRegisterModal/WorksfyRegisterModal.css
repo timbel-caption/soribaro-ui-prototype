@@ -1,0 +1,157 @@
+/* ============================================================ */
+/* WorksfyRegisterModal                                         */
+/* ============================================================ */
+
+.worksfy-register-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.worksfy-register-modal {
+  width: 560px;
+  max-height: 90vh;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 헤더 */
+.worksfy-register-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-dark);
+}
+
+.worksfy-register-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.worksfy-modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.worksfy-modal-close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* 본문 */
+.worksfy-register-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 매핑 정보 요약 */
+.worksfy-info-summary {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.worksfy-info-summary-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.worksfy-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.worksfy-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.worksfy-info-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.worksfy-info-value {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.worksfy-info-item--wide {
+  grid-column: 1 / -1;
+}
+
+.worksfy-info-description {
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+/* 폼 입력 */
+.worksfy-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.worksfy-form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.worksfy-form-group textarea {
+  padding: 10px 12px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.2s ease;
+}
+
+.worksfy-form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.worksfy-form-group textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* 푸터 */
+.worksfy-register-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}

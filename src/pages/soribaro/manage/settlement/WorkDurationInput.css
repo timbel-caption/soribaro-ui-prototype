@@ -1,0 +1,10 @@
+/* 작업시간 시·분 입력 레이아웃 */
+.wd-hm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wd-hm .wd-hm-input {
+  width: 48px;
+}

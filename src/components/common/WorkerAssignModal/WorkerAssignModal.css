@@ -1,0 +1,396 @@
+/* ============================================================ */
+/* WorkerAssignModal — Notion 스타일 오버라이드                  */
+/* 기본 모달 셸은 notion-list.css의 notion-modal-* 클래스 사용   */
+/* ============================================================ */
+
+/* 모달 너비 오버라이드 */
+.worker-assign-modal {
+  width: 720px;
+}
+
+/* ── 탭 바 ── */
+.worker-assign-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.worker-assign-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.worker-assign-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.worker-assign-tab.active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.worker-assign-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--text-primary);
+}
+
+/* ── 본문 ── */
+.worker-assign-body {
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+  max-height: calc(90vh - 140px);
+}
+
+/* ── 공통 상태 (로딩 / 에러 / 빈) ── */
+.worker-assign-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.worker-assign-error {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--accent-secondary);
+  font-size: 13px;
+}
+
+.worker-assign-empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── 스피너 ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+/* ── 테이블 ── */
+.worker-assign-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.worker-assign-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  z-index: 1;
+}
+
+.worker-assign-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.worker-assign-table td {
+  padding: 10px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+.worker-assign-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+/* 열 너비 */
+.worker-assign-table .col-name   { width: 110px; }
+.worker-assign-table .col-email  { min-width: 160px; }
+.worker-assign-table .col-phone  { width: 130px; }
+.worker-assign-table .col-status { width: 80px; text-align: center; }
+.worker-assign-table .col-action {
+  width: 160px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.worker-assign-table .col-action .action-btns {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── 상태 칩 (MUI Chip 대체) ── */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── 버튼 (모달 내부용) ── */
+.worker-assign-modal .btn-primary,
+.worker-assign-modal .btn-ghost {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.worker-assign-modal .btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.worker-assign-modal .btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.worker-assign-modal .btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.worker-assign-modal .btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.worker-assign-modal .btn-ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--text-muted);
+}
+
+.worker-assign-modal .btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.worker-assign-modal .btn-sm {
+  padding: 4px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+  min-width: 52px;
+}
+
+/* ── 신청자 탭 스크롤 영역 ── */
+.worker-assign-applicants-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── 수동 배정 탭 ── */
+.worker-assign-manual {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.worker-assign-table-area {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.worker-assign-search {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.worker-assign-search input {
+  flex: 1;
+  height: 36px;
+  padding: 0 12px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.worker-assign-search input:hover {
+  border-color: var(--text-muted);
+}
+
+.worker-assign-search input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.worker-assign-search input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── 페이지네이션 ── */
+.worker-assign-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.worker-assign-pagination .pagination-info {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── 이메일 직접 배정 ── */
+.worker-assign-direct {
+  padding: 12px 16px;
+  border-top: 1px dashed var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.worker-assign-direct .direct-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.worker-assign-direct .direct-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.worker-assign-direct .direct-input-row input {
+  flex: 1;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--surface-light);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.worker-assign-direct .direct-input-row input:hover {
+  border-color: var(--text-muted);
+}
+
+.worker-assign-direct .direct-input-row input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.worker-assign-direct .direct-input-row input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── 일괄 배정 버튼 ── */
+.btn-outline {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 메모 호버 툴팁 ===== */
+.worksfy-memo-tooltip {
+  position: fixed;
+  z-index: 1100;
+  max-width: 360px;
+  min-width: 180px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+  animation: workerAssignMemoFadeIn 0.12s ease;
+}
+
+@keyframes workerAssignMemoFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.worksfy-memo-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.worksfy-memo-content {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}

@@ -1,0 +1,234 @@
+/* ============================================================ */
+/* WorksfyApplicantsModal                                       */
+/* ============================================================ */
+
+.worksfy-applicants-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.worksfy-applicants-modal {
+  width: 720px;
+  max-height: 90vh;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 헤더 */
+.worksfy-applicants-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-dark);
+}
+
+.worksfy-applicants-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 툴바 */
+.worksfy-applicants-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-light);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.worksfy-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.worksfy-filter-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.worksfy-filter-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.worksfy-filter-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+.worksfy-total-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.worksfy-action-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 본문 */
+.worksfy-applicants-body {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 200px;
+  max-height: calc(90vh - 160px);
+}
+
+/* 로딩 / 에러 / 빈 상태 */
+.worksfy-applicants-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.worksfy-applicants-error {
+  padding: 48px 20px;
+  text-align: center;
+  color: #d32f2f;
+  font-size: 13px;
+}
+
+.worksfy-applicants-empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* 테이블 */
+.worksfy-applicants-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.worksfy-applicants-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--surface-dark);
+  z-index: 1;
+}
+
+.worksfy-applicants-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.worksfy-applicants-table td {
+  padding: 10px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.worksfy-applicants-table tbody tr:hover {
+  background: var(--surface-dark);
+}
+
+.worksfy-applicants-table tbody tr.selected {
+  background: rgba(25, 118, 210, 0.06);
+}
+
+/* 열 너비 */
+.worksfy-applicants-table .col-check {
+  width: 40px;
+  text-align: center;
+}
+
+.worksfy-applicants-table .col-name {
+  width: 120px;
+}
+
+.worksfy-applicants-table .col-email {
+  min-width: 180px;
+}
+
+.worksfy-applicants-table .col-phone {
+  width: 140px;
+}
+
+.worksfy-applicants-table .col-status {
+  width: 90px;
+  text-align: center;
+}
+
+/* 체크박스 */
+.worksfy-applicants-table input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* ===== 메모 툴팁 ===== */
+.worksfy-memo-tooltip {
+  position: fixed;
+  z-index: 1100;
+  max-width: 360px;
+  min-width: 180px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+  animation: memoFadeIn 0.12s ease;
+}
+
+@keyframes memoFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.worksfy-memo-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.worksfy-memo-content {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}

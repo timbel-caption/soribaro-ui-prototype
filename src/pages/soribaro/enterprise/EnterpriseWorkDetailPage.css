@@ -1,0 +1,456 @@
+/* ============================================
+   EnterpriseWorkDetailPage — 엔터프라이즈 전용 오버라이드
+   공통 스타일은 TranslationWorkDetailPage.css를 import하여 재사용
+   ============================================ */
+
+/* ── Page ── */
+.notion-page.enterprise-work-detail-page {
+  overflow-y: auto;
+  overflow-x: hidden;
+  gap: 0;
+}
+
+/* detail-section, info-card 등은 TranslationWorkDetailPage.css에서 상속 */
+
+/* 상태 배지: index.css 공통 스타일 사용 */
+
+/* ── Detail Table (파일목록/작업관리) ── */
+.enterprise-work-detail-page .detail-table-wrap {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.enterprise-work-detail-page .detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.enterprise-work-detail-page .detail-table thead th {
+  text-align: center;
+  padding: 10px 12px;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.01em;
+}
+
+.enterprise-work-detail-page .detail-table tbody td {
+  padding: 10px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+.enterprise-work-detail-page .detail-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.enterprise-work-detail-page .detail-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.enterprise-work-detail-page .detail-table .text-center { text-align: center; }
+.enterprise-work-detail-page .detail-table .td-filename { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.enterprise-work-detail-page .detail-table .td-mono { font-family: monospace; font-size: 12px; }
+
+/* 파일 목록 테이블 컬럼 너비 */
+.enterprise-work-detail-page .file-table .col-check    { width: 40px; }
+.enterprise-work-detail-page .file-table .col-no       { width: 36px; }
+.enterprise-work-detail-page .file-table .col-filename  { width: auto; text-align: left; }
+.enterprise-work-detail-page .file-table .col-split     { width: 80px; }
+.enterprise-work-detail-page .file-table .col-difficulty { width: 130px; }
+.enterprise-work-detail-page .file-table .col-playtime  { width: 100px; }
+.enterprise-work-detail-page .file-table .col-filesize  { width: 100px; }
+.enterprise-work-detail-page .file-table .col-status    { width: 120px; }
+.enterprise-work-detail-page .file-table .col-play      { width: 80px; }
+.enterprise-work-detail-page .file-table .col-action    { width: 120px; }
+
+/* ── 스트리밍 재생 버튼 ── */
+.enterprise-work-detail-page .file-stream-btn {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: #66bb6a;
+  background: transparent;
+  border: 1px solid #66bb6a;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.enterprise-work-detail-page .file-stream-btn:hover {
+  background: rgba(56, 142, 60, 0.08);
+}
+
+.enterprise-work-detail-page .file-stream-btn.playing {
+  color: #ef5350;
+  border-color: #ef5350;
+}
+
+.enterprise-work-detail-page .file-stream-btn.playing:hover {
+  background: rgba(198, 40, 40, 0.08);
+}
+
+/* ── 인라인 오디오 플레이어 ── */
+.enterprise-work-detail-page .audio-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-top: 8px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.enterprise-work-detail-page .audio-player-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  flex-shrink: 0;
+}
+
+.enterprise-work-detail-page .audio-player-bar audio {
+  flex: 1;
+  height: 32px;
+  min-width: 200px;
+}
+
+.enterprise-work-detail-page .audio-player-close {
+  font-family: inherit;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.enterprise-work-detail-page .audio-player-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ── Memo ── */
+.enterprise-work-detail-page .memo-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.enterprise-work-detail-page .memo-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+
+.enterprise-work-detail-page .memo-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.enterprise-work-detail-page .memo-content {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+
+
+/* ── 메모 3컬럼 레이아웃 ── */
+.enterprise-work-detail-page .memo-row {
+  display: grid;
+  gap: 16px;
+}
+
+.enterprise-work-detail-page .memo-row-3col { grid-template-columns: repeat(3, 1fr); }
+.enterprise-work-detail-page .memo-row-1col { grid-template-columns: 1fr; }
+
+.enterprise-work-detail-page .memo-row-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.enterprise-work-detail-page .memo-row-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.enterprise-work-detail-page .memo-row-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.enterprise-work-detail-page .memo-copy-btn {
+  font-family: inherit;
+  border: 1px solid var(--border-color);
+  background: var(--surface-light);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.enterprise-work-detail-page .memo-copy-btn:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.enterprise-work-detail-page .memo-copy-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.enterprise-work-detail-page .memo-row-col .remark-readonly,
+.enterprise-work-detail-page .memo-row-col .memo-card {
+  flex: 1;
+}
+
+/* ── 파일 세부정보 카드 ── */
+.enterprise-work-detail-page .file-detail-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.enterprise-work-detail-page .file-detail-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.enterprise-work-detail-page .file-detail-card-header {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.enterprise-work-detail-page .file-detail-card-body {
+  padding: 14px 16px;
+}
+
+/* ── 의뢰자 세부요청사항 (읽기 전용) ── */
+.enterprise-work-detail-page .remark-readonly {
+  padding: 16px 20px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  min-height: 48px;
+}
+
+.enterprise-work-detail-page .remark-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.enterprise-work-detail-page .remark-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── 메모 카드 (stenoMemo / adminMemo) ── */
+.enterprise-work-detail-page .memo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.enterprise-work-detail-page .memo-textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.enterprise-work-detail-page .memo-textarea:hover { border-color: var(--text-muted); }
+.enterprise-work-detail-page .memo-textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--focus-ring-color); }
+
+.enterprise-work-detail-page .memo-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.enterprise-work-detail-page .memo-save-btn {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #1976d2;
+  color: #fff;
+}
+
+.enterprise-work-detail-page .memo-save-btn:hover:not(:disabled) { background: #1565c0; }
+.enterprise-work-detail-page .memo-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── 파일 확장 행 ── */
+.enterprise-work-detail-page .td-expand-toggle { cursor: pointer; user-select: none; }
+
+.enterprise-work-detail-page .expand-arrow {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.enterprise-work-detail-page .expand-arrow.expanded { transform: rotate(90deg); }
+.enterprise-work-detail-page .file-row-expanded > td { border-bottom-color: transparent !important; }
+.enterprise-work-detail-page .file-expand-row > td { padding: 0 !important; background: var(--bg-primary); }
+
+.enterprise-work-detail-page .file-expand-content {
+  padding: 12px 20px 16px;
+  border-top: 1px dashed color-mix(in srgb, var(--border-color) 60%, transparent);
+}
+
+.enterprise-work-detail-page .file-expand-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px 24px;
+}
+
+.enterprise-work-detail-page .file-expand-item { display: flex; flex-direction: column; gap: 2px; }
+.enterprise-work-detail-page .file-expand-item-wide { grid-column: span 3; }
+.enterprise-work-detail-page .file-expand-label { font-size: 11px; font-weight: 500; color: var(--text-muted); }
+.enterprise-work-detail-page .file-expand-value { font-size: 13px; color: var(--text-primary); }
+
+/* ── 기록 원본 정보 ── */
+.enterprise-work-detail-page .nota-info {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+.enterprise-work-detail-page .nota-info-title {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── 화자 정보 ── */
+.enterprise-work-detail-page .speaker-group-list { display: flex; flex-direction: column; gap: 16px; }
+.enterprise-work-detail-page .speaker-group-header { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+
+.enterprise-work-detail-page .speaker-table,
+.enterprise-work-detail-page .file-speakers .speaker-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.enterprise-work-detail-page .speaker-table thead th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.enterprise-work-detail-page .speaker-table thead th:first-child { width: 60px; text-align: center; }
+
+.enterprise-work-detail-page .speaker-table tbody td {
+  padding: 7px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+}
+
+.enterprise-work-detail-page .speaker-table tbody tr:last-child td { border-bottom: none; }
+
+.enterprise-work-detail-page .file-speakers {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+.enterprise-work-detail-page .file-time-segments {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+/* ── 첨부파일 공유 체크박스 ── */
+.enterprise-work-detail-page .share-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #1976d2; }
+
+/* ── 첨부파일 헤더 액션 ── */
+.enterprise-work-detail-page .detail-section-header-actions { display: flex; align-items: center; gap: 8px; }
+
+.enterprise-work-detail-page .btn-share-save {
+  font-family: inherit;
+  border: 1px solid #64b5f6;
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  color: #64b5f6;
+}
+
+.enterprise-work-detail-page .btn-share-save:hover:not(:disabled) { background: rgba(25, 118, 210, 0.08); }
+.enterprise-work-detail-page .btn-share-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Page Footer ── */
+.enterprise-work-detail-page .page-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}

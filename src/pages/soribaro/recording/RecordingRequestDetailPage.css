@@ -1,0 +1,584 @@
+/* ============================================
+   RecordingRequestDetailPage — 녹취록 의뢰현황 상세
+   공통 스타일은 TranslationWorkDetailPage.css를 import하여 재사용
+   ============================================ */
+
+/* ── Page ── */
+.notion-page.record-request-detail-page {
+  overflow-y: auto;
+  overflow-x: hidden;
+  gap: 0;
+}
+
+/* 상태 배지: index.css 공통 스타일 사용 */
+
+/* ── Detail Table ── */
+.record-request-detail-page .detail-table-wrap {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.record-request-detail-page .detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.record-request-detail-page .detail-table thead th {
+  text-align: center;
+  padding: 10px 12px;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.01em;
+}
+
+.record-request-detail-page .detail-table tbody td {
+  padding: 10px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+.record-request-detail-page .detail-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.record-request-detail-page .detail-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.record-request-detail-page .detail-table .text-center { text-align: center; }
+.record-request-detail-page .detail-table .td-filename { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+
+/* (file-table 컬럼 너비는 하단에서 7열 기준으로 재설정됨) */
+
+/* ── 작업금액 항목 (2칸 너비) ── */
+.record-request-detail-page .info-item-wide {
+  grid-column: span 2;
+}
+
+/* ── 작업금액 인라인 편집 ── */
+.record-request-detail-page .price-edit-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.record-request-detail-page .price-edit-input {
+  width: 120px;
+  font-family: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 5px 10px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  text-align: right;
+}
+
+.record-request-detail-page .price-edit-input:hover {
+  border-color: var(--text-muted);
+}
+
+.record-request-detail-page .price-edit-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.record-request-detail-page .price-edit-unit {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── 금액 확정 버튼 ── */
+.record-request-detail-page .btn-price-confirm {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #1976d2;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.record-request-detail-page .btn-price-confirm:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.record-request-detail-page .btn-price-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── 파일 액션 버튼 ── */
+.record-request-detail-page .file-action-btn {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: #1976d2;
+  background: transparent;
+  border: 1px solid #64b5f6;
+  border-radius: 4px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.record-request-detail-page .file-action-btn:hover {
+  background: #e3f2fd;
+}
+
+/* (file-table 6열 너비도 하단 7열 기준으로 이동됨) */
+
+/* ── 금액 정보 카드 ── */
+.record-request-detail-page .price-card {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.record-request-detail-page .price-item {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.record-request-detail-page .price-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.record-request-detail-page .price-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.record-request-detail-page .price-value.highlight {
+  color: #1976d2;
+}
+
+/* ── 의뢰 확정 영역 ── */
+.record-request-detail-page .confirm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  margin-top: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.record-request-detail-page .confirm-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.record-request-detail-page .confirm-title-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.record-request-detail-page .confirm-title-input {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  max-width: 400px;
+}
+
+.record-request-detail-page .confirm-title-input:hover {
+  border-color: var(--text-muted);
+}
+
+.record-request-detail-page .confirm-title-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.record-request-detail-page .confirm-title-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.record-request-detail-page .confirm-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.record-request-detail-page .btn-confirm {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #1976d2;
+  color: #fff;
+}
+
+.record-request-detail-page .btn-confirm:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.record-request-detail-page .btn-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.record-request-detail-page .confirm-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── 메모 3컬럼 레이아웃 ── */
+.record-request-detail-page .memo-row {
+  display: grid;
+  gap: 16px;
+}
+
+.record-request-detail-page .memo-row-3col { grid-template-columns: repeat(3, 1fr); }
+.record-request-detail-page .memo-row-2col { grid-template-columns: repeat(2, 1fr); }
+
+.record-request-detail-page .memo-row-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.record-request-detail-page .memo-row-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.record-request-detail-page .memo-row-col .remark-readonly,
+.record-request-detail-page .memo-row-col .memo-card {
+  flex: 1;
+}
+
+/* ── 파일 세부정보 카드 ── */
+.record-request-detail-page .file-detail-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.record-request-detail-page .file-detail-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.record-request-detail-page .file-detail-card-header {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.record-request-detail-page .file-detail-card-body {
+  padding: 14px 16px;
+}
+
+/* ── 의뢰자 세부요청사항 (읽기 전용) ── */
+.record-request-detail-page .remark-readonly {
+  padding: 16px 20px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  min-height: 48px;
+}
+
+.record-request-detail-page .remark-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.record-request-detail-page .remark-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── 메모 카드 (stenoMemo / adminMemo) ── */
+.record-request-detail-page .memo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.record-request-detail-page .memo-textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.record-request-detail-page .memo-textarea:hover {
+  border-color: var(--text-muted);
+}
+
+.record-request-detail-page .memo-textarea:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.record-request-detail-page .memo-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.record-request-detail-page .memo-save-btn {
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #1976d2;
+  color: #fff;
+}
+
+.record-request-detail-page .memo-save-btn:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.record-request-detail-page .memo-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── 파일 확장 행 ── */
+.record-request-detail-page .td-expand-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+
+.record-request-detail-page .expand-arrow {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.record-request-detail-page .expand-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.record-request-detail-page .file-row-expanded > td {
+  border-bottom-color: transparent !important;
+}
+
+.record-request-detail-page .file-expand-row > td {
+  padding: 0 !important;
+  background: var(--bg-primary);
+}
+
+.record-request-detail-page .file-expand-content {
+  padding: 12px 20px 16px;
+  border-top: 1px dashed color-mix(in srgb, var(--border-color) 60%, transparent);
+}
+
+.record-request-detail-page .file-expand-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 24px;
+}
+
+.record-request-detail-page .file-expand-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.record-request-detail-page .file-expand-item-wide {
+  grid-column: span 3;
+}
+
+.record-request-detail-page .file-expand-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.record-request-detail-page .file-expand-value {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* ── 기록 원본 정보 ── */
+.record-request-detail-page .nota-info {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+.record-request-detail-page .nota-info-title {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── 화자 정보 ── */
+.record-request-detail-page .speaker-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.record-request-detail-page .speaker-group-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.record-request-detail-page .speaker-table,
+.record-request-detail-page .file-speakers .speaker-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.record-request-detail-page .speaker-table thead th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.record-request-detail-page .speaker-table thead th:first-child {
+  width: 60px;
+  text-align: center;
+}
+
+.record-request-detail-page .speaker-table tbody td {
+  padding: 7px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+}
+
+.record-request-detail-page .speaker-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.record-request-detail-page .file-speakers {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+}
+
+/* ── 첨부파일 공유 체크박스 ── */
+.record-request-detail-page .share-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #1976d2;
+}
+
+/* ── 첨부파일 헤더 액션 ── */
+.record-request-detail-page .detail-section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.record-request-detail-page .btn-share-save {
+  font-family: inherit;
+  border: 1px solid #64b5f6;
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  color: #1976d2;
+}
+
+.record-request-detail-page .btn-share-save:hover:not(:disabled) {
+  background: #e3f2fd;
+}
+
+.record-request-detail-page .btn-share-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── 파일 테이블 컬럼 너비 (6열: No / 파일명 / 분할 / 재생시간 / 파일크기 / 액션) ── */
+.record-request-detail-page .file-table th:nth-child(1) { width: 50px; }
+.record-request-detail-page .file-table th:nth-child(2) { width: auto; text-align: left; }
+.record-request-detail-page .file-table th:nth-child(3) { width: 80px; }
+.record-request-detail-page .file-table th:nth-child(4) { width: 100px; }
+.record-request-detail-page .file-table th:nth-child(5) { width: 100px; }
+.record-request-detail-page .file-table th:nth-child(6) { width: 90px; }
+
+/* ── Page Footer ── */
+.record-request-detail-page .page-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}

@@ -1,0 +1,56 @@
+/* VOD 분할 — 다른 작업자 구간(WORK_DONE) 자막 카드. 일반 자막과 구분되는 회색 톤 + 자물쇠 배지. */
+.locked-subtitle-card {
+  height: 124px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px dashed var(--border-color, #4b5563);
+  border-left: 3px solid var(--text-secondary, #6b7280);
+  background: color-mix(in srgb, var(--surface-dark, #111827) 92%, #6b7280 8%);
+  color: var(--text-secondary, #9ca3af);
+  cursor: not-allowed;
+  user-select: none;
+  overflow: hidden;
+}
+
+.locked-subtitle-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--text-secondary, #6b7280) 18%, transparent);
+  color: var(--text-secondary, #9ca3af);
+  letter-spacing: 0.02em;
+}
+
+.locked-subtitle-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-tertiary, #6b7280);
+  font-variant-numeric: tabular-nums;
+}
+
+.locked-subtitle-card__time {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+.locked-subtitle-card__text {
+  flex: 1 1 auto;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-primary, #d1d5db);
+  opacity: 0.85;
+}

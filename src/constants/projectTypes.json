@@ -1,0 +1,5 @@
+[
+    {"type": "START", "name": "출발어"},
+    {"type": "MID", "name": "중간어"},
+    {"type": "FINAL", "name": "도착어"}
+]

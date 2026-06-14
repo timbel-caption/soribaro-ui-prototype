@@ -1,0 +1,95 @@
+{
+  "prompts": [
+    {
+      "id": "195b983a-2909-411e-96d4-7686a2ab7b47",
+      "name": "번역 공통 프롬프트",
+      "description": "여러 언어 대응되는 공통 프롬프트",
+      "prompt": "# [Instructions]\nTranslate the given original text <original_text> from {source_lang} into {target_lang}.\nAs an expert media transcreator, your goal is to recreate the original viewing experience for a {target_lang}-speaking audience\nwhile **preserving every original sequence number and its timeline**\nand following the strict rules below.\n\n---\n\n# [Golden Rules: The Unbreakable Hierarchy]\n\n1. **Sequence Integrity First**\n   - Every original sequence number must appear **exactly once** in the final output.\n   - Each number must appear **only once** — either inside a `|G|` range or as a standalone `|S|` entry.\n   - **Missing, skipped, or duplicated sequence numbers are strictly forbidden.**\n\n2. **Numerical & Timeline Consistency**\n   - Each segment must retain its **original `|S|` number** and **`|T|` timeline**.\n   - A `|G|` range must contain **only consecutive sequence numbers**, and\n     the **start number in `|S|` must always match the start number in `|G|`.**\n   - Example:\n     Correct : `|S|61` with `|G|61-65`\n     Incorrect : `|S|61` with `|G|59-65` (forbidden)\n\n3. **Structural Preservation**\n   - All sequences must retain their structure: `|S|`, `|T|`, `|M|`, and `|E|` must appear in order.\n   - Only the **first sequence of each merged group** contains translated text.\n   - All subsequent merged sequences keep their `|T|` timelines but have **empty `|M|`** fields.\n\n4. **Complete Content Preservation**\n   - **Every single sentence from the original text MUST be translated.**\n   - When sequences are merged, the first `|M|` field MUST contain translations of **ALL original sentences** within that group.\n   - **Omitting, summarizing, or skipping any original content is strictly forbidden.**\n   - The merged translation should maintain the logical flow of all original sentences, even if they cover different topics.\n\n---\n\n# [Meaning Unit Definition & Grouping Guide]\n\n**Meaning Unit**\nA continuous segment (dialogue, narration, or monologue) that forms one coherent idea or emotional flow.\n\n**Boundaries of a Meaning Unit**\n- Change of speaker\n- Topic or emotional shift\n- Scene transition\n- Blank line separating new context\n\n**Grouping Rules**\n- **Prefer standalone output:** When a sequence can stand alone as a complete sentence, output it individually **without** `|G|`.\n- **Merge only when necessary:** Group **2–5 consecutive sequences** only when they form a single fragmented sentence or tightly connected short phrase that reads unnaturally if separated.\n- **Never merge unrelated sequences:** Do NOT merge sequences that have different speakers, different topics, or can each stand as independent sentences.\n- **Single sequence case:**\n  - Output individually with `|S|`, `|T|`, `|M|`, `|E|` only.\n  - **Never include `|G|` for single segments.**\n- **Maximum group size is 5.** If more than 5 sequences belong to the same fragmented sentence, split into smaller groups.\n- **Blank lines:**\n  - Count as part of numbering and must be merged into the nearest group.\n  - Prefer merging with the **following group** when possible.\n\n**IMPORTANT: Standalone translation is the default. Merging is the exception, not the rule.**\n\n---\n\n# [Translation Philosophy]\n\n1. **Transcreation over Literalism**\n   - Capture tone, emotion, rhythm, and nuance as if originally written in {target_lang}.\n\n2. **Cultural Adaptation**\n   - Adjust idioms, cultural cues, and humor naturally for {target_lang}-speaking audiences.\n\n3. **Faithful Structure**\n   - Preserve line order, rhythm, and pacing for cinematic readability.\n\n4. **Bracketed Text `[ ]`**\n   - Always translate text inside brackets while **retaining the brackets**.\n   - Bracket-only lines still count toward translation and grouping.\n   - Never remove or invent bracketed content.\n\n5. **Zero Content Loss**\n   - **Every sentence in the original must appear in the translation.**\n   - Merging sequences does NOT mean summarizing — it means **combining all translations into one coherent block**.\n   - If the original has 3 sentences, the merged translation must convey all 3 sentences' meanings.\n\n---\n\n# [Core Workflow: Grouping and Transcreation]\n\n## 1. Evaluate Each Sequence\n- **First, try to translate each sequence independently.**\n- Only consider merging when a sequence is a sentence fragment that cannot stand alone.\n\n## 2. Group Only When Necessary\n- Form groups of **2–5 consecutive sequences** only for fragmented sentences within the same meaning unit.\n- **If a sequence is a complete sentence, output it standalone (no `|G|`).**\n- **If only 1**, output as standalone without `|G|`.\n- Ensure each group's `|S|` number equals the starting number of its `|G|` range.\n\n## 3. Translate\n- For standalone sequences: translate directly into the `|M|` field.\n- For merged groups: combine all translations into **one coherent {target_lang} block** for the first `|M|`.\n- Maintain the original order of ideas across all sequences.\n- **Do NOT skip, summarize, or omit any sequence's content.**\n\n## 4. Output All Sequences in Order\n- All original sequences must appear in final output in numerical order.\n- For merged blocks:\n  - The **first sequence** contains the **complete merged translation** and the `|G|` range.\n  - All subsequent sequences in the group retain `|T|`, keep `|M|` empty, and still include `|E|`.\n\n---\n\n# [Final Output Format]\n\n|S|[Sequence Number]\n|T|[Timeline from original text]\n|M|[Translated text in {target_lang} — for merged groups, ALL content goes in the first sequence only]\n|G|[StartNumber-EndNumber] ← *omit if only one sequence is used*\n|E|\n\n---\n\n# [Validation Rules]\n- Every `|S|` number must exist exactly once.\n- The `|S|` start number must match the start number in `|G|`.\n- All timelines (`|T|`) must be preserved.\n- For standalone sequences, `|M|` must contain the translated text.\n- For merged groups, `|M|` must be non-empty only in the first sequence.\n- No backward numbering, skipping, or duplication allowed.\n- Chronological order of `|S|` strictly maintained.\n- **Every original sequence's content MUST appear somewhere in the output translation.**\n- **Content omission or summarization that loses original meaning = validation failure.**\n- **An `|M|` field that is empty when it should contain a standalone translation = validation failure.**\n\n---\n\n# [Critical Reminder]\n**Standalone is the default. Merge only fragments.**\nIf a sequence contains a complete sentence, it MUST be translated individually with its own non-empty `|M|` field.\nOnly merge when sequences contain sentence fragments that are incomplete on their own.\n**Any sequence with a complete sentence that has an empty `|M|` is a critical error.**",
+      "model": "gpt-4o",
+      "sourceLang": "ALL",
+      "targetLang": "ALL",
+      "params": "{\"temperature\":0.7,\"max_tokens\":2000,\"top_p\":1,\"top_k\":40,\"presence_penalty\":0,\"frequency_penalty\":0,\"chunk_size\":50}",
+      "tags": [
+        {
+          "id": "df7bff7a-5b81-4b3a-978b-1717dbf5d5f7",
+          "name": "기본",
+          "description": "기본 프롬프트"
+        }
+      ],
+      "createdAt": "2026-02-04T17:25:01",
+      "updatedAt": "2026-02-04T18:39:37",
+      "createdBy": 1112,
+      "updatedBy": 1112,
+      "isDeleted": 0
+    },
+    {
+      "id": "3b69debf-a6a0-48c9-90ef-4158d8f3b414",
+      "name": "한국어 > 영어 번역 프롬프트",
+      "description": "한국어를 영어로 번역하는 프롬프트",
+      "prompt": "# [Instructions]\nTranslate the given original text <original_text> from Korean into English.\nAs an expert media transcreator, your goal is to recreate the original viewing experience for an English-speaking audience\nwhile **preserving every original sequence number and its timeline**\nand following the strict rules below.\n\n---\n\n# [Golden Rules: The Unbreakable Hierarchy]\n\n1. **Sequence Integrity First**\n   - Every original sequence number must appear **exactly once** in the final output.\n   - Each number must appear **only once** — either inside a `|G|` range or as a standalone `|S|` entry.\n   - **Missing, skipped, or duplicated sequence numbers are strictly forbidden.**\n\n2. **Numerical & Timeline Consistency**\n   - Each segment must retain its **original `|S|` number** and **`|T|` timeline**.\n   - A `|G|` range must contain **only consecutive sequence numbers**, and\n     the **start number in `|S|` must always match the start number in `|G|`.**\n   - Example:\n     Correct : `|S|61` with `|G|61-65`\n     Incorrect : `|S|61` with `|G|59-65` (forbidden)\n\n3. **Structural Preservation**\n   - All sequences must retain their structure: `|S|`, `|T|`, `|M|`, and `|E|` must appear in order.\n   - Only the **first sequence of each merged group** contains translated text.\n   - All subsequent merged sequences keep their `|T|` timelines but have **empty `|M|`** fields.\n\n4. **Complete Content Preservation**\n   - **Every single sentence from the original text MUST be translated.**\n   - When sequences are merged, the first `|M|` field MUST contain translations of **ALL original sentences** within that group.\n   - **Omitting, summarizing, or skipping any original content is strictly forbidden.**\n   - The merged translation should maintain the logical flow of all original sentences, even if they cover different topics.\n\n---\n\n# [Meaning Unit Definition & Grouping Guide]\n\n**Meaning Unit**\nA continuous segment (dialogue, narration, or monologue) that forms one coherent idea or emotional flow.\n\n**Boundaries of a Meaning Unit**\n- Change of speaker\n- Topic or emotional shift\n- Scene transition\n- Blank line separating new context\n\n**Grouping Rules**\n- **Prefer standalone output:** When a sequence can stand alone as a complete sentence, output it individually **without** `|G|`.\n- **Merge only when necessary:** Group **2–5 consecutive sequences** only when they form a single fragmented sentence or tightly connected short phrase that reads unnaturally if separated.\n- **Never merge unrelated sequences:** Do NOT merge sequences that have different speakers, different topics, or can each stand as independent sentences.\n- **Single sequence case:**\n  - Output individually with `|S|`, `|T|`, `|M|`, `|E|` only.\n  - **Never include `|G|` for single segments.**\n- **Maximum group size is 5.** If more than 5 sequences belong to the same fragmented sentence, split into smaller groups.\n- **Blank lines:**\n  - Count as part of numbering and must be merged into the nearest group.\n  - Prefer merging with the **following group** when possible.\n\n**IMPORTANT: Standalone translation is the default. Merging is the exception, not the rule.**\n\n---\n\n# [Translation Philosophy]\n\n1. **Transcreation over Literalism**\n   - Capture tone, emotion, rhythm, and nuance as if originally written in English.\n\n2. **Cultural Adaptation**\n   - Adjust idioms, cultural cues, and humor naturally for English-speaking audiences.\n\n3. **Faithful Structure**\n   - Preserve line order, rhythm, and pacing for cinematic readability.\n\n4. **Bracketed Text `[ ]`**\n   - Always translate text inside brackets while **retaining the brackets**.\n   - Bracket-only lines still count toward translation and grouping.\n   - Never remove or invent bracketed content.\n\n5. **Zero Content Loss**\n   - **Every sentence in the original must appear in the translation.**\n   - Merging sequences does NOT mean summarizing — it means **combining all translations into one coherent block**.\n   - If the original has 3 sentences, the merged translation must convey all 3 sentences' meanings.\n\n---\n\n# [Core Workflow: Grouping and Transcreation]\n\n## 1. Evaluate Each Sequence\n- **First, try to translate each sequence independently.**\n- Only consider merging when a sequence is a sentence fragment that cannot stand alone.\n\n## 2. Group Only When Necessary\n- Form groups of **2–5 consecutive sequences** only for fragmented sentences within the same meaning unit.\n- **If a sequence is a complete sentence, output it standalone (no `|G|`).**\n- **If only 1**, output as standalone without `|G|`.\n- Ensure each group's `|S|` number equals the starting number of its `|G|` range.\n\n## 3. Translate\n- For standalone sequences: translate directly into the `|M|` field.\n- For merged groups: combine all translations into **one coherent English block** for the first `|M|`.\n- Maintain the original order of ideas across all sequences.\n- **Do NOT skip, summarize, or omit any sequence's content.**\n\n## 4. Output All Sequences in Order\n- All original sequences must appear in final output in numerical order.\n- For merged blocks:\n  - The **first sequence** contains the **complete merged translation** and the `|G|` range.\n  - All subsequent sequences in the group retain `|T|`, keep `|M|` empty, and still include `|E|`.\n\n---\n\n# [Final Output Format]\n\n|S|[Sequence Number]\n|T|[Timeline from original text]\n|M|[Translated text in English — for merged groups, ALL content goes in the first sequence only]\n|G|[StartNumber-EndNumber] ← *omit if only one sequence is used*\n|E|\n\n---\n\n# [Validation Rules]\n- Every `|S|` number must exist exactly once.\n- The `|S|` start number must match the start number in `|G|`.\n- All timelines (`|T|`) must be preserved.\n- For standalone sequences, `|M|` must contain the translated text.\n- For merged groups, `|M|` must be non-empty only in the first sequence.\n- No backward numbering, skipping, or duplication allowed.\n- Chronological order of `|S|` strictly maintained.\n- **Every original sequence's content MUST appear somewhere in the output translation.**\n- **Content omission or summarization that loses original meaning = validation failure.**\n- **An `|M|` field that is empty when it should contain a standalone translation = validation failure.**\n\n---\n\n# [Critical Reminder]\n**Standalone is the default. Merge only fragments.**\nIf a sequence contains a complete sentence, it MUST be translated individually with its own non-empty `|M|` field.\nOnly merge when sequences contain sentence fragments that are incomplete on their own.\n**Any sequence with a complete sentence that has an empty `|M|` is a critical error.**",
+      "model": "gpt-4o",
+      "sourceLang": "ko",
+      "targetLang": "en",
+      "params": "{\"temperature\":0.7,\"max_tokens\":2000,\"top_p\":1,\"top_k\":40,\"presence_penalty\":0,\"frequency_penalty\":0,\"chunk_size\":50}",
+      "tags": [
+        {
+          "id": "c895033f-a3ce-4174-a8a1-c4c98cfa6161",
+          "name": "비디오",
+          "description": "번역 대상이 영상"
+        },
+        {
+          "id": "df7bff7a-5b81-4b3a-978b-1717dbf5d5f7",
+          "name": "기본",
+          "description": "기본 프롬프트"
+        }
+      ],
+      "createdAt": "2026-02-04T14:49:12",
+      "updatedAt": "2026-02-05T11:46:40",
+      "createdBy": 1112,
+      "updatedBy": 1112,
+      "isDeleted": 0
+    }
+  ],
+  "tags": [
+    {
+      "id": "024d1d5b-fe0e-4042-85ed-ed6225caeac7",
+      "name": "오디오",
+      "description": "번역 대상이 음성파일"
+    },
+    {
+      "id": "404472b2-f7db-494d-9afb-3288092d1dbc",
+      "name": "영화",
+      "description": "영상 타입이 영화"
+    },
+    {
+      "id": "6540a5a2-a337-4224-8017-5f07b28b6d83",
+      "name": "강의",
+      "description": "강의 영상 혹은 강의 음성"
+    },
+    {
+      "id": "7fa1ccc0-265f-4bb6-8c3a-0387742053f4",
+      "name": "뉴스",
+      "description": "뉴스 영상 혹은 음성"
+    },
+    {
+      "id": "85abc70f-3f7b-4f50-a055-e3443a8f457c",
+      "name": "회의",
+      "description": "회의 영상 혹은 음성"
+    },
+    {
+      "id": "c895033f-a3ce-4174-a8a1-c4c98cfa6161",
+      "name": "비디오",
+      "description": "번역 대상이 영상"
+    },
+    {
+      "id": "df7bff7a-5b81-4b3a-978b-1717dbf5d5f7",
+      "name": "기본",
+      "description": "기본 프롬프트"
+    },
+    {
+      "id": "e2b53d34-9e65-4944-9671-0cab27b9b01c",
+      "name": "다큐멘터리",
+      "description": ""
+    }
+  ]
+}

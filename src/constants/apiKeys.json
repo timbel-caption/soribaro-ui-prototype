@@ -1,0 +1,16 @@
+{
+  "llm": {
+    "openai": "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",
+    "claude": "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",
+    "gemini": "AIzaSyC53DUWnvIdBlJMFzT5FE1bkJJb05SvhR8"
+  },
+  "stt": {
+    "clova": {
+      "invokeUrl": "https://clovaspeech-gw.ncloud.com/external/v1/3962/c3c9ccf10b2fe11c301e08b2616788be931e398ee45cbdf40b76510ed1389cd7",
+      "secretKey": "a8da79c3aceb41b9a4f0dcfe434f34b4"
+    },
+    "elevenlabs": {
+      "apiKey": "sk_d7704a0505eaaeb4bcdb96d2a80de5ad85f7e318345bfe3e"
+    }
+  }
+}

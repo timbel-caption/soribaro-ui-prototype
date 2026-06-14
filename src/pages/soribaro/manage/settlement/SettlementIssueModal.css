@@ -1,0 +1,540 @@
+/* ========================================
+   정산서 발행 모달 — 2-Column Checkout
+   ======================================== */
+
+/* ── Modal ── */
+.si-modal {
+  width: 720px;
+  max-width: 95vw;
+  max-height: 92vh;
+}
+
+/* ── Header ── */
+.si-header {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+}
+
+.si-header h3 {
+  margin: 0;
+  margin-right: auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.si-nav {
+  display: flex;
+  align-items: center;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 1px;
+}
+
+.si-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 22px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.si-nav-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.si-nav-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.si-nav-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0 6px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+/* ── Body — 2 column grid ── */
+.si-body {
+  display: grid !important;
+  grid-template-columns: 5fr 7fr;
+  gap: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+/* ── LEFT: File info ── */
+.si-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 16px 20px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+}
+
+.si-prop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+}
+
+.si-prop-label {
+  flex-shrink: 0;
+  width: 62px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.si-prop-value {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.si-prop-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+.si-info-sep {
+  height: 1px;
+  background: var(--border-color);
+  margin: 6px 0;
+}
+
+/* ── RIGHT: Invoice area ── */
+.si-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+/* 작업시간 라벨 + 표시 모드 토글 인라인 배치 */
+.si-line-label-with-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Invoice Section ── */
+.si-invoice {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: opacity 0.15s ease;
+}
+
+.si-invoice + .si-invoice {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.si-invoice-disabled .si-invoice-lines {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Invoice head */
+.si-invoice-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.si-invoice-role {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.si-invoice-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.si-badge {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 0 5px;
+  line-height: 1.6;
+  margin-left: auto;
+}
+
+/* Toggle switch */
+.si-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.si-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.si-toggle-track {
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--border-color);
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.si-toggle input:checked + .si-toggle-track {
+  background: var(--accent-color);
+}
+
+.si-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  transition: transform 0.15s ease;
+}
+
+.si-toggle input:checked + .si-toggle-track .si-toggle-thumb {
+  transform: translateX(12px);
+}
+
+/* Separators */
+.si-invoice-sep {
+  height: 1px;
+  background: var(--border-color);
+  margin: 6px 0;
+}
+
+.si-invoice-sep-light {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+  opacity: 0.5;
+}
+
+/* ── Invoice Lines ── */
+.si-invoice-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.si-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  gap: 8px;
+}
+
+.si-line-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.si-line-label-sub {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.si-line-value {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.si-line-readonly {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.si-line-unit {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.si-line-minus {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Inline input — looks like text, editable on focus */
+.si-inline-input {
+  width: 80px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  outline: none;
+  transition: all 0.12s ease;
+}
+
+.si-inline-input:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-color);
+}
+
+.si-inline-input:focus {
+  background: var(--bg-primary);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.si-inline-input:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.si-inline-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.si-inline-input::-webkit-outer-spin-button,
+.si-inline-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.si-inline-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.si-inline-input-sm {
+  width: 56px;
+}
+
+/* 좌측 정보 영역 평가 지표 입력 (정확도/오류건수/회의록오류) */
+.si-prop-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.si-prop-eval-input {
+  width: 64px;
+  height: 22px;
+  font-size: 12px;
+  text-align: left;
+  border-color: var(--border-color);
+}
+
+.si-prop-unit {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Auto-calc button */
+.si-line-auto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent-color);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.12s ease;
+  opacity: 0.6;
+}
+
+.si-line-auto:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  opacity: 1;
+}
+
+.si-line-auto:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.2;
+}
+
+/* Total line */
+.si-line-total {
+  margin-top: 2px;
+}
+
+.si-line-total .si-line-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.si-line-total-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-color);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.si-line-total-value small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ── Loading state ── */
+.si-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@keyframes si-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.si-loading-spinner {
+  animation: si-spin 0.8s linear infinite;
+  color: var(--accent-color);
+}
+
+/* ── Validation Banner ── */
+.si-validation-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 20px;
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 8%, var(--bg-primary));
+  border-top: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 25%, transparent);
+  color: color-mix(in srgb, var(--color-warning, #f59e0b) 80%, var(--text-primary));
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.si-validation-banner > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.si-validation-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.si-validation-list li {
+  padding: 1px 0;
+}
+
+.si-validation-list li::before {
+  content: '·';
+  margin-right: 6px;
+  font-weight: 700;
+}
+
+/* ── Nav error indicators ── */
+.si-nav-label-error {
+  color: color-mix(in srgb, var(--color-warning, #f59e0b) 80%, var(--text-primary));
+  font-weight: 600;
+}
+
+.si-nav-error-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-warning, #f59e0b) 85%, var(--text-primary));
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 25%, transparent);
+  border-radius: 8px;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .si-modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .si-body {
+    grid-template-columns: 1fr !important;
+  }
+
+  .si-info {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
+  }
+
+  .si-right {
+    padding: 12px 16px;
+  }
+
+  .si-line-total-value {
+    font-size: 18px;
+  }
+
+  .si-header {
+    flex-wrap: wrap;
+  }
+}

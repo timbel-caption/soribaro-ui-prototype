@@ -1,0 +1,46 @@
+/* ============================================
+   EnterpriseWorkList — 페이지 고유 스타일
+   공통 스타일은 src/styles/notion-list.css 참조
+   ============================================ */
+
+/* ── 날짜 필터 ── */
+.enterprise-work-page .filter-date {
+  height: 32px;
+  padding: 0 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.enterprise-work-page .filter-date:hover {
+  border-color: var(--text-muted);
+}
+
+.enterprise-work-page .filter-date:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.enterprise-work-page .filter-date-separator {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* 상태/취소 배지: index.css 공통 스타일 사용 */
+
+/* ── 취소된 항목 (disabled) ── */
+.enterprise-work-page .grid-container .ag-row.row-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.enterprise-work-page .grid-container .ag-row.row-disabled .ag-cell {
+  color: var(--text-muted) !important;
+}
