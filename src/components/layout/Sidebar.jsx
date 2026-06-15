@@ -509,7 +509,7 @@ export default function Sidebar({ isCollapsed, onToggle }) {
       <div className="sidebar-header">
         {!isCollapsed && (
           <div className="logo-area">
-            <img src="/favicon.ico" alt="Soribaro" className="logo-icon" />
+            <img src={`${import.meta.env.BASE_URL}favicon.ico`} alt="Soribaro" className="logo-icon" />
             <span className="logo-text">Soribaro</span>
           </div>
         )}
