@@ -13,12 +13,12 @@
 export const MOCK_USER = {
   membNo: 1,
   membId: 'planner@soribaro.com',
-  membNm: '기획 관리자',
+  membNm: '관리자',
   membTp: 'A',
   membLvl: '4',
   roles: ['ROLE_ADMIN', 'ROLE_SUPER'],
   email: 'planner@soribaro.com',
-  name: '기획 관리자',
+  name: '관리자',
 };
 
 // ────────────────────────────────────────────────────────────────────────────
