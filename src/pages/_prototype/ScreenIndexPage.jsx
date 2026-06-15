@@ -12,6 +12,13 @@ import './ScreenIndexPage.css';
  */
 const SECTIONS = [
   {
+    title: '🚧 개발중',
+    note: '작업 중인 신규 화면입니다.',
+    links: [
+      { to: '/dev/project-task-types', label: '프로젝트 작업 유형·용어집 설정' },
+    ],
+  },
+  {
     title: '소리바로 · 마이페이지',
     links: [{ to: '/soribaro/mypage', label: '마이페이지 대시보드' }],
   },

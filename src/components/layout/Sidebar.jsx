@@ -65,6 +65,18 @@ const menuData = [
     path: "/updates",
   },
   {
+    // [프로토타입] 개발중 화면 모음
+    id: "dev",
+    label: "🚧 [개발중]",
+    children: [
+      {
+        id: "dev-project-task-types",
+        label: "작업 유형·용어집 설정",
+        path: "/dev/project-task-types",
+      },
+    ],
+  },
+  {
     id: "soribaro",
     labelKey: "sidebar.soribaro",
     icon: "Mic",

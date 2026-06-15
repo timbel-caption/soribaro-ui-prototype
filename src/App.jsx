@@ -68,6 +68,7 @@ import ScreenIndexPage from './pages/_prototype/ScreenIndexPage';
 import ReadmePage from './pages/_prototype/ReadmePage';
 // [프로토타입] 업데이트 내역
 import UpdatesPage from './pages/_prototype/UpdatesPage';
+import ProjectTaskTypePage from './pages/_prototype/ProjectTaskTypePage';
 import './App.css';
 
 /**
@@ -235,6 +236,9 @@ function AppRoutes() {
 
         {/* [프로토타입] 업데이트 내역 */}
         <Route path="updates" element={<UpdatesPage />} />
+
+        {/* [프로토타입 · 개발중] 프로젝트 작업 유형 및 용어집 설정 */}
+        <Route path="dev/project-task-types" element={<ProjectTaskTypePage />} />
 
         {/* 소리바로 - 마이페이지 */}
         <Route path="soribaro/mypage" element={<MyPage />} />

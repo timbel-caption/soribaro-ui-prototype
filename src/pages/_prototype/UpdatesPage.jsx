@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-15',
+    author: 'jybae',
+    title: '[개발중] 작업 유형·용어집 설정 화면 추가',
+    description:
+      '사이드바에 "[개발중]" 메뉴를 추가하고, 프로젝트 작업 유형 및 용어집 설정 화면(공통 정보·세부 메모·파일 목록)을 시안대로 구성했습니다.',
+  },
+  {
+    date: '2026-06-15',
     author: '정기태',
     title: '사이드바 공지사항 관리 메뉴 제거',
     description:
