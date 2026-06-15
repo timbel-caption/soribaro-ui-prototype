@@ -24,4 +24,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Claude Code: ignore local/personal files but keep the shared session hook
 .claude/*
+!.claude/settings.json
+!.claude/hooks
+.claude/settings.local.json
