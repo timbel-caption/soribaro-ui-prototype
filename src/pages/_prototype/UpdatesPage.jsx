@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-15',
+    author: '정기태',
+    title: '사이드바 공지사항 관리 메뉴 제거',
+    description:
+      '사이드바 서비스 관리 메뉴에서 "공지사항 관리" 항목을 제거했습니다.',
+  },
+  {
+    date: '2026-06-15',
     author: 'jybae',
     title: '로그인 사용자 표시 이름 변경',
     description:

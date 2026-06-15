@@ -190,11 +190,6 @@ const menuData = [
             labelKey: "sidebar.evaluationManagement",
             path: "/soribaro/manage/evaluation",
           },
-          {
-            id: "manage-notice",
-            labelKey: "sidebar.noticeManagement",
-            path: "/soribaro/manage/notice",
-          },
         ],
       },
     ],
