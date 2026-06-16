@@ -35,6 +35,16 @@
 
 /* 상태/취소 배지: index.css 공통 스타일 사용 */
 
+/* ── 대시보드가 남은 공간을 채우도록 ── */
+.enterprise-work-page {
+  overflow-y: auto;
+}
+
+.enterprise-work-page .proto-dashboard {
+  flex: 1;
+  overflow-y: auto;
+}
+
 /* ── 취소된 항목 (disabled) ── */
 .enterprise-work-page .grid-container .ag-row.row-disabled {
   opacity: 0.5;

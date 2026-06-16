@@ -38,17 +38,16 @@ const formatSplitRange = (item, t) => {
   return `${formatDuration(item.startSec, t)} ~ ${formatDuration(item.endSec, t)}`;
 };
 
-// 작업시간 계산 (project_files.work_time 기준, 30초 반올림하여 정수 분 반환)
+// 스플릿 파일의 경우 id만으로 고유하지 않을 수 있으므로 복합키 사용
+const itemKey = (item) =>
+  `${item.id}_${item.fileNo}_${item.startSec ?? ''}_${item.endSec ?? ''}`;
+
 const calcWorkMinutes = (item) => {
   const seconds = item.workTime ?? item.duration;
   if (seconds == null || seconds <= 0) return 0;
   return Math.round(seconds / 60);
 };
 
-// 지급액 계산 (백엔드 SettlementServiceImpl.recalculatePay 와 동일 공식):
-//   subtotal = price * workMinutes * payRate / 100   (payRate=null 이면 100% 동일)
-//   afterPenalty = subtotal - penalty
-//   pay = round(afterPenalty * (1 - taxRate / 100))   (음수면 0)
 const calcPay = (price, workMinutes, penalty, taxRate, payRate = null) => {
   const rate = payRate != null ? Number(payRate) : 100;
   const subtotal = price * workMinutes * rate / 100;
@@ -62,7 +61,7 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
   const pay = Number(form[`${prefix}Pay`]) || 0;
   const penalty = Number(form[`${prefix}Penalty`]) || 0;
   const taxRate = Number(form[`${prefix}TaxRate`]) || 0;
-  const payRate = form[`_${prefix}PayRate`]; // null = 감가 미적용 (bssType 에 감가표 없거나 매칭 구간 없음)
+  const payRate = form[`_${prefix}PayRate`];
   const subtotalBase = pay * workMinutes;
   const subtotalAfterDepr = payRate != null
     ? Math.round(subtotalBase * Number(payRate) / 100)
@@ -90,7 +89,6 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
       <div className="si-invoice-sep" />
 
       <div className="si-invoice-lines">
-        {/* 단가 (editable) */}
         <div className="si-line">
           <span className="si-line-label">{t('manage.settlement.issueModal.unitPrice')}</span>
           <span className="si-line-value">
@@ -99,7 +97,6 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
             <button className="si-line-auto" type="button" disabled={disabled} onClick={() => onAutoCalc(label)} title={t('manage.settlement.issueModal.autoCalc')}><RotateCcw size={11} /></button>
           </span>
         </div>
-        {/* 작업시간 (editable) */}
         <div className="si-line">
           <span className="si-line-label si-line-label-with-toggle">
             {t('manage.settlement.issueModal.labelWorkDuration')}
@@ -119,12 +116,10 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
 
         <div className="si-invoice-sep-light" />
 
-        {/* 소계 (readonly) — 감가 미적용 base */}
         <div className="si-line">
           <span className="si-line-label si-line-label-sub">{t('manage.settlement.issueModal.subtotal')}</span>
           <span className="si-line-value si-line-readonly">{subtotalBase.toLocaleString()} {t('manage.settlement.issueModal.wonUnit')}</span>
         </div>
-        {/* 감가 적용 — accuracy 가 있는 경우 항상 표시. payRate NULL 이면 감가표없음 표기 + base 금액 유지. */}
         {accuracy != null && (
           <div className="si-line">
             <span className="si-line-label si-line-label-sub">
@@ -137,7 +132,6 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
             </span>
           </div>
         )}
-        {/* 패널티 (editable) */}
         <div className="si-line">
           <span className="si-line-label">{t('manage.settlement.issueModal.penalty')}</span>
           <span className="si-line-value">
@@ -146,7 +140,6 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
             <span className="si-line-unit">{t('manage.settlement.issueModal.wonUnit')}</span>
           </span>
         </div>
-        {/* 세율 (editable) */}
         <div className="si-line">
           <span className="si-line-label">{t('manage.settlement.issueModal.taxRate')}</span>
           <span className="si-line-value">
@@ -154,7 +147,6 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
             <span className="si-line-unit">%</span>
           </span>
         </div>
-        {/* 세금 (readonly) */}
         <div className="si-line">
           <span className="si-line-label si-line-label-sub">{t('manage.settlement.issueModal.taxAmount')}</span>
           <span className="si-line-value si-line-readonly">-{tax.toLocaleString()} {t('manage.settlement.issueModal.wonUnit')}</span>
@@ -162,7 +154,6 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
 
         <div className="si-invoice-sep" />
 
-        {/* 최종 지급액 */}
         <div className="si-line si-line-total">
           <span className="si-line-label">{t('manage.settlement.issueModal.finalAmount')}</span>
           <span className="si-line-value si-line-total-value">{total.toLocaleString()} <small>{t('manage.settlement.issueModal.wonUnit')}</small></span>
@@ -172,9 +163,18 @@ function InvoiceSection({ label, id, levelName, form, disabled, accuracy, onTogg
   );
 }
 
-/**
- * 정산서 발행 모달
- */
+const defaultForm = {
+  workMinutes: 0,
+  workerPay: 0, workerPenalty: 0, workerTaxRate: 0,
+  checkerEnabled: false, checkerPay: 0, checkerPenalty: 0, checkerTaxRate: 0,
+  accuracy: '', errorCount: '', formErrorCount: 0,
+  _workerLevelName: null, _workerLevelId: null,
+  _checkerLevelName: null, _checkerLevelId: null,
+  _workerPayRate: null, _checkerPayRate: null,
+};
+
+const toNullableNumber = (v) => (v === '' || v == null ? null : Number(v));
+
 export default function SettlementIssueModal({ open, items = [], onClose, onSuccess }) {
   const { t } = useTranslation('soribaro');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -186,19 +186,6 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
   const user = useUserStore((s) => s.user);
   const getCodeLabel = useCommonCodeStore((s) => s.getCodeLabel);
   const workTimeMode = useSettlementUiStore((s) => s.workTimeDisplayMode);
-
-  const defaultForm = {
-    workMinutes: 0,
-    workerPay: 0, workerPenalty: 0, workerTaxRate: 0,
-    checkerEnabled: false, checkerPay: 0, checkerPenalty: 0, checkerTaxRate: 0,
-    accuracy: '', errorCount: '', formErrorCount: 0,
-    _workerLevelName: null, _workerLevelId: null,
-    _checkerLevelName: null, _checkerLevelId: null,
-    _workerPayRate: null, _checkerPayRate: null,
-  };
-
-  // 평가 지표 수정값 정규화: '' → null, 그 외 숫자
-  const toNullableNumber = (v) => (v === '' || v == null ? null : Number(v));
 
   useEffect(() => {
     if (!open || items.length === 0) return;
@@ -227,9 +214,9 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
 
       const newFormDataMap = {};
       workerResults.forEach((result, i) => {
-        let workerPay = 0;
-        let workerLevelName = null;
-        let workerLevelId = null;
+        const item = items[i];
+        const key = itemKey(item);
+        let workerPay = 0, workerLevelName = null, workerLevelId = null;
 
         if (result.status === 'fulfilled' && result.value?.status === 'SUCCESS') {
           const data = result.value.data;
@@ -241,12 +228,9 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
           toast.error(msg || t('manage.settlement.issueModal.toastWorkerPriceFailed'));
         }
 
-        let checkerEnabled = false;
-        let checkerPay = 0;
-        let checkerLevelName = null;
-        let checkerLevelId = null;
+        let checkerEnabled = false, checkerPay = 0, checkerLevelName = null, checkerLevelId = null;
 
-        if (items[i].checkerId) {
+        if (item.checkerId) {
           const cResult = checkerResults[i];
           if (cResult.status === 'fulfilled' && cResult.value?.status === 'SUCCESS') {
             const cData = cResult.value.data;
@@ -257,12 +241,12 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
           }
         }
 
-        newFormDataMap[i] = {
+        newFormDataMap[key] = {
           ...defaultForm,
-          workMinutes: calcWorkMinutes(items[i]),
-          accuracy: items[i].accuracy ?? '',
-          errorCount: items[i].errorCount ?? '',
-          formErrorCount: items[i].formErrorCount ?? 0,
+          workMinutes: calcWorkMinutes(item),
+          accuracy: item.accuracy ?? '',
+          errorCount: item.errorCount ?? '',
+          formErrorCount: item.formErrorCount ?? 0,
           workerPay,
           _workerLevelName: workerLevelName,
           _workerLevelId: workerLevelId,
@@ -276,14 +260,12 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
       setFormDataMap(newFormDataMap);
       setInitialLoading(false);
 
-      // 감가 미리보기 — 작업자만 대상. 검수자는 감가 대상이 아니므로 호출하지 않음(_checkerPayRate 항상 null).
-      // accuracy 가 있는 항목에 대해서만 호출, 실패해도 발행 흐름은 막지 않음
-      const previewPromises = items.map((item, i) => {
+      // 감가 미리보기 — accuracy가 있는 항목만, 실패해도 발행 흐름 차단하지 않음
+      const previewPromises = items.map((item) => {
         if (item.accuracy == null || !item.bssType) return Promise.resolve(null);
-        const form = newFormDataMap[i];
+        const form = newFormDataMap[itemKey(item)];
         const workMinutes = Number(form?.workMinutes) || 0;
-
-        const workerPreview = (form?.workerPay)
+        const workerPreview = form?.workerPay
           ? previewSettlementPay({
               bssType: item.bssType,
               price: Number(form.workerPay) || 0,
@@ -293,8 +275,7 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
               accuracy: item.accuracy,
             })
           : Promise.resolve(null);
-
-        return workerPreview.then((w) => ({ i, w }));
+        return workerPreview.then((w) => ({ key: itemKey(item), w }));
       });
 
       const previewResults = await Promise.allSettled(previewPromises);
@@ -304,11 +285,11 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
         const next = { ...prev };
         previewResults.forEach((r) => {
           if (r.status !== 'fulfilled' || !r.value) return;
-          const { i, w } = r.value;
-          const cur = next[i];
+          const { key, w } = r.value;
+          const cur = next[key];
           if (!cur) return;
           const workerPayRate = (w?.status === 'SUCCESS' && w.data?.depreciationApplied) ? w.data.payRate : null;
-          next[i] = { ...cur, _workerPayRate: workerPayRate };
+          next[key] = { ...cur, _workerPayRate: workerPayRate };
         });
         return next;
       });
@@ -324,20 +305,19 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
 
   const currentItem = items[currentIndex] || null;
   const total = items.length;
-  const currentForm = formDataMap[currentIndex] || defaultForm;
+  const currentKey = currentItem ? itemKey(currentItem) : null;
+  const currentForm = (currentKey && formDataMap[currentKey]) || defaultForm;
 
   const fetchCheckerPrice = useCallback(async () => {
-    if (!currentItem) return;
+    if (!currentItem || !currentKey) return;
     try {
       const res = await calculatePrice({ fileNo: currentItem.fileNo, servCd: currentItem.servCd, bssType: currentItem.bssType, workerId: currentItem.checkerId });
       if (res?.status === 'SUCCESS') {
         const data = res.data;
-
-        // 검수자는 감가 대상이 아니므로 미리보기 호출 없이 _checkerPayRate 는 항상 null 유지.
         setFormDataMap((prev) => ({
           ...prev,
-          [currentIndex]: {
-            ...(prev[currentIndex] || defaultForm),
+          [currentKey]: {
+            ...(prev[currentKey] || defaultForm),
             checkerEnabled: true,
             checkerPay: data.pricePerMinute,
             _checkerLevelName: data.workerLevelName,
@@ -347,50 +327,55 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
         }));
       } else toast.error(res?.message || t('manage.settlement.issueModal.toastCheckerPriceFailed'));
     } catch (err) { toast.error(err.message || t('manage.settlement.issueModal.toastCheckerPriceFailed')); }
-  }, [currentItem, currentIndex, formDataMap]);
+  }, [currentItem, currentKey]);
 
   const handleFormChange = useCallback((field, value) => {
     if (field === 'checkerEnabled' && value === true) {
-      const form = formDataMap[currentIndex] || defaultForm;
+      const form = (currentKey && formDataMap[currentKey]) || defaultForm;
       if (!form.checkerPay) { fetchCheckerPrice(); return; }
     }
-    setFormDataMap((prev) => ({ ...prev, [currentIndex]: { ...(prev[currentIndex] || defaultForm), [field]: value } }));
-  }, [currentIndex, formDataMap, fetchCheckerPrice]);
+    setFormDataMap((prev) => ({
+      ...prev,
+      [currentKey]: { ...(prev[currentKey] || defaultForm), [field]: value },
+    }));
+  }, [currentKey, formDataMap, fetchCheckerPrice]);
 
   const handleFormBlur = useCallback((field) => {
     setFormDataMap((prev) => {
-      const cur = prev[currentIndex] || defaultForm;
-      if (cur[field] === '' || cur[field] == null) return { ...prev, [currentIndex]: { ...cur, [field]: 0 } };
+      const cur = prev[currentKey] || defaultForm;
+      if (cur[field] === '' || cur[field] == null) return { ...prev, [currentKey]: { ...cur, [field]: 0 } };
       return prev;
     });
-  }, [currentIndex]);
+  }, [currentKey]);
 
   const handleWorkMinutesChange = useCallback((value) => {
-    setFormDataMap((prev) => ({ ...prev, [currentIndex]: { ...(prev[currentIndex] || defaultForm), workMinutes: value } }));
-  }, [currentIndex]);
+    setFormDataMap((prev) => ({
+      ...prev,
+      [currentKey]: { ...(prev[currentKey] || defaultForm), workMinutes: value },
+    }));
+  }, [currentKey]);
 
   const handleWorkMinutesBlur = useCallback(() => {
     setFormDataMap((prev) => {
-      const cur = prev[currentIndex] || defaultForm;
+      const cur = prev[currentKey] || defaultForm;
       const val = Number(cur.workMinutes);
-      if (!val || val < 0) return { ...prev, [currentIndex]: { ...cur, workMinutes: 0 } };
-      return { ...prev, [currentIndex]: { ...cur, workMinutes: Math.round(val) } };
+      if (!val || val < 0) return { ...prev, [currentKey]: { ...cur, workMinutes: 0 } };
+      return { ...prev, [currentKey]: { ...cur, workMinutes: Math.round(val) } };
     });
-  }, [currentIndex]);
+  }, [currentKey]);
 
-  // 정확도 blur: 0~100 범위 보정(소수 2자리) 후 감가 미리보기 재조회 — _workerPayRate 갱신
   const handleAccuracyBlur = useCallback(async () => {
     let clamped = null;
     setFormDataMap((prev) => {
-      const cur = prev[currentIndex] || defaultForm;
+      const cur = prev[currentKey] || defaultForm;
       if (cur.accuracy === '' || cur.accuracy == null) return prev;
       const num = Number(cur.accuracy);
       clamped = Math.round(Math.min(100, Math.max(0, isNaN(num) ? 0 : num)) * 100) / 100;
-      return { ...prev, [currentIndex]: { ...cur, accuracy: clamped } };
+      return { ...prev, [currentKey]: { ...cur, accuracy: clamped } };
     });
 
     if (clamped == null || !currentItem?.bssType) return;
-    const form = formDataMap[currentIndex] || defaultForm;
+    const form = (currentKey && formDataMap[currentKey]) || defaultForm;
     if (!form.workerPay) return;
     try {
       const w = await previewSettlementPay({
@@ -404,20 +389,19 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
       const workerPayRate = (w?.status === 'SUCCESS' && w.data?.depreciationApplied) ? w.data.payRate : null;
       setFormDataMap((prev) => ({
         ...prev,
-        [currentIndex]: { ...(prev[currentIndex] || defaultForm), _workerPayRate: workerPayRate },
+        [currentKey]: { ...(prev[currentKey] || defaultForm), _workerPayRate: workerPayRate },
       }));
     } catch { /* 미리보기 실패는 발행 흐름을 막지 않음 */ }
-  }, [currentIndex, currentItem, formDataMap]);
+  }, [currentKey, currentItem, formDataMap]);
 
-  // 오류 건수류 blur: 0 이상 정수 보정 (빈 값은 그대로 유지 — 평가값 없음 의미)
   const handleEvalCountBlur = useCallback((field) => {
     setFormDataMap((prev) => {
-      const cur = prev[currentIndex] || defaultForm;
+      const cur = prev[currentKey] || defaultForm;
       if (cur[field] === '' || cur[field] == null) return prev;
       const num = Math.max(0, Math.floor(Number(cur[field]) || 0));
-      return { ...prev, [currentIndex]: { ...cur, [field]: num } };
+      return { ...prev, [currentKey]: { ...cur, [field]: num } };
     });
-  }, [currentIndex]);
+  }, [currentKey]);
 
   const handleAutoCalcPrice = useCallback(async (role) => {
     if (!currentItem) return;
@@ -433,14 +417,12 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
     if (initialLoading) return {};
     const errors = {};
     items.forEach((item, i) => {
+      const form = formDataMap[itemKey(item)] || defaultForm;
       const itemErrors = [];
-      const form = formDataMap[i] || defaultForm;
 
       if (!item.workerId) itemErrors.push('workerIdMissing');
-
       const hasWorkerLevel = item.workerLevelName || item.workerLevelId || form._workerLevelName || form._workerLevelId;
       if (!hasWorkerLevel) itemErrors.push('workerLevelMissing');
-
       if (Number(form.workMinutes) <= 0) itemErrors.push('workDurationZero');
       if (!item.fileNo || !item.servCd || !item.bssType || !item.id) itemErrors.push('requiredFieldMissing');
       if (Number(form.workerPay) <= 0) itemErrors.push('workerPriceZero');
@@ -466,16 +448,14 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
     try {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        const form = formDataMap[i] || defaultForm;
+        const form = formDataMap[itemKey(item)] || defaultForm;
         const workMinutes = Number(form.workMinutes) || 0;
         const bssTypeName = item.bssTypeName || getCodeLabel('BSS_TYPE', item.bssType) || item.bssType;
 
-        // 평가 지표 수정값 (input '' = 평가값 없음 → null)
         const effAccuracy = toNullableNumber(form.accuracy);
         const effErrorCount = toNullableNumber(form.errorCount);
         const effFormErrorCount = Number(form.formErrorCount) || 0;
 
-        // 수정된 경우 발행 전에 project_file_evaluation 부터 갱신 — 실패 시 해당 항목 발행 스킵 (스냅샷 불일치 방지)
         const metricsChanged =
           effAccuracy !== toNullableNumber(item.accuracy) ||
           effErrorCount !== toNullableNumber(item.errorCount) ||
@@ -548,7 +528,6 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
   return (
     <div className="notion-modal-overlay" onClick={onClose}>
       <div className="notion-modal si-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="notion-modal-header si-header">
           <h3>{t('manage.settlement.issueModal.title')}</h3>
           <div className="si-nav">
@@ -560,9 +539,7 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
           <button className="notion-modal-close" onClick={onClose}><X size={16} /></button>
         </div>
 
-        {/* Body — 2 column */}
         <div className="notion-modal-body si-body">
-          {/* LEFT: file info */}
           <div className="si-info">
             <div className="si-prop"><span className="si-prop-label">{t('manage.settlement.issueModal.labelProjectTitle')}</span><span className="si-prop-value">{currentItem.projectTitle || currentItem.title}</span></div>
             <div className="si-prop"><span className="si-prop-label">{t('manage.settlement.issueModal.labelServiceName')}</span><span className="si-prop-value">{currentItem.servTitle}</span></div>
@@ -575,7 +552,6 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
               <div className="si-prop"><span className="si-prop-label">{t('manage.settlement.issueModal.labelFileDifficulty')}</span><span className="si-prop-value">{currentItem.fileDifficultName}</span></div>
             )}
             <div className="si-prop"><span className="si-prop-label">{t('manage.settlement.issueModal.labelRequester')}</span><span className="si-prop-value">{currentItem.requestMemberName}</span></div>
-            {/* 평가 지표 (수정 가능) — 발행 시 project_file_evaluation 에도 반영 */}
             <div className="si-prop"><span className="si-prop-label">{t('manage.settlement.issueModal.labelAccuracy')}</span><span className="si-prop-value si-prop-edit">
               <input type="number" className="si-inline-input si-prop-eval-input" value={currentForm.accuracy} onChange={(e) => handleFormChange('accuracy', e.target.value)} onBlur={handleAccuracyBlur} min={0} max={100} step="0.01" placeholder="-" />
               <span className="si-prop-unit">%</span>
@@ -597,7 +573,6 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
             )}
           </div>
 
-          {/* RIGHT: invoice */}
           <div className="si-right">
             {initialLoading ? (
               <div className="si-loading">
@@ -629,7 +604,7 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
                     levelName={currentItem.checkerLevelName || currentForm._checkerLevelName}
                     form={currentForm}
                     disabled={!currentForm.checkerEnabled}
-                    accuracy={null} /* 검수자는 감가 대상이 아니므로 감가 라인 미표시 */
+                    accuracy={null}
                     onToggle={(checked) => handleFormChange('checkerEnabled', checked)}
                     onFormChange={handleFormChange}
                     onFormBlur={handleFormBlur}
@@ -646,7 +621,6 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
           </div>
         </div>
 
-        {/* Validation Banner */}
         {!initialLoading && hasErrors && (
           <div className="si-validation-banner">
             <AlertTriangle size={14} />
@@ -662,7 +636,6 @@ export default function SettlementIssueModal({ open, items = [], onClose, onSucc
           </div>
         )}
 
-        {/* Footer */}
         <div className="notion-modal-footer">
           <button className="btn-primary" onClick={handleIssue} disabled={initialLoading || issuing || hasErrors}>
             {initialLoading ? t('manage.settlement.issueModal.loadingPrices') : issuing ? t('manage.settlement.issueModal.issuing') : t('manage.settlement.issueModal.issueAll', { count: total })}
