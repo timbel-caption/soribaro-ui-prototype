@@ -8,6 +8,13 @@ import './UpdatesPage.css';
  */
 const UPDATES = [
   {
+    date: '2026-06-17',
+    author: '정기태',
+    title: '사이드바 공지사항 관리 메뉴 복구',
+    description:
+      '이전에 제거했던 사이드바 서비스 관리 메뉴의 "공지사항 관리" 항목을 다시 추가했습니다.',
+  },
+  {
     date: '2026-06-15',
     author: 'jybae',
     title: '[개발중] 작업 유형·용어집 설정 화면 추가',
