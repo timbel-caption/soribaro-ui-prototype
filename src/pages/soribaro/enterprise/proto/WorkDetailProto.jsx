@@ -311,12 +311,12 @@ function ProjectManageTab({ s }) {
   return (
     <div className="proto-tab-panel">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <p className="proto-section-title" style={{ margin: 0 }}>과목 / 묶음 현황</p>
+        <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
         <button
           className="proto-file-add-btn"
           onClick={() => setShowForm(v => !v)}
         >
-          {showForm ? '취소' : '+ 과목 추가'}
+          {showForm ? '취소' : '+ 프로젝트 추가'}
         </button>
       </div>
 
