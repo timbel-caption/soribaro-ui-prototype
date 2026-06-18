@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
-import { getRequestTypes, addRequestType, deleteRequestType } from './manageProtoStore';
 import { useNavigate } from 'react-router-dom';
 import { usePageParams } from '../../../hooks/usePageParams';
 import { AgGridReact } from 'ag-grid-react';
@@ -14,70 +13,6 @@ import '../../../styles/notion-list.css';
 import './ManageEnterpriseCustomerPage.css';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-function RequestTypeManageModal({ onClose }) {
-  const [types, setTypes] = useState(getRequestTypes());
-  const [newName, setNewName] = useState('');
-  const [newContracts, setNewContracts] = useState('');
-
-  const handleAdd = () => {
-    if (!newName.trim()) return;
-    const rt = {
-      id: `rt-${Date.now()}`,
-      name: newName.trim(),
-      contractTypes: newContracts.split(',').map((s) => s.trim()).filter(Boolean),
-    };
-    addRequestType(rt);
-    setTypes(getRequestTypes());
-    setNewName('');
-    setNewContracts('');
-  };
-
-  const handleDelete = (id) => {
-    deleteRequestType(id);
-    setTypes(getRequestTypes());
-  };
-
-  return (
-    <div className="req-type-modal-overlay" onClick={onClose}>
-      <div className="req-type-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="req-type-modal-header">
-          <span>의뢰유형 관리</span>
-          <button className="preg-x-btn" onClick={onClose}>✕</button>
-        </div>
-        <div className="req-type-modal-body">
-          {types.map((rt) => (
-            <div key={rt.id} className="req-type-row">
-              <span className="req-type-name">{rt.name}</span>
-              <div className="req-type-contracts">
-                {rt.contractTypes.map((ct) => (
-                  <span key={ct} className="req-type-contract-tag">{ct}</span>
-                ))}
-              </div>
-              <button className="proto-note-cancel-btn" onClick={() => handleDelete(rt.id)}>삭제</button>
-            </div>
-          ))}
-          <div className="req-type-add-form">
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="유형명 (예: 자막)"
-            />
-            <input
-              value={newContracts}
-              onChange={(e) => setNewContracts(e.target.value)}
-              placeholder="계약구분 (쉼표로 구분, 예: 단건계약, 연간계약)"
-            />
-            <button className="proto-note-save-btn" style={{ alignSelf: 'flex-end', padding: '6px 14px' }} onClick={handleAdd}>추가</button>
-          </div>
-        </div>
-        <div className="req-type-modal-footer">
-          <button className="preg-cancel-btn" onClick={onClose}>닫기</button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const PLATFORM_OPTIONS = [
   { value: '', key: 'all' },
@@ -107,7 +42,6 @@ export default function ManageEnterpriseCustomerPage() {
   const [error, setError] = useState(null);
   const [excelLoading, setExcelLoading] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [showReqTypeModal, setShowReqTypeModal] = useState(false);
 
   const { page: urlPage, size: urlSize, setPageParams } = usePageParams();
   const [pagination, setPagination] = useState({
@@ -229,9 +163,6 @@ export default function ManageEnterpriseCustomerPage() {
             <p className="page-description">{t('manage.enterprise.customer.pageDescription')}</p>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="proto-register-page-btn" style={{ background: 'var(--surface-light)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }} onClick={() => setShowReqTypeModal(true)}>
-              의뢰유형 관리
-            </button>
             <button className="btn-primary" onClick={() => setAddModalOpen(true)}>
               {t('manage.enterprise.customer.addCustomer')}
             </button>
@@ -344,7 +275,6 @@ export default function ManageEnterpriseCustomerPage() {
         onClose={() => setAddModalOpen(false)}
         onSuccess={() => fetchData({ page: 0 })}
       />
-      {showReqTypeModal && <RequestTypeManageModal onClose={() => setShowReqTypeModal(false)} />}
     </div>
   );
 }
