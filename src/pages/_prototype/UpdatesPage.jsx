@@ -8,6 +8,13 @@ import './UpdatesPage.css';
  */
 const UPDATES = [
   {
+    date: '2026-06-18',
+    author: '정기태',
+    title: 'VOD 새 프로젝트 등록 모달에서 영상 파일 등록 섹션 제거',
+    description:
+      'VOD 작업관리 새 프로젝트 등록 창 하단의 영상 파일 등록(드래그앤드롭) 영역을 UI에서 제거했습니다.',
+  },
+  {
     date: '2026-06-17',
     author: '정기태',
     title: '프로젝트 관리 탭 텍스트 수정 (과목→프로젝트)',
