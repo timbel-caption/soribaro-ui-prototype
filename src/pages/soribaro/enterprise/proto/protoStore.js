@@ -8,6 +8,18 @@ export const getVodSamples = () => _vodSamples;
 export const getMeetingSamples = () => _meetingSamples;
 export const addVodSample = (s) => { _vodSamples = [s, ..._vodSamples]; };
 export const addMeetingSample = (s) => { _meetingSamples = [s, ..._meetingSamples]; };
+export const appendMeetingSample = (s) => { _meetingSamples = [..._meetingSamples, s]; };
+export const appendVodSample = (s) => { _vodSamples = [..._vodSamples, s]; };
+
+export const updateSampleSpecialNote = (id, note) => {
+  _meetingSamples = _meetingSamples.map((s) => s.id === id ? { ...s, specialNote: note } : s);
+  _vodSamples = _vodSamples.map((s) => s.id === id ? { ...s, specialNote: note } : s);
+};
+
+export const updateSampleSubfileStatus = (id, status) => {
+  _meetingSamples = _meetingSamples.map((s) => s.id === id ? { ...s, subfileStatus: status } : s);
+  _vodSamples = _vodSamples.map((s) => s.id === id ? { ...s, subfileStatus: status } : s);
+};
 
 export const updateSampleFiles = (id, newFiles) => {
   const vi = _vodSamples.findIndex((s) => s.id === id);
@@ -22,20 +34,3 @@ export const updateSampleSubjects = (id, newSubjects) => {
   const mi = _meetingSamples.findIndex((s) => s.id === id);
   if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, subjects: newSubjects } : s); }
 };
-
-export const updateSampleSpecialNote = (id, note) => {
-  const vi = _vodSamples.findIndex((s) => s.id === id);
-  if (vi !== -1) { _vodSamples = _vodSamples.map((s, i) => i === vi ? { ...s, specialNote: note } : s); return; }
-  const mi = _meetingSamples.findIndex((s) => s.id === id);
-  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, specialNote: note } : s); }
-};
-
-export const updateSampleSubfileStatus = (id, status) => {
-  const vi = _vodSamples.findIndex((s) => s.id === id);
-  if (vi !== -1) { _vodSamples = _vodSamples.map((s, i) => i === vi ? { ...s, subfileStatus: status } : s); return; }
-  const mi = _meetingSamples.findIndex((s) => s.id === id);
-  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, subfileStatus: status } : s); }
-};
-
-export const appendMeetingSample = (s) => { _meetingSamples = [..._meetingSamples, s]; };
-export const appendVodSample = (s) => { _vodSamples = [..._vodSamples, s]; };
