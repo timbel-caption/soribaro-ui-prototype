@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { updateSampleFiles, updateSampleSubjects } from './protoStore';
+import { updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries } from './protoStore';
+import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -51,8 +52,126 @@ function settleBadge(status) {
 
 const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('ko-KR'));
 
+// 현재 시각을 'YYYY-MM-DD HH:MM' 형식으로 반환 (로그 기록용)
+function nowStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// ─── 특이사항 / 내부 메모: 작성자·시각 로그가 남는 추가·수정·삭제 카드 ───
+function EditableLogCard({ variant, icon, iconClass, title, entries, author, onChange }) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editDraft, setEditDraft] = useState('');
+
+  const confirmAdd = () => {
+    const text = draft.trim();
+    if (!text) return;
+    onChange([...entries, { id: `log-${Date.now()}`, author, dttm: nowStamp(), content: text }]);
+    setDraft('');
+    setAdding(false);
+  };
+
+  const startEdit = (entry) => { setEditingId(entry.id); setEditDraft(entry.content); };
+
+  const confirmEdit = (id) => {
+    const text = editDraft.trim();
+    if (!text) return;
+    onChange(entries.map((e) => (e.id === id ? { ...e, content: text } : e)));
+    setEditingId(null);
+  };
+
+  const removeEntry = (id) => onChange(entries.filter((e) => e.id !== id));
+
+  return (
+    <div className={`proto-basic-extra-card proto-basic-extra-card--${variant}`}>
+      <div className="proto-basic-extra-header">
+        <span className={`proto-basic-extra-icon ${iconClass}`}>{icon}</span>
+        <span className="proto-basic-extra-title">{title}</span>
+        <button className="proto-log-add-btn" onClick={() => { setAdding(true); setDraft(''); }} title="추가">+</button>
+      </div>
+      <div className={`proto-basic-extra-body proto-basic-extra-body--${variant}`}>
+        {adding && (
+          <div className="proto-log-input-row">
+            <textarea
+              className="proto-log-input"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="내용을 입력하세요"
+              rows={2}
+              autoFocus
+            />
+            <div className="proto-log-input-actions">
+              <button className="proto-log-btn proto-log-btn--save" onClick={confirmAdd}>등록</button>
+              <button className="proto-log-btn" onClick={() => setAdding(false)}>취소</button>
+            </div>
+          </div>
+        )}
+
+        {entries.length === 0 && !adding ? (
+          <div className="proto-log-empty">등록된 내용이 없습니다.</div>
+        ) : (
+          <div className="proto-log-list">
+            {entries.map((entry) => (
+              <div key={entry.id} className="proto-log-item">
+                {editingId === entry.id ? (
+                  <div className="proto-log-input-row">
+                    <textarea
+                      className="proto-log-input"
+                      value={editDraft}
+                      onChange={(e) => setEditDraft(e.target.value)}
+                      rows={2}
+                      autoFocus
+                    />
+                    <div className="proto-log-input-actions">
+                      <button className="proto-log-btn proto-log-btn--save" onClick={() => confirmEdit(entry.id)}>저장</button>
+                      <button className="proto-log-btn" onClick={() => setEditingId(null)}>취소</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="proto-log-item-head">
+                      <span className="proto-log-meta">{entry.dttm} · {entry.author}</span>
+                      <span className="proto-log-actions">
+                        <button className="proto-log-action" onClick={() => startEdit(entry)}>수정</button>
+                        <button className="proto-log-action proto-log-action--del" onClick={() => removeEntry(entry.id)}>삭제</button>
+                      </span>
+                    </div>
+                    <div className="proto-log-content">{entry.content}</div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── 탭 1: 기본정보 ───
 function BasicInfoTab({ s }) {
+  // VOD 작업관리에서만 특이사항/내부 메모를 로그형(추가·수정·삭제) 카드로 제공
+  const isVod = s.bssTypeName !== '회의록';
+  const authorName = useUserStore((st) => st.user?.membNm) || '관리자';
+
+  // 기존 문자열 더미값을 첫 로그 항목으로 시드 (없으면 빈 목록)
+  const [noteEntries, setNoteEntries] = useState(() =>
+    s.noteEntries ?? ((s.specialNote || s.remark)
+      ? [{ id: 'note-seed', author: '관리자', dttm: s.regDttm || '', content: s.specialNote || s.remark }]
+      : [])
+  );
+  const [memoEntries, setMemoEntries] = useState(() =>
+    s.memoEntries ?? (s.internalMemo
+      ? [{ id: 'memo-seed', author: '관리자', dttm: s.regDttm || '', content: s.internalMemo }]
+      : [])
+  );
+
+  const syncNotes = (next) => { setNoteEntries(next); updateSampleNoteEntries(s.id, next); };
+  const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
+
   const row1 = [
     { label: '작업 유형', value: s.bssTypeName },
     { label: '입체명', value: s.entNm },
@@ -106,24 +225,49 @@ function BasicInfoTab({ s }) {
       </div>
 
       <div className="proto-basic-extra-row">
-        <div className="proto-basic-extra-card proto-basic-extra-card--note">
-          <div className="proto-basic-extra-header">
-            <span className="proto-basic-extra-icon proto-basic-extra-icon--star">★</span>
-            <span className="proto-basic-extra-title">특이사항</span>
-          </div>
-          <div className="proto-basic-extra-body proto-basic-extra-body--note">
-            {s.specialNote || s.remark || '-'}
-          </div>
-        </div>
-        <div className="proto-basic-extra-card proto-basic-extra-card--memo">
-          <div className="proto-basic-extra-header">
-            <span className="proto-basic-extra-icon proto-basic-extra-icon--memo">≡</span>
-            <span className="proto-basic-extra-title">내부 메모</span>
-          </div>
-          <div className="proto-basic-extra-body proto-basic-extra-body--memo">
-            {s.internalMemo || '-'}
-          </div>
-        </div>
+        {isVod ? (
+          <>
+            <EditableLogCard
+              variant="note"
+              icon="★"
+              iconClass="proto-basic-extra-icon--star"
+              title="특이사항"
+              entries={noteEntries}
+              author={authorName}
+              onChange={syncNotes}
+            />
+            <EditableLogCard
+              variant="memo"
+              icon="≡"
+              iconClass="proto-basic-extra-icon--memo"
+              title="내부 메모"
+              entries={memoEntries}
+              author={authorName}
+              onChange={syncMemos}
+            />
+          </>
+        ) : (
+          <>
+            <div className="proto-basic-extra-card proto-basic-extra-card--note">
+              <div className="proto-basic-extra-header">
+                <span className="proto-basic-extra-icon proto-basic-extra-icon--star">★</span>
+                <span className="proto-basic-extra-title">특이사항</span>
+              </div>
+              <div className="proto-basic-extra-body proto-basic-extra-body--note">
+                {s.specialNote || s.remark || '-'}
+              </div>
+            </div>
+            <div className="proto-basic-extra-card proto-basic-extra-card--memo">
+              <div className="proto-basic-extra-header">
+                <span className="proto-basic-extra-icon proto-basic-extra-icon--memo">≡</span>
+                <span className="proto-basic-extra-title">내부 메모</span>
+              </div>
+              <div className="proto-basic-extra-body proto-basic-extra-body--memo">
+                {s.internalMemo || '-'}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="proto-basic-status-history">

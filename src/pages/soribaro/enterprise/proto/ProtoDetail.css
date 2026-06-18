@@ -331,6 +331,133 @@
   background: rgba(96, 165, 250, 0.07);
 }
 
+/* 특이사항/내부 메모 로그 카드 (추가·수정·삭제) */
+.proto-log-add-btn {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+.proto-log-add-btn:hover { opacity: 0.85; }
+
+.proto-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proto-log-item {
+  padding: 8px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.proto-log-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.proto-log-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.proto-log-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.proto-log-action {
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.proto-log-action:hover { color: var(--accent-color); }
+.proto-log-action--del:hover { color: #f87171; }
+
+.proto-log-content {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.proto-log-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.proto-log-input-row {
+  margin-bottom: 8px;
+}
+
+.proto-log-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+  resize: vertical;
+}
+.proto-log-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.proto-log-input-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.proto-log-btn {
+  padding: 5px 12px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.proto-log-btn:hover { background: var(--surface-light); }
+
+.proto-log-btn--save {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--bg-primary);
+}
+.proto-log-btn--save:hover { opacity: 0.85; background: var(--accent-color); }
+
 /* 상태 변경 이력 */
 .proto-basic-status-history {
   margin-bottom: 16px;
