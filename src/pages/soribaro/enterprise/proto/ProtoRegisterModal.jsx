@@ -194,52 +194,6 @@ export default function ProtoRegisterModal({ isVod, onClose, onSubmit }) {
             </div>
           </div>
 
-          {/* 파일 등록 */}
-          <div className="preg-section">
-            <div className="preg-section-header">
-              <span>{isVod ? '🎬' : '🎙️'}</span>
-              <span>{isVod ? '영상 파일 등록' : '음성 파일 등록'}</span>
-            </div>
-
-            <div
-              className={`preg-drop-zone${dragOver ? ' preg-drop-zone--active' : ''}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept={isVod ? 'video/*' : 'audio/*'}
-                style={{ display: 'none' }}
-                onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
-              />
-              <div className="preg-drop-icon">{isVod ? '🎬' : '🎙️'}</div>
-              <div className="preg-drop-text">
-                파일을 드래그하거나 클릭하여 추가
-              </div>
-              <div className="preg-drop-hint">
-                {isVod ? 'MP4, MOV, AVI, MKV 등' : 'WAV, MP3, M4A 등'}
-              </div>
-            </div>
-
-            {files.length > 0 && (
-              <div className="preg-file-list">
-                {files.map((f, i) => (
-                  <div key={f.id} className="preg-file-item">
-                    <span className="preg-file-num">{i + 1}</span>
-                    <span className="preg-file-icon">{isVod ? '🎬' : '🎙️'}</span>
-                    <span className="preg-file-name">{f.name}</span>
-                    <span className="preg-file-size">{f.size}</span>
-                    <button className="preg-file-remove" onClick={() => removeFile(f.id)}>✕</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
         </div>
 
         {/* 푸터 */}

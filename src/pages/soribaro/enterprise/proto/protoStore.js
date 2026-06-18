@@ -34,3 +34,13 @@ export const updateSampleSubjects = (id, newSubjects) => {
   const mi = _meetingSamples.findIndex((s) => s.id === id);
   if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, subjects: newSubjects } : s); }
 };
+
+const _updateSampleField = (id, patch) => {
+  const vi = _vodSamples.findIndex((s) => s.id === id);
+  if (vi !== -1) { _vodSamples = _vodSamples.map((s, i) => i === vi ? { ...s, ...patch } : s); return; }
+  const mi = _meetingSamples.findIndex((s) => s.id === id);
+  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, ...patch } : s); }
+};
+
+export const updateSampleNoteEntries = (id, noteEntries) => _updateSampleField(id, { noteEntries });
+export const updateSampleMemoEntries = (id, memoEntries) => _updateSampleField(id, { memoEntries });
