@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getVodSamples, getMeetingSamples, addVodSample, addMeetingSample } from './proto/protoStore';
+import { getVodSamples, getMeetingSamples, appendVodSample, appendMeetingSample } from './proto/protoStore';
 import ProtoListDashboard from './proto/ProtoListDashboard';
 import ProtoRegisterModal from './proto/ProtoRegisterModal';
 import '../../../styles/notion-list.css';
@@ -12,6 +12,8 @@ export default function EnterpriseWorkList({ videoYn, title, description }) {
   const [showRegister, setShowRegister] = useState(false);
   const isVod = videoYn === 'Y';
   const [samples, setSamples] = useState(() => isVod ? getVodSamples() : getMeetingSamples());
+
+  const refreshSamples = () => setSamples(isVod ? [...getVodSamples()] : [...getMeetingSamples()]);
 
   const handleRegister = (form, files) => {
     const today = new Date().toISOString().split('T')[0];
@@ -38,6 +40,9 @@ export default function EnterpriseWorkList({ videoYn, title, description }) {
       deliveryFormats: form.deliveryFormats || '-',
       specialNote: form.specialNote || '',
       internalMemo: form.internalMemo || '',
+      contractType: form.contractType || '',
+      subfileStatus: '미요청',
+      round: 1,
       statusHistory: [{ date: form.regDate || today, label: '접수' }],
       protoPath: `/soribaro/enterprise/${isVod ? 'vod' : 'meeting'}-proto/${newId}`,
       files: files.map((f, i) => ({ fileNo: i + 1, fileName: f.name, duration: '-', size: f.size, uploadDttm: today })),
@@ -55,11 +60,11 @@ export default function EnterpriseWorkList({ videoYn, title, description }) {
     };
 
     if (isVod) {
-      addVodSample(newProject);
+      appendVodSample(newProject);
     } else {
-      addMeetingSample(newProject);
+      appendMeetingSample(newProject);
     }
-    setSamples(isVod ? getVodSamples() : getMeetingSamples());
+    setSamples(isVod ? [...getVodSamples()] : [...getMeetingSamples()]);
   };
 
   return (
@@ -74,7 +79,7 @@ export default function EnterpriseWorkList({ videoYn, title, description }) {
         </button>
       </div>
 
-      <ProtoListDashboard samples={samples} />
+      <ProtoListDashboard samples={samples} onSamplesChange={refreshSamples} />
 
       {showRegister && (
         <ProtoRegisterModal isVod={isVod} onClose={() => setShowRegister(false)} onSubmit={handleRegister} />

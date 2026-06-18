@@ -22,3 +22,20 @@ export const updateSampleSubjects = (id, newSubjects) => {
   const mi = _meetingSamples.findIndex((s) => s.id === id);
   if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, subjects: newSubjects } : s); }
 };
+
+export const updateSampleSpecialNote = (id, note) => {
+  const vi = _vodSamples.findIndex((s) => s.id === id);
+  if (vi !== -1) { _vodSamples = _vodSamples.map((s, i) => i === vi ? { ...s, specialNote: note } : s); return; }
+  const mi = _meetingSamples.findIndex((s) => s.id === id);
+  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, specialNote: note } : s); }
+};
+
+export const updateSampleSubfileStatus = (id, status) => {
+  const vi = _vodSamples.findIndex((s) => s.id === id);
+  if (vi !== -1) { _vodSamples = _vodSamples.map((s, i) => i === vi ? { ...s, subfileStatus: status } : s); return; }
+  const mi = _meetingSamples.findIndex((s) => s.id === id);
+  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, subfileStatus: status } : s); }
+};
+
+export const appendMeetingSample = (s) => { _meetingSamples = [..._meetingSamples, s]; };
+export const appendVodSample = (s) => { _vodSamples = [..._vodSamples, s]; };

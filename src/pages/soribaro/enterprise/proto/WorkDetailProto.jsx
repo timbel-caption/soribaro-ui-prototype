@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { updateSampleFiles, updateSampleSubjects } from './protoStore';
+import { updateSampleFiles, updateSampleSubjects, updateSampleSpecialNote } from './protoStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -52,7 +52,8 @@ function settleBadge(status) {
 const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('ko-KR'));
 
 // ─── 탭 1: 기본정보 ───
-function BasicInfoTab({ s }) {
+function BasicInfoTab({ s, onSpecialNoteChange }) {
+  const [specialNote, setSpecialNote] = useState(s.specialNote || s.remark || '');
   const row1 = [
     { label: '작업 유형', value: s.bssTypeName },
     { label: '입체명', value: s.entNm },
@@ -111,8 +112,14 @@ function BasicInfoTab({ s }) {
             <span className="proto-basic-extra-icon proto-basic-extra-icon--star">★</span>
             <span className="proto-basic-extra-title">특이사항</span>
           </div>
-          <div className="proto-basic-extra-body proto-basic-extra-body--note">
-            {s.specialNote || s.remark || '-'}
+          <div className="proto-basic-extra-body proto-basic-extra-body--note" style={{ padding: 0 }}>
+            <textarea
+              className="proto-special-note-textarea"
+              value={specialNote}
+              onChange={(e) => setSpecialNote(e.target.value)}
+              onBlur={() => onSpecialNoteChange?.(specialNote)}
+              placeholder="특이사항을 입력하세요"
+            />
           </div>
         </div>
         <div className="proto-basic-extra-card proto-basic-extra-card--memo">
@@ -758,7 +765,7 @@ export default function WorkDetailProto({ samples, backPath }) {
   }
 
   const tabContent = [
-    <BasicInfoTab s={s} />,
+    <BasicInfoTab s={s} onSpecialNoteChange={(note) => updateSampleSpecialNote(s.id, note)} />,
     <FileManageTab s={s} />,
     <ProjectManageTab s={s} />,
     <AssignManageTab s={s} />,

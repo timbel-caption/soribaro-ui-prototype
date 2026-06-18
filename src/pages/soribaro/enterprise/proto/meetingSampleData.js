@@ -21,6 +21,9 @@ export const MEETING_SAMPLES = [
     deliveryFormats: 'HWP',
     specialNote: '한글 문서 납품, 공문서 형식 적용',
     internalMemo: '1부 전사·검수 완료. 2부 전사 진행중.',
+    subfileStatus: '미요청',
+    contractType: '연간계약',
+    round: 1,
     statusHistory: [
       { date: '2026-06-01', label: '접수' },
       { date: '2026-06-01', label: '파일등록' },
@@ -96,6 +99,9 @@ export const MEETING_SAMPLES = [
     deliveryFormats: 'PDF',
     specialNote: 'PDF 납품, 기관 공문서 포맷 적용',
     internalMemo: '전사 완료, 검수 진행중.',
+    subfileStatus: '미요청',
+    contractType: '단건계약',
+    round: 1,
     statusHistory: [
       { date: '2026-05-28', label: '접수' },
       { date: '2026-05-28', label: '파일등록' },
