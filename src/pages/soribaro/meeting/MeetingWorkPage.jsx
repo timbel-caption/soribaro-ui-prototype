@@ -28,7 +28,7 @@ export default function MeetingWorkPage() {
       overallStatus: 'WORKING',
       subfileStatus: '미요청',
       contractType: form.contractType || '',
-      round: 1,
+      round: form.round ? parseInt(form.round, 10) || form.round : '-',
       regDttm: (form.regDate || today) + ' 09:00',
       dueDate: form.dueDate || today,
       actualDeliveryDate: '-',
