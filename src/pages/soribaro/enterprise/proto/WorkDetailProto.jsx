@@ -320,15 +320,29 @@ function FileManageTab({ s }) {
   const fileInputRef = useRef();
   const isVod = s.bssTypeName !== '회의록';
 
-  const addFiles = (fileList) => {
-    const today = new Date().toISOString().split('T')[0];
+  // 파일 한 개의 미디어 재생시간을 브라우저 API로 추출 ('HH:MM:SS')
+  const extractDuration = (file) => new Promise((resolve) => {
+    const el = document.createElement(isVod ? 'video' : 'audio');
+    const url = URL.createObjectURL(file);
+    el.preload = 'metadata';
+    el.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(secToDuration(Math.round(el.duration))); };
+    el.onerror = () => { URL.revokeObjectURL(url); resolve('-'); };
+    el.src = url;
+  });
+
+  const addFiles = async (fileList) => {
+    const now = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    const uploadDttm = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}`;
     const base = files.length;
-    const next = Array.from(fileList).map((f, i) => ({
+    const arr = Array.from(fileList);
+    const durations = await Promise.all(arr.map(extractDuration));
+    const next = arr.map((f, i) => ({
       fileNo: base + i + 1,
       fileName: f.name,
-      duration: '-',
+      duration: durations[i],
       size: fmtSize(f.size),
-      uploadDttm: today,
+      uploadDttm,
     }));
     const updated = [...files, ...next];
     setFiles(updated);
@@ -362,7 +376,9 @@ function FileManageTab({ s }) {
   const selectedSec = files
     .filter((f) => checked.has(f.fileNo))
     .reduce((acc, f) => acc + durationToSec(f.duration), 0);
-  const totalDuration = totalSec > 0 ? secToDuration(totalSec) : (s.totalPlayTm || '-');
+  // duration이 있는 파일이 하나라도 있으면 합산값 표시, 전부 '-'이면 s.totalPlayTm 폴백
+  const hasKnownDuration = files.some((f) => f.duration && f.duration !== '-');
+  const totalDuration = hasKnownDuration ? secToDuration(totalSec) : (s.totalPlayTm || '-');
 
   return (
     <div className="proto-tab-panel">

@@ -223,6 +223,7 @@ export default function ManageEnterprisePage() {
   const displayPage = pagination.page + 1;
 
   return (
+    <>
     <div className="notion-page manage-enterprise-page">
       <div className="page-header">
         <div>
@@ -367,5 +368,6 @@ export default function ManageEnterprisePage() {
       </div>
     </div>
       {showReqTypeModal && <RequestTypeManageModal onClose={() => setShowReqTypeModal(false)} />}
+    </>
   );
 }
