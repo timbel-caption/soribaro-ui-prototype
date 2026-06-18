@@ -76,6 +76,7 @@ export const COMMON_CODES = {
     code('BSS_TYPE', 'REC', '녹취록', 1),
     code('BSS_TYPE', 'TRN', '번역', 2),
     code('BSS_TYPE', 'ENT', '엔터프라이즈', 3),
+    code('BSS_TYPE', 'H', '회의록', 4),
   ],
   NOTI_TP: [
     code('NOTI_TP', '1', '공지', 1),
