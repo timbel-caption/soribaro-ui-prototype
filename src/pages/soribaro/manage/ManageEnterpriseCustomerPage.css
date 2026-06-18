@@ -155,3 +155,112 @@
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px var(--focus-ring-color);
 }
+
+/* ── 의뢰유형 관리 모달 ── */
+.req-type-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.req-type-modal {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+}
+.req-type-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.req-type-modal-header .preg-x-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 4px 7px;
+  border-radius: 4px;
+  line-height: 1;
+  font-family: inherit;
+}
+.req-type-modal-header .preg-x-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.req-type-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+.req-type-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}
+.req-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.req-type-row:last-of-type { border-bottom: none; }
+.req-type-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 60px;
+}
+.req-type-contracts {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.req-type-contract-tag {
+  padding: 2px 7px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.req-type-add-form {
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.req-type-add-form input {
+  padding: 7px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+.req-type-add-form input:focus { outline: none; border-color: var(--accent-color); }

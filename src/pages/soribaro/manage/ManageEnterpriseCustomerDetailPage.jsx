@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getRequestTypes } from './manageProtoStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getEnterpriseCustomerDetail, updateEnterpriseCustomer } from '../../../api/v9/enterpriseCustomer';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,15 @@ export default function ManageEnterpriseCustomerDetailPage() {
   const { t } = useTranslation('soribaro');
   const { membNo } = useParams();
   const navigate = useNavigate();
+
+  const [selectedRequestTypes, setSelectedRequestTypes] = useState([]);
+  const [selectedContractTypes, setSelectedContractTypes] = useState([]);
+
+  const availableContractTypes = [...new Set(
+    getRequestTypes()
+      .filter((rt) => selectedRequestTypes.includes(rt.id))
+      .flatMap((rt) => rt.contractTypes)
+  )];
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -183,6 +193,47 @@ export default function ManageEnterpriseCustomerDetailPage() {
         <PropRow label={t('manage.enterprise.customer.modal.labelChgDttm')} value={data?.chgDttm} />
         {data?.wdlRsn && (
           <PropRow label={t('manage.enterprise.customer.modal.labelWdlReason')} value={data.wdlRsn} wide />
+        )}
+      </div>
+
+      <div style={{ marginTop: '24px' }}>
+        <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>의뢰유형 · 계약구분</div>
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>의뢰유형</div>
+          <div className="proto-req-type-chips">
+            {getRequestTypes().map((rt) => (
+              <span
+                key={rt.id}
+                className={`proto-req-type-chip${selectedRequestTypes.includes(rt.id) ? ' selected' : ''}`}
+                onClick={() => {
+                  setSelectedRequestTypes((prev) =>
+                    prev.includes(rt.id) ? prev.filter((id) => id !== rt.id) : [...prev, rt.id]
+                  );
+                  setSelectedContractTypes([]);
+                }}
+              >
+                {rt.name}
+              </span>
+            ))}
+          </div>
+        </div>
+        {selectedRequestTypes.length > 0 && (
+          <div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>계약구분</div>
+            <div className="proto-req-type-chips">
+              {availableContractTypes.map((ct) => (
+                <span
+                  key={ct}
+                  className={`proto-contract-chip${selectedContractTypes.includes(ct) ? ' selected' : ''}`}
+                  onClick={() => setSelectedContractTypes((prev) =>
+                    prev.includes(ct) ? prev.filter((c) => c !== ct) : [...prev, ct]
+                  )}
+                >
+                  {ct}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>

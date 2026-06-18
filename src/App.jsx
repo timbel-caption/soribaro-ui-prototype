@@ -25,6 +25,7 @@ import RecordingWorkDetailPage from './pages/soribaro/recording/RecordingWorkDet
 import MyPage from './pages/soribaro/mypage/MyPage';
 
 // 소리바로 - 엔터프라이즈 페이지
+import MeetingWorkPage from './pages/soribaro/meeting/MeetingWorkPage';
 import EnterpriseMeetingPage from './pages/soribaro/enterprise/EnterpriseMeetingPage';
 import EnterpriseVodPage from './pages/soribaro/enterprise/EnterpriseVodPage';
 import EnterpriseWorkDetailPage from './pages/soribaro/enterprise/EnterpriseWorkDetailPage';
@@ -253,6 +254,7 @@ function AppRoutes() {
         <Route path="soribaro/recording/work/:servCd" element={<RecordingWorkDetailPage />} />
 
         {/* 소리바로 - 엔터프라이즈 */}
+        <Route path="soribaro/meeting/work" element={<AdminRoute><MeetingWorkPage /></AdminRoute>} />
         <Route path="soribaro/enterprise/meeting" element={<AdminRoute><EnterpriseMeetingPage /></AdminRoute>} />
         <Route path="soribaro/enterprise/meeting/:servCd" element={<EnterpriseWorkDetailPage />} />
         <Route path="soribaro/enterprise/vod" element={<AdminRoute><EnterpriseVodPage /></AdminRoute>} />

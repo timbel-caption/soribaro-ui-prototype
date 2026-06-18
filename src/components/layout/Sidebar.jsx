@@ -106,6 +106,19 @@ const menuData = [
         ],
       },
       {
+        id: "meeting",
+        labelKey: "sidebar.meeting",
+        icon: "FileText",
+        adminOnly: true,
+        children: [
+          {
+            id: "meeting-work",
+            labelKey: "sidebar.meetingWorkManagement",
+            path: "/soribaro/meeting/work",
+          },
+        ],
+      },
+      {
         id: "enterprise",
         labelKey: "sidebar.enterprise",
         icon: "Building2",
