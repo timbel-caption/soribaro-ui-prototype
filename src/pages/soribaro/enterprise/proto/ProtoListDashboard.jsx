@@ -32,13 +32,19 @@ const SEARCH_FIELDS = [
   { value: 'worker', label: '작업자명' },
 ];
 
+function formatRegDate(regDttm) {
+  if (!regDttm) return '-';
+  const d = regDttm.replace(/-/g, '').slice(2, 8);
+  return d || regDttm;
+}
+
 function computeStats(samples) {
-  const total = samples.length;
-  const working  = samples.filter((s) => s.overallStatus === 'WORKING').length;
-  const checking = samples.filter((s) => s.overallStatus === 'CHECKING').length;
-  const deliveryDone = samples.flatMap((s) => s.deliveries).filter((d) => d.status === '납품완료').length;
-  const settleWait   = samples.filter((s) => ['정산대기', '부분정산'].includes(s.settlement.status)).length;
-  return { total, working, checking, deliveryDone, settleWait };
+  const inProgress = samples.filter((s) => s.overallStatus !== 'DONE').length;
+  const working    = samples.filter((s) => s.overallStatus === 'WORKING').length;
+  const checking   = samples.filter((s) => s.overallStatus === 'CHECKING').length;
+  const checkDone  = samples.filter((s) => s.overallStatus === 'DONE').length;
+  const settleWait = samples.filter((s) => ['정산대기', '부분정산'].includes(s.settlement.status)).length;
+  return { inProgress, working, checking, checkDone, settleWait };
 }
 
 function matchesSearch(s, field, text) {
@@ -50,6 +56,13 @@ function matchesSearch(s, field, text) {
   if (field === 'round') return String(s.round ?? '').includes(q);
   if (field === 'worker') return (s.assignments || []).some((a) => (a.worker || '').toLowerCase().includes(q));
   return true;
+}
+
+function computeAlerts(samples) {
+  const today = new Date().toISOString().split('T')[0];
+  const todayDue = samples.filter((s) => s.dueDate === today && s.overallStatus !== 'DONE').length;
+  const overdue  = samples.filter((s) => s.dueDate < today && s.overallStatus !== 'DONE').length;
+  return { todayDue, overdue };
 }
 
 export default function ProtoListDashboard({ samples, onSamplesChange }) {
@@ -66,21 +79,14 @@ export default function ProtoListDashboard({ samples, onSamplesChange }) {
 
   const filtered = samples.filter((s) => matchesSearch(s, searchField, searchText));
   const st = computeStats(samples);
+  const alerts = computeAlerts(samples);
 
   const statCards = [
-    { label: '전체 프로젝트', value: st.total,       color: 'var(--accent-color)' },
-    { label: '작업중',        value: st.working,      color: '#f87171' },
-    { label: '검수중',        value: st.checking,     color: '#fbbf24' },
-    { label: '납품 완료',     value: st.deliveryDone, color: '#4ade80' },
-    { label: '정산 대기',     value: st.settleWait,   color: '#a78bfa' },
-  ];
-
-  const maxBarValue = Math.max(st.working, st.checking, st.deliveryDone, st.settleWait, 1);
-  const statusBars = [
-    { label: '작업중',   value: st.working,      color: '#f87171' },
-    { label: '검수중',   value: st.checking,     color: '#fbbf24' },
-    { label: '납품완료', value: st.deliveryDone, color: '#4ade80' },
-    { label: '정산대기', value: st.settleWait,   color: '#a78bfa' },
+    { label: '진행 중 의뢰', value: st.inProgress,  color: 'var(--accent-color)' },
+    { label: '작업중',        value: st.working,     color: '#f87171' },
+    { label: '검수중',        value: st.checking,    color: '#fbbf24' },
+    { label: '검수 완료',     value: st.checkDone,   color: '#4ade80' },
+    { label: '정산 대기',     value: st.settleWait,  color: '#a78bfa' },
   ];
 
   const cycleSubfile = (s) => {
@@ -147,32 +153,34 @@ export default function ProtoListDashboard({ samples, onSamplesChange }) {
           <table className="proto-table">
             <thead>
               <tr>
+                <th className="text-center">의뢰일자</th>
                 <th>업체명</th>
-                <th>프로젝트명</th>
-                <th className="text-center">작업유형</th>
+                <th className="text-center">계약구분</th>
+                <th className="text-center">회차</th>
+                <th className="text-center">의뢰시간</th>
                 <th className="text-center">납품기한</th>
-                <th className="text-center">상태</th>
-                <th className="text-center">정산</th>
                 <th className="text-center">서브파일요청</th>
                 <th style={{ minWidth: '140px' }}>특이사항</th>
+                <th className="text-center">상태</th>
+                <th className="text-center">정산</th>
                 <th className="text-center" style={{ width: '72px' }}></th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
+                <tr><td colSpan={11} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
               ) : (
                 filtered.map((s) => {
                   const subStatus = s.subfileStatus || '미요청';
                   const isEditingNote = editingNoteId === s.id;
                   return (
                     <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(s.protoPath)}>
+                      <td className="text-center">{formatRegDate(s.regDttm)}</td>
                       <td style={{ fontWeight: 600 }}>{s.entNm}</td>
-                      <td style={{ color: 'var(--accent-color)', fontWeight: 500 }}>{s.servTitle}</td>
-                      <td className="text-center">{s.bssTypeName}</td>
+                      <td className="text-center">{s.contractType || '-'}</td>
+                      <td className="text-center">{s.round != null ? `제${s.round}차` : '-'}</td>
+                      <td className="text-center">{s.totalPlayTm || '-'}</td>
                       <td className="text-center">{s.dueDate}</td>
-                      <td className="text-center">{statusBadge(s.overallStatus)}</td>
-                      <td className="text-center">{settleBadge(s.settlement.status)}</td>
                       <td className="text-center" onClick={(e) => e.stopPropagation()}>
                         <button
                           className={`proto-subfile-btn ${SUBFILE_CLS[subStatus]}`}
@@ -206,6 +214,8 @@ export default function ProtoListDashboard({ samples, onSamplesChange }) {
                           </div>
                         )}
                       </td>
+                      <td className="text-center">{statusBadge(s.overallStatus)}</td>
+                      <td className="text-center">{settleBadge(s.settlement.status)}</td>
                       <td className="text-center">
                         <button
                           className="proto-dash-detail-btn"
@@ -224,22 +234,18 @@ export default function ProtoListDashboard({ samples, onSamplesChange }) {
       </div>
 
       <div className="proto-dash-status-bottom">
-        <p className="proto-dash-section-title">상태별 현황</p>
-        <div className="proto-dash-status-grid">
-          {statusBars.map((b) => (
-            <div key={b.label} className="proto-dash-status-item">
-              <span className="proto-dash-status-label">{b.label}</span>
-              <div className="proto-dash-status-bar-bg">
-                <div
-                  className="proto-dash-status-bar-fill"
-                  style={{ width: `${(b.value / maxBarValue) * 100}%`, background: b.color }}
-                />
-              </div>
-              <span className="proto-dash-status-count" style={{ color: b.value > 0 ? b.color : 'var(--text-muted)' }}>
-                {b.value}건
-              </span>
-            </div>
-          ))}
+        <p className="proto-dash-section-title">긴급 알림</p>
+        <div className="proto-alert-list">
+          <div className="proto-alert-item proto-alert-urgent">
+            <span className="proto-alert-icon">⚠️</span>
+            <span className="proto-alert-text">오늘 마감</span>
+            <span className="proto-alert-count">{alerts.todayDue}건</span>
+          </div>
+          <div className="proto-alert-item proto-alert-delay">
+            <span className="proto-alert-icon">🔔</span>
+            <span className="proto-alert-text">납품 지연</span>
+            <span className="proto-alert-count">{alerts.overdue}건</span>
+          </div>
         </div>
       </div>
     </div>
