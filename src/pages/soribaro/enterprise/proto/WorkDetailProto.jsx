@@ -288,16 +288,35 @@ function BasicInfoTab({ s }) {
   );
 }
 
+// ─── 탭 2: 파일관리 ───
 function fmtSize(bytes) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-// ─── 탭 2: 파일관리 ───
+// 'HH:MM:SS' → 초(number)
+function durationToSec(d) {
+  if (!d || d === '-') return 0;
+  const parts = d.split(':').map(Number);
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return 0;
+}
+
+// 초 → 'HH:MM:SS'
+function secToDuration(sec) {
+  if (sec <= 0) return '00:00:00';
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
+}
+
 function FileManageTab({ s }) {
   const [files, setFiles] = useState(s.files);
   const [dragOver, setDragOver] = useState(false);
+  const [checked, setChecked] = useState(new Set());
   const fileInputRef = useRef();
   const isVod = s.bssTypeName !== '회의록';
 
@@ -315,6 +334,35 @@ function FileManageTab({ s }) {
     setFiles(updated);
     updateSampleFiles(s.id, updated);
   };
+
+  const toggleCheck = (fileNo) => setChecked((prev) => {
+    const next = new Set(prev);
+    next.has(fileNo) ? next.delete(fileNo) : next.add(fileNo);
+    return next;
+  });
+
+  const toggleAll = () => {
+    setChecked(checked.size === files.length ? new Set() : new Set(files.map((f) => f.fileNo)));
+  };
+
+  const deleteSelected = () => {
+    const updated = files.filter((f) => !checked.has(f.fileNo));
+    setFiles(updated);
+    setChecked(new Set());
+    updateSampleFiles(s.id, updated);
+  };
+
+  const deleteAll = () => {
+    setFiles([]);
+    setChecked(new Set());
+    updateSampleFiles(s.id, []);
+  };
+
+  const totalSec = files.reduce((acc, f) => acc + durationToSec(f.duration), 0);
+  const selectedSec = files
+    .filter((f) => checked.has(f.fileNo))
+    .reduce((acc, f) => acc + durationToSec(f.duration), 0);
+  const totalDuration = totalSec > 0 ? secToDuration(totalSec) : (s.totalPlayTm || '-');
 
   return (
     <div className="proto-tab-panel">
@@ -352,10 +400,34 @@ function FileManageTab({ s }) {
         </span>
       </div>
 
-      <div className="proto-table-wrap" style={{ marginTop: '12px' }}>
+      <div className="proto-file-bulk-actions">
+        <button
+          className="proto-file-bulk-btn proto-file-bulk-btn--all"
+          onClick={deleteAll}
+          disabled={files.length === 0}
+        >
+          일괄 삭제
+        </button>
+        <button
+          className="proto-file-bulk-btn proto-file-bulk-btn--sel"
+          onClick={deleteSelected}
+          disabled={checked.size === 0}
+        >
+          선택 삭제 {checked.size > 0 ? `(${checked.size})` : ''}
+        </button>
+      </div>
+
+      <div className="proto-table-wrap">
         <table className="proto-table">
           <thead>
             <tr>
+              <th className="text-center" style={{ width: '36px' }}>
+                <input
+                  type="checkbox"
+                  checked={files.length > 0 && checked.size === files.length}
+                  onChange={toggleAll}
+                />
+              </th>
               <th>파일번호</th>
               <th>파일명</th>
               <th className="text-center">재생시간</th>
@@ -365,10 +437,17 @@ function FileManageTab({ s }) {
           </thead>
           <tbody>
             {files.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>등록된 파일이 없습니다.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>등록된 파일이 없습니다.</td></tr>
             ) : (
               files.map((f) => (
-                <tr key={f.fileNo}>
+                <tr key={f.fileNo} className={checked.has(f.fileNo) ? 'proto-row-checked' : ''}>
+                  <td className="text-center">
+                    <input
+                      type="checkbox"
+                      checked={checked.has(f.fileNo)}
+                      onChange={() => toggleCheck(f.fileNo)}
+                    />
+                  </td>
                   <td className="text-center">{f.fileNo}</td>
                   <td>{f.fileName}</td>
                   <td className="text-center">{f.duration}</td>
@@ -380,9 +459,17 @@ function FileManageTab({ s }) {
           </tbody>
         </table>
       </div>
-      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '6px 0 0' }}>
-        총 {files.length}개 파일 · 전체 재생시간 {s.totalPlayTm}
-      </p>
+      <div className="proto-file-summary">
+        <span>총 {files.length}개 파일</span>
+        <span className="proto-file-summary-sep">·</span>
+        <span>전체 재생시간 {totalDuration}</span>
+        {checked.size > 0 && (
+          <>
+            <span className="proto-file-summary-sep">·</span>
+            <span className="proto-file-summary-sel">선택 재생시간 {secToDuration(selectedSec)}</span>
+          </>
+        )}
+      </div>
     </div>
   );
 }
