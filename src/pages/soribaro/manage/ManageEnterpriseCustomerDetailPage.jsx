@@ -21,14 +21,11 @@ export default function ManageEnterpriseCustomerDetailPage() {
   const { membNo } = useParams();
   const navigate = useNavigate();
 
-  const [selectedRequestTypes, setSelectedRequestTypes] = useState([]);
+  const [selectedRequestTypeId, setSelectedRequestTypeId] = useState(null);
   const [selectedContractTypes, setSelectedContractTypes] = useState([]);
 
-  const availableContractTypes = [...new Set(
-    getRequestTypes()
-      .filter((rt) => selectedRequestTypes.includes(rt.id))
-      .flatMap((rt) => rt.contractTypes)
-  )];
+  const availableContractTypes =
+    getRequestTypes().find((rt) => rt.id === selectedRequestTypeId)?.contractTypes ?? [];
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -204,11 +201,9 @@ export default function ManageEnterpriseCustomerDetailPage() {
             {getRequestTypes().map((rt) => (
               <span
                 key={rt.id}
-                className={`proto-req-type-chip${selectedRequestTypes.includes(rt.id) ? ' selected' : ''}`}
+                className={`proto-req-type-chip${selectedRequestTypeId === rt.id ? ' selected' : ''}`}
                 onClick={() => {
-                  setSelectedRequestTypes((prev) =>
-                    prev.includes(rt.id) ? prev.filter((id) => id !== rt.id) : [...prev, rt.id]
-                  );
+                  setSelectedRequestTypeId((prev) => prev === rt.id ? null : rt.id);
                   setSelectedContractTypes([]);
                 }}
               >
@@ -217,7 +212,7 @@ export default function ManageEnterpriseCustomerDetailPage() {
             ))}
           </div>
         </div>
-        {selectedRequestTypes.length > 0 && (
+        {selectedRequestTypeId !== null && (
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>계약구분</div>
             <div className="proto-req-type-chips">
