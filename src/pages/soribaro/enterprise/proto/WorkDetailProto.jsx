@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries } from './protoStore';
+import { updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
@@ -169,7 +169,11 @@ function BasicInfoTab({ s }) {
       : [])
   );
 
-  const syncNotes = (next) => { setNoteEntries(next); updateSampleNoteEntries(s.id, next); };
+  const syncNotes = (next) => {
+    setNoteEntries(next);
+    updateSampleNoteEntries(s.id, next);
+    if (!isVod) updateSampleSpecialNote(s.id, next[next.length - 1]?.content ?? '');
+  };
   const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
 
   const row1 = [
@@ -225,49 +229,24 @@ function BasicInfoTab({ s }) {
       </div>
 
       <div className="proto-basic-extra-row">
-        {isVod ? (
-          <>
-            <EditableLogCard
-              variant="note"
-              icon="★"
-              iconClass="proto-basic-extra-icon--star"
-              title="특이사항"
-              entries={noteEntries}
-              author={authorName}
-              onChange={syncNotes}
-            />
-            <EditableLogCard
-              variant="memo"
-              icon="≡"
-              iconClass="proto-basic-extra-icon--memo"
-              title="내부 메모"
-              entries={memoEntries}
-              author={authorName}
-              onChange={syncMemos}
-            />
-          </>
-        ) : (
-          <>
-            <div className="proto-basic-extra-card proto-basic-extra-card--note">
-              <div className="proto-basic-extra-header">
-                <span className="proto-basic-extra-icon proto-basic-extra-icon--star">★</span>
-                <span className="proto-basic-extra-title">특이사항</span>
-              </div>
-              <div className="proto-basic-extra-body proto-basic-extra-body--note">
-                {s.specialNote || s.remark || '-'}
-              </div>
-            </div>
-            <div className="proto-basic-extra-card proto-basic-extra-card--memo">
-              <div className="proto-basic-extra-header">
-                <span className="proto-basic-extra-icon proto-basic-extra-icon--memo">≡</span>
-                <span className="proto-basic-extra-title">내부 메모</span>
-              </div>
-              <div className="proto-basic-extra-body proto-basic-extra-body--memo">
-                {s.internalMemo || '-'}
-              </div>
-            </div>
-          </>
-        )}
+        <EditableLogCard
+          variant="note"
+          icon="★"
+          iconClass="proto-basic-extra-icon--star"
+          title="특이사항"
+          entries={noteEntries}
+          author={authorName}
+          onChange={syncNotes}
+        />
+        <EditableLogCard
+          variant="memo"
+          icon="≡"
+          iconClass="proto-basic-extra-icon--memo"
+          title="내부 메모"
+          entries={memoEntries}
+          author={authorName}
+          onChange={syncMemos}
+        />
       </div>
 
       <div className="proto-basic-status-history">

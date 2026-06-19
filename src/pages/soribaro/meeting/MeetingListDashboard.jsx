@@ -24,13 +24,7 @@ const SUBFILE_CYCLE = ['미요청', '요청', '수령'];
 const SUBFILE_ICON = { '미요청': '□', '요청': '✔', '수령': '⭕' };
 const SUBFILE_CLS = { '미요청': 'proto-subfile-none', '요청': 'proto-subfile-req', '수령': 'proto-subfile-recv' };
 
-const SEARCH_FIELDS = [
-  { value: 'contractType', label: '계약구분' },
-  { value: 'dueDate', label: '납품기한' },
-  { value: 'membNm', label: '의뢰자명' },
-  { value: 'round', label: '회차' },
-  { value: 'worker', label: '작업자명' },
-];
+const CONTRACT_TYPE_OPTIONS = ['학폭위', '교권위', '성고충위', '징계위', '특운위', '시청', '의회', '일반회의'];
 
 function formatRegDate(regDttm) {
   if (!regDttm) return '-';
@@ -46,14 +40,24 @@ function computeStats(samples) {
   return { inProgress, working, checking, checkDone, settleWait };
 }
 
-function matchesSearch(s, field, text) {
-  if (!text.trim()) return true;
-  const q = text.trim().toLowerCase();
-  if (field === 'contractType') return (s.contractType || '').toLowerCase().includes(q);
-  if (field === 'dueDate') return (s.dueDate || '').includes(q);
-  if (field === 'membNm') return (s.membNm || '').toLowerCase().includes(q);
-  if (field === 'round') return String(s.round ?? '').includes(q);
-  if (field === 'worker') return (s.assignments || []).some((a) => (a.worker || '').toLowerCase().includes(q));
+function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterEntNm, filterContractType, searchText, showAll }) {
+  if (!showAll && s.overallStatus === 'DONE') return false;
+  const date = (s.regDttm || '').slice(0, 10);
+  if (filterFrom && date < filterFrom) return false;
+  if (filterTo && date > filterTo) return false;
+  if (filterStatus && s.overallStatus !== filterStatus) return false;
+  if (filterSettlement && s.settlement?.status !== filterSettlement) return false;
+  if (filterContractType && s.contractType !== filterContractType) return false;
+  if (filterEntNm.trim()) {
+    const q = filterEntNm.trim().toLowerCase();
+    if (!(s.entNm || '').toLowerCase().includes(q)) return false;
+  }
+  if (searchText.trim()) {
+    const q = searchText.trim().toLowerCase();
+    const haystack = [s.entNm, s.contractType, s.membNm, String(s.round ?? ''), s.specialNote]
+      .map((v) => (v || '').toLowerCase()).join(' ');
+    if (!haystack.includes(q)) return false;
+  }
   return true;
 }
 
@@ -64,19 +68,24 @@ function computeAlerts(samples) {
   return { todayDue, overdue };
 }
 
-export default function MeetingListDashboard({ samples, onSamplesChange }) {
+export default function MeetingListDashboard({ samples, onSamplesChange, showAll }) {
   const navigate = useNavigate();
-  const [searchField, setSearchField] = useState('contractType');
+  const [filterFrom, setFilterFrom] = useState('');
+  const [filterTo, setFilterTo] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterSettlement, setFilterSettlement] = useState('');
+  const [filterEntNm, setFilterEntNm] = useState('');
+  const [filterContractType, setFilterContractType] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [pendingSearch, setPendingSearch] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [noteInput, setNoteInput] = useState('');
 
-  const handleSearchFieldChange = (field) => {
-    setSearchField(field);
-    setSearchText('');
-  };
+  const handleSearch = () => setSearchText(pendingSearch);
 
-  const filtered = samples.filter((s) => matchesSearch(s, searchField, searchText));
+  const filtered = samples.filter((s) =>
+    matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterEntNm, filterContractType, searchText, showAll })
+  );
   const st = computeStats(samples);
   const alerts = computeAlerts(samples);
 
@@ -127,26 +136,56 @@ export default function MeetingListDashboard({ samples, onSamplesChange }) {
       </div>
 
       <div className="proto-dash-projects">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <p className="proto-dash-section-title" style={{ margin: 0 }}>최근 프로젝트</p>
-          <div className="proto-search-bar">
-            <select
-              className="proto-search-select"
-              value={searchField}
-              onChange={(e) => handleSearchFieldChange(e.target.value)}
-            >
-              {SEARCH_FIELDS.map((f) => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
-            <input
-              className="proto-search-input"
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="검색어 입력"
-            />
-          </div>
+        <p className="proto-dash-section-title" style={{ marginBottom: '8px' }}>진행 의뢰 현황</p>
+        <div className="filter-bar" style={{ marginBottom: '12px' }}>
+          <input
+            className="filter-date"
+            type="date"
+            value={filterFrom}
+            onChange={(e) => setFilterFrom(e.target.value)}
+            title="의뢰일 시작"
+          />
+          <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
+          <input
+            className="filter-date"
+            type="date"
+            value={filterTo}
+            onChange={(e) => setFilterTo(e.target.value)}
+            title="의뢰일 종료"
+          />
+          <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <option value="">상태 전체</option>
+            <option value="WORKING">작업중</option>
+            <option value="CHECKING">검수중</option>
+            <option value="DONE">완료</option>
+          </select>
+          <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>
+            <option value="">정산 전체</option>
+            <option value="정산전">정산전</option>
+            <option value="정산대기">정산대기</option>
+            <option value="부분정산">부분정산</option>
+            <option value="정산완료">정산완료</option>
+          </select>
+          <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
+            <option value="">계약구분 전체</option>
+            {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
+          </select>
+          <input
+            className="filter-input"
+            type="text"
+            value={filterEntNm}
+            onChange={(e) => setFilterEntNm(e.target.value)}
+            placeholder="업체명"
+          />
+          <input
+            className="filter-input"
+            type="text"
+            value={pendingSearch}
+            onChange={(e) => setPendingSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+            placeholder="검색어"
+          />
+          <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 14px' }} onClick={handleSearch}>검색</button>
         </div>
         <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
           <table className="proto-table">
