@@ -23,9 +23,14 @@ export default function ManageEnterpriseCustomerDetailPage() {
 
   const [selectedRequestTypeId, setSelectedRequestTypeId] = useState(null);
   const [selectedContractTypes, setSelectedContractTypes] = useState([]);
+  const [reqTypeOpen, setReqTypeOpen] = useState(false);
+  const [contractOpen, setContractOpen] = useState(false);
 
   const availableContractTypes =
     getRequestTypes().find((rt) => rt.id === selectedRequestTypeId)?.contractTypes ?? [];
+
+  const selectedRequestTypeName =
+    getRequestTypes().find((rt) => rt.id === selectedRequestTypeId)?.name ?? null;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -157,6 +162,84 @@ export default function ManageEnterpriseCustomerDetailPage() {
         <PropRow label={t('manage.enterprise.customer.modal.labelMembId')} value={data?.membId} />
         <PropRow label={t('manage.enterprise.customer.modal.labelPlatform')} value={data?.platform} />
         <PropRow label={t('manage.enterprise.customer.modal.labelEntNm')} value={data?.entNm} />
+
+        {/* 의뢰유형 드롭다운 */}
+        <div className="prop-item">
+          <span className="prop-label">의뢰유형</span>
+          <span className="prop-value">
+            <div className="proto-dropdown">
+              <button
+                className="proto-dropdown-trigger"
+                onClick={() => { setReqTypeOpen((o) => !o); setContractOpen(false); }}
+              >
+                <span className={selectedRequestTypeName ? '' : 'proto-dropdown-placeholder'}>
+                  {selectedRequestTypeName ?? '의뢰유형을 선택하세요.'}
+                </span>
+                <span className="proto-dropdown-arrow">▼</span>
+              </button>
+              {reqTypeOpen && (
+                <>
+                  <div className="proto-dropdown-backdrop" onClick={() => setReqTypeOpen(false)} />
+                  <div className="proto-dropdown-menu">
+                    {getRequestTypes().map((rt) => (
+                      <div
+                        key={rt.id}
+                        className={`proto-dropdown-item${selectedRequestTypeId === rt.id ? ' selected' : ''}`}
+                        onClick={() => {
+                          setSelectedRequestTypeId((prev) => prev === rt.id ? null : rt.id);
+                          setSelectedContractTypes([]);
+                          setReqTypeOpen(false);
+                        }}
+                      >
+                        {rt.name}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </span>
+        </div>
+
+        {/* 계약구분 체크박스 드롭다운 */}
+        <div className="prop-item">
+          <span className="prop-label">계약구분</span>
+          <span className="prop-value">
+            <div className="proto-dropdown">
+              <button
+                className="proto-dropdown-trigger"
+                onClick={() => { setContractOpen((o) => !o); setReqTypeOpen(false); }}
+                disabled={!selectedRequestTypeId}
+              >
+                <span className={selectedContractTypes.length > 0 ? '' : 'proto-dropdown-placeholder'}>
+                  {selectedContractTypes.length > 0 ? selectedContractTypes.join(', ') : '계약구분을 선택하세요.'}
+                </span>
+                <span className="proto-dropdown-arrow">▼</span>
+              </button>
+              <div className="proto-dropdown-hint">*중복 선택 가능</div>
+              {contractOpen && (
+                <>
+                  <div className="proto-dropdown-backdrop" onClick={() => setContractOpen(false)} />
+                  <div className="proto-dropdown-menu">
+                    {availableContractTypes.map((ct) => (
+                      <label key={ct} className="proto-dropdown-checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={selectedContractTypes.includes(ct)}
+                          onChange={() => setSelectedContractTypes((prev) =>
+                            prev.includes(ct) ? prev.filter((c) => c !== ct) : [...prev, ct]
+                          )}
+                        />
+                        <span>{ct}</span>
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </span>
+        </div>
+
         <PropRow label={t('manage.enterprise.customer.modal.labelStatus')}>
           <span className={`customer-status-badge ${data?.status === '정상' ? 'active' : data?.status === '대기' ? 'pending' : 'withdrawn'}`}>
             {data?.status || '-'}
@@ -193,44 +276,6 @@ export default function ManageEnterpriseCustomerDetailPage() {
         )}
       </div>
 
-      <div style={{ marginTop: '24px' }}>
-        <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>의뢰유형 · 계약구분</div>
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>의뢰유형</div>
-          <div className="proto-req-type-chips">
-            {getRequestTypes().map((rt) => (
-              <span
-                key={rt.id}
-                className={`proto-req-type-chip${selectedRequestTypeId === rt.id ? ' selected' : ''}`}
-                onClick={() => {
-                  setSelectedRequestTypeId((prev) => prev === rt.id ? null : rt.id);
-                  setSelectedContractTypes([]);
-                }}
-              >
-                {rt.name}
-              </span>
-            ))}
-          </div>
-        </div>
-        {selectedRequestTypeId !== null && (
-          <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>계약구분</div>
-            <div className="proto-req-type-chips">
-              {availableContractTypes.map((ct) => (
-                <span
-                  key={ct}
-                  className={`proto-contract-chip${selectedContractTypes.includes(ct) ? ' selected' : ''}`}
-                  onClick={() => setSelectedContractTypes((prev) =>
-                    prev.includes(ct) ? prev.filter((c) => c !== ct) : [...prev, ct]
-                  )}
-                >
-                  {ct}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
