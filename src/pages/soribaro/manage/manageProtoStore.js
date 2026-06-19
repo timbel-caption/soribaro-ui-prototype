@@ -1,7 +1,7 @@
 let _requestTypes = [
-  { id: 'rt-1', code: 'H', name: '회의록', contractTypes: ['단건계약', '연간계약', '수의계약', '긴급계약'] },
+  { id: 'rt-1', code: 'H', name: '회의록', contractTypes: ['학폭위', '교권위', '성고충위', '징계위', '특운위', '시청', '의회', '일반회의'] },
   { id: 'rt-2', code: 'ENT', name: '엔터프라이즈', contractTypes: ['단건계약', '수의계약', '볼륨계약'] },
-  { id: 'rt-3', code: 'REC', name: '녹취록', contractTypes: ['연간계약', '수의계약'] },
+  { id: 'rt-3', code: 'REC', name: '녹취록', contractTypes: ['현장녹음', '통화녹음'] },
   { id: 'rt-4', code: 'TRN', name: '번역', contractTypes: ['단건계약', '볼륨계약'] },
 ];
 
