@@ -493,7 +493,7 @@ function ProjectManageTab({ s }) {
   const [subjects, setSubjects] = useState(s.subjects || []);
   const [expandedId, setExpandedId] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', totalWeeks: 14, startDate: '', worker: '', reviewer: '' });
+  const [form, setForm] = useState({ name: '', workerCount: 1, unitPrice: '', recruitStart: '', recruitEnd: '', workStart: '', workEnd: '' });
 
   const setF = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
 
@@ -503,18 +503,24 @@ function ProjectManageTab({ s }) {
   };
 
   const addSubject = () => {
-    if (!form.name.trim() || !form.startDate) return;
+    if (!form.name.trim()) return;
     const newSubj = {
       id: `subj-${Date.now()}`,
       name: form.name.trim(),
-      totalWeeks: Number(form.totalWeeks) || 14,
-      startDate: form.startDate,
-      worker: form.worker.trim(),
-      reviewer: form.reviewer.trim(),
+      totalWeeks: 1,
+      startDate: form.workStart || '',
+      worker: '',
+      reviewer: '',
+      workerCount: Number(form.workerCount) || 1,
+      unitPrice: form.unitPrice.trim(),
+      recruitStart: form.recruitStart,
+      recruitEnd: form.recruitEnd,
+      workStart: form.workStart,
+      workEnd: form.workEnd,
       weekStatuses: {},
     };
     syncStore([...subjects, newSubj]);
-    setForm({ name: '', totalWeeks: 14, startDate: '', worker: '', reviewer: '' });
+    setForm({ name: '', workerCount: 1, unitPrice: '', recruitStart: '', recruitEnd: '', workStart: '', workEnd: '' });
     setShowForm(false);
     setExpandedId(newSubj.id);
   };
@@ -532,7 +538,7 @@ function ProjectManageTab({ s }) {
     return { done, total: subj.totalWeeks, pct: Math.round((done / subj.totalWeeks) * 100) };
   };
 
-  const isFormValid = form.name.trim() && form.startDate;
+  const isFormValid = form.name.trim();
 
   return (
     <div className="proto-tab-panel">
@@ -548,26 +554,38 @@ function ProjectManageTab({ s }) {
 
       {showForm && (
         <div className="proto-subj-form">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+            <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)' }}>프로젝트 현황</span>
+            <button className="proto-file-add-btn" onClick={() => setShowForm(false)}>취소</button>
+          </div>
           <div className="proto-subj-form-grid">
             <div className="proto-subj-form-field proto-subj-form-field--full">
-              <label>과목명 <span className="preg-required">*</span></label>
-              <input className="preg-input" value={form.name} onChange={setF('name')} placeholder="예: 지구과학개론" />
+              <label>프로젝트명 <span className="preg-required">*</span></label>
+              <input className="preg-input" value={form.name} onChange={setF('name')} placeholder="회의록 전사 프로젝트" />
             </div>
             <div className="proto-subj-form-field">
-              <label>총 주차수</label>
-              <input className="preg-input" type="number" min={1} max={52} value={form.totalWeeks} onChange={setF('totalWeeks')} />
+              <label>작업자 수 <span className="preg-required">*</span></label>
+              <input className="preg-input" type="number" min={1} value={form.workerCount} onChange={setF('workerCount')} />
             </div>
             <div className="proto-subj-form-field">
-              <label>1주차 예상 수령일 <span className="preg-required">*</span></label>
-              <input className="preg-input" type="date" value={form.startDate} onChange={setF('startDate')} />
+              <label>단가 <span className="preg-required">*</span></label>
+              <input className="preg-input" value={form.unitPrice} onChange={setF('unitPrice')} placeholder="내부 기준 적용" />
             </div>
             <div className="proto-subj-form-field">
-              <label>담당 전사자</label>
-              <input className="preg-input" value={form.worker} onChange={setF('worker')} placeholder="전사자 이름" />
+              <label>모집 시작</label>
+              <input className="preg-input" type="datetime-local" value={form.recruitStart} onChange={setF('recruitStart')} />
             </div>
             <div className="proto-subj-form-field">
-              <label>담당 검수자</label>
-              <input className="preg-input" value={form.reviewer} onChange={setF('reviewer')} placeholder="검수자 이름" />
+              <label>모집 종료</label>
+              <input className="preg-input" type="datetime-local" value={form.recruitEnd} onChange={setF('recruitEnd')} />
+            </div>
+            <div className="proto-subj-form-field">
+              <label>작업 시작</label>
+              <input className="preg-input" type="datetime-local" value={form.workStart} onChange={setF('workStart')} />
+            </div>
+            <div className="proto-subj-form-field">
+              <label>작업 종료</label>
+              <input className="preg-input" type="datetime-local" value={form.workEnd} onChange={setF('workEnd')} />
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
@@ -585,8 +603,7 @@ function ProjectManageTab({ s }) {
       {subjects.length === 0 && !showForm && (
         <div className="proto-empty-state">
           <span style={{ fontSize: '30px' }}>📂</span>
-          <p style={{ margin: '6px 0 2px', fontWeight: 500 }}>등록된 과목이 없습니다.</p>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>과목을 추가하면 주차별 작업 일정을 한눈에 관리할 수 있습니다.</p>
+          <p style={{ margin: '6px 0 2px', fontWeight: 500 }}>프로젝트를 등록하여 주세요.</p>
         </div>
       )}
 
