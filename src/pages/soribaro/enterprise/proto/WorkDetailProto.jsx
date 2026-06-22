@@ -573,6 +573,120 @@ function AssignPickModal({ title, current, onConfirm, onClose }) {
   );
 }
 
+// projFiles의 workTime 합산 → 'HH:MM:SS'
+function calcProjWorkTime(projFiles) {
+  if (!projFiles || projFiles.length === 0) return '0:00:00';
+  const total = projFiles.reduce((acc, f) => acc + durationToSec(f.workTime), 0);
+  return total > 0 ? secToDuration(total) : '0:00:00';
+}
+
+// ─── 웍스파이 등록 모달 ───
+function WorkspyRegisterModal({ proj, onConfirm, onClose }) {
+  const now = new Date();
+  const fmtLocal = (d) => {
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
+  const [form, setForm] = useState({
+    name: proj.name,
+    desc: proj.name,
+    workers: '1',
+    unitPrice: '내부 기준 적용',
+    recruitStart: fmtLocal(new Date(now.getTime())),
+    recruitEnd:   fmtLocal(new Date(now.getTime() + 3600000)),
+    workStart:    fmtLocal(new Date(now.getTime() + 7200000)),
+    workEnd:      fmtLocal(new Date(now.getTime() + 10800000)),
+    isImportant: false,
+    openApply: true,
+  });
+
+  const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--workspy" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">새 프로젝트</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="pm-workspy-body">
+          <div className="pm-workspy-field">
+            <label className="preg-label">프로젝트명 *</label>
+            <input className="preg-input" value={form.name} onChange={(e) => set('name', e.target.value)} />
+          </div>
+
+          <div className="pm-workspy-field">
+            <label className="preg-label">프로젝트 설명 *</label>
+            <div className="pm-desc-editor">
+              <div className="pm-desc-toolbar">
+                {['B', '/', 'S', 'H2', 'H3', '• 목록', '1. 목록', '" 인용'].map((t) => (
+                  <button key={t} className="pm-desc-tool-btn" type="button">{t}</button>
+                ))}
+              </div>
+              <textarea
+                className="pm-desc-textarea"
+                value={form.desc}
+                onChange={(e) => set('desc', e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">작업자 수 *</label>
+              <input className="preg-input" type="number" min="1" value={form.workers} onChange={(e) => set('workers', e.target.value)} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">단가 *</label>
+              <input className="preg-input" value={form.unitPrice} onChange={(e) => set('unitPrice', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">모집 시작 *</label>
+              <input className="preg-input" type="datetime-local" value={form.recruitStart} onChange={(e) => set('recruitStart', e.target.value)} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">모집 종료 *</label>
+              <input className="preg-input" type="datetime-local" value={form.recruitEnd} onChange={(e) => set('recruitEnd', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">작업 시작 *</label>
+              <input className="preg-input" type="datetime-local" value={form.workStart} onChange={(e) => set('workStart', e.target.value)} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">작업 종료 *</label>
+              <input className="preg-input" type="datetime-local" value={form.workEnd} onChange={(e) => set('workEnd', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="pm-workspy-checks">
+            <label className="pm-workspy-check-label">
+              <input type="checkbox" checked={form.isImportant} onChange={(e) => set('isImportant', e.target.checked)} />
+              <span>중요 프로젝트</span>
+            </label>
+            <label className="pm-workspy-check-label">
+              <input type="checkbox" checked={form.openApply} onChange={(e) => set('openApply', e.target.checked)} />
+              <span>누구나 지원 가능</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form)}>등록</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const SEED_PROJ_FILES = [
   { fileNo: 'seed-1', fileName: '20260512135718_2026-12 피해교원 진술_심의장.wav', split: '분할', range: '00:07:55 ~ 00:44:05', workTime: '00:36:05', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00' },
   { fileNo: 'seed-2', fileName: '20260512144220_2026-12 관련학생 진술_심의장.wav', split: '-',    range: '',                     workTime: '00:17:57', status: '검수완료', progress: 55,  lastWork: '2026-06-11 16:00' },
@@ -610,6 +724,7 @@ function ProjectManageTab({ s }) {
   const [fileModalFor, setFileModalFor] = useState(null);
   const [assignModal, setAssignModal] = useState(null);
   const [expandedMsgs, setExpandedMsgs] = useState({});
+  const [workspyModal, setWorkspyModal] = useState(null);
 
   const syncStore = (updated) => {
     setProjects(updated);
@@ -619,6 +734,11 @@ function ProjectManageTab({ s }) {
   const toggleExpand = (projId) => syncStore(projects.map(p => p.id === projId ? { ...p, expanded: !p.expanded } : p));
   const deleteProject = (projId) => syncStore(projects.filter(p => p.id !== projId));
   const toggleWorkspy = (projId) => syncStore(projects.map(p => p.id === projId ? { ...p, workspyRegistered: !p.workspyRegistered } : p));
+
+  const registerWorkspy = (projId, form) => {
+    syncStore(projects.map(p => p.id === projId ? { ...p, workspyRegistered: true, workspyData: form } : p));
+    setWorkspyModal(null);
+  };
 
   const addProjectFiles = (projId, fileNos) => {
     const newFiles = s.files
@@ -701,7 +821,7 @@ function ProjectManageTab({ s }) {
               <span className={`proto-status-badge ${proj.status === '작업완료' ? 'proto-status-done' : 'proto-status-working'}`}>
                 {proj.status}
               </span>
-              <span className="pm-work-time">작업 시간 {proj.workTime}</span>
+              <span className="pm-work-time">작업 시간 {calcProjWorkTime(proj.projFiles)}</span>
               <span className="pm-assign-area">
                 <span className="pm-assign-label">작업자</span>
                 <button
@@ -727,7 +847,7 @@ function ProjectManageTab({ s }) {
                   <button className="pm-btn" onClick={() => setFileModalFor(proj.id)}>+ 파일 추가</button>
                   <button
                     className={`pm-btn${proj.workspyRegistered ? ' pm-btn--active' : ''}`}
-                    onClick={() => toggleWorkspy(proj.id)}
+                    onClick={() => proj.workspyRegistered ? toggleWorkspy(proj.id) : setWorkspyModal(proj.id)}
                   >
                     {proj.workspyRegistered ? '웍스파이 등록됨' : '웍스파이 등록'}
                   </button>
@@ -840,6 +960,14 @@ function ProjectManageTab({ s }) {
           current={projects.find(p => p.id === assignModal.projId)?.[assignModal.type] || ''}
           onConfirm={(name) => setAssign(assignModal.projId, assignModal.type, name)}
           onClose={() => setAssignModal(null)}
+        />
+      )}
+
+      {workspyModal && (
+        <WorkspyRegisterModal
+          proj={projects.find(p => p.id === workspyModal) || { name: '' }}
+          onConfirm={(form) => registerWorkspy(workspyModal, form)}
+          onClose={() => setWorkspyModal(null)}
         />
       )}
     </div>
