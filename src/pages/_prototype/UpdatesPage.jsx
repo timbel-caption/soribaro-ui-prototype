@@ -8,6 +8,13 @@ import './UpdatesPage.css';
  */
 const UPDATES = [
   {
+    date: '2026-06-22',
+    author: '정기태',
+    title: 'VOD 프로젝트 관리 탭 프로젝트 목록에 스크롤 추가',
+    description:
+      '프로젝트 현황 목록이 많을 때 우측 스크롤로 내려볼 수 있도록 .proto-subj-list에 max-height와 overflow-y: auto를 적용했습니다.',
+  },
+  {
     date: '2026-06-18',
     author: '정윤실',
     title: '의뢰유형 관리 위치 변경 — 엔터프라이즈 고객 관리 → 엔터프라이즈 관리',
