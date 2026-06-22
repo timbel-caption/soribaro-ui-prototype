@@ -1086,118 +1086,73 @@ function ManualToggleCard({ label, desc, on, onToggle }) {
 }
 
 function ManualGlossaryTab({ s }) {
-  const [activeType, setActiveType] = useState('VOD');
   const [settings, setSettings] = useState(MANUAL_SETTING_SEED);
+  const [editModal, setEditModal] = useState(null); // typeKey or null
 
-  const cur = settings[activeType];
-  const curType = MANUAL_WORK_TYPES.find((t) => t.key === activeType);
-  const set = (k, v) => setSettings((prev) => ({ ...prev, [activeType]: { ...prev[activeType], [k]: v } }));
-  const toggle = (k) => set(k, !cur[k]);
+  // 편집 중인 유형의 draft (모달 열릴 때 복사, 저장 시 반영)
+  const [draft, setDraft] = useState(null);
 
-  // 좌측 요약 칩 (현재 선택된 유형 기준)
-  const summaryChips = [
-    cur.lineCount.replace(' (2줄 허용)', '').replace('기본 ', ''),
-    `${cur.charLimit}자 제한`,
-    cur.sentenceFirst ? '문장 단위' : '싱크 우선',
-    cur.speaker ? '화자 구분' : '화자 미구분',
-  ];
+  const openModal = (typeKey) => {
+    setDraft({ ...settings[typeKey] });
+    setEditModal(typeKey);
+  };
 
-  // 용어집은 적용된 용어집 카드(glossary)만 표시
+  const closeModal = () => { setEditModal(null); setDraft(null); };
+
+  const saveModal = () => {
+    setSettings((prev) => ({ ...prev, [editModal]: { ...draft, updatedAt: new Date().toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\. /g, '.').replace(', ', ' ') } }));
+    closeModal();
+  };
+
+  const setD = (k, v) => setDraft((prev) => ({ ...prev, [k]: v }));
+  const toggleD = (k) => setD(k, !draft[k]);
+
+  const curType = editModal ? MANUAL_WORK_TYPES.find((t) => t.key === editModal) : null;
+
+  // 요약 칩 계산 (각 유형)
+  const chips = (key) => {
+    const c = settings[key];
+    return [
+      c.lineCount.replace(' (2줄 허용)', '').replace('기본 ', ''),
+      `${c.charLimit}자`,
+      c.sentenceFirst ? '문장 단위' : '싱크 우선',
+      c.speaker ? '화자 구분' : '화자 미구분',
+    ];
+  };
+
+  // 용어집 (glossary 타입만)
   const glossaries = (s.manuals || []).filter((m) => m.type !== '매뉴얼');
 
   return (
     <div className="proto-tab-panel">
-      {/* ─── 매뉴얼 세팅 ─── */}
-      <p className="proto-section-title">매뉴얼 — 작업 유형별 기본 세팅</p>
-      <div className="mset-layout">
-        {/* 좌측: 작업 유형 선택 */}
-        <div className="mset-side">
-          <p className="mset-side-title">작업 유형 선택</p>
-          <div className="mset-type-list">
-            {MANUAL_WORK_TYPES.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                className={`mset-type-item${activeType === t.key ? ' mset-type-item--active' : ''}`}
-                onClick={() => setActiveType(t.key)}
-              >
-                <span className="mset-type-code">{t.code}</span>
-                <span className="mset-type-label">{t.label}</span>
-                <span className="mset-type-arrow">›</span>
-              </button>
-            ))}
-          </div>
-          <div className="mset-summary">
-            <p className="mset-summary-title">{curType.label} 설정 요약</p>
-            <div className="mset-summary-chips">
-              {summaryChips.map((c, i) => (
-                <span key={i} className="mset-summary-chip">{c}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* 우측: 선택된 유형 편집 */}
-        <div className="mset-edit">
-          <div className="mset-edit-head">
-            <span className="mset-edit-title">⚙ {curType.label} 기본 세팅 편집</span>
-            <span className="mset-edit-updated">🕘 최종 수정: {cur.updatedAt}</span>
-          </div>
-
-          <div className="mset-grid">
-            <div className="pm-workspy-field">
-              <label className="preg-label">줄 수 설정</label>
-              <select className="preg-input" value={cur.lineCount} onChange={(e) => set('lineCount', e.target.value)}>
-                <option>기본 1줄</option>
-                <option>기본 1줄 (2줄 허용)</option>
-                <option>기본 2줄</option>
-              </select>
-              <span className="mset-field-hint">* 기본적으로 1줄로 생성하되, 필요시 2줄까지 허용합니다.</span>
-            </div>
-            <div className="pm-workspy-field">
-              <label className="preg-label">줄당 글자 수 제한</label>
-              <div className="mset-suffix-input">
-                <input className="preg-input" type="number" min="1" value={cur.charLimit} onChange={(e) => set('charLimit', e.target.value)} />
-                <span className="mset-suffix">자</span>
+      {/* ─── 매뉴얼 섹션 ─── */}
+      <div className="mset-section-header">
+        <p className="proto-section-title" style={{ margin: 0 }}>매뉴얼 — 작업 유형별 기본 세팅</p>
+      </div>
+      <div className="mset-list-wrap">
+        {MANUAL_WORK_TYPES.map((t) => {
+          const c = settings[t.key];
+          return (
+            <div key={t.key} className="mset-list-row">
+              <span className="mset-type-code">{t.code}</span>
+              <span className="mset-list-label">{t.label}</span>
+              <div className="mset-list-chips">
+                {chips(t.key).map((ch, i) => (
+                  <span key={i} className="mset-summary-chip">{ch}</span>
+                ))}
               </div>
-              <span className="mset-field-hint">* 공백 포함 글자 수 기준입니다.</span>
+              <span className="mset-list-updated">최종 수정: {c.updatedAt}</span>
+              <button className="proto-log-btn proto-log-btn--save mset-list-edit-btn" onClick={() => openModal(t.key)}>
+                세팅 수정
+              </button>
             </div>
-          </div>
-
-          <div className="mset-grid">
-            <ManualToggleCard label="분절 옵션 1 — 문장 단위 분절 우선" desc="문장 부호(. ? !) 기준으로 자막을 나눕니다." on={cur.sentenceFirst} onToggle={() => toggle('sentenceFirst')} />
-            <ManualToggleCard label="분절 옵션 2 — 싱크 너비 초과 시 문맥 분절" desc="시간이 부족할 경우 문맥에 맞게 다음 싱크로 넘깁니다." on={cur.syncOverflow} onToggle={() => toggle('syncOverflow')} />
-            <ManualToggleCard label="발화 내용 반영 — 추임새·감탄사" desc="'음', '아', '그' 등의 불필요한 추임새를 포함합니다." on={cur.fillers} onToggle={() => toggle('fillers')} />
-            <ManualToggleCard label="속도 제어 — CPS 자동 계산" desc="초당 글자 수가 기준을 넘지 않도록 자동 조절합니다." on={cur.cpsAuto} onToggle={() => toggle('cpsAuto')} />
-            <ManualToggleCard label="화자 설정 — 화자 구분 설정" desc="발화자별로 화자명을 구분해 표기합니다." on={cur.speaker} onToggle={() => toggle('speaker')} />
-            <ManualToggleCard label="비언어적 요소 — 효과음·배경음 표기" desc="(박수), (웃음) 등 비언어적 요소를 표기합니다." on={cur.nonverbal} onToggle={() => toggle('nonverbal')} />
-          </div>
-
-          <div className="mset-info-banner">
-            <span className="mset-info-icon">ⓘ</span>
-            <div className="mset-info-text">
-              <span className="mset-info-title">저장 범위 안내</span>
-              <span className="mset-info-line">✓ <strong>기본 설정</strong>: 모든 {curType.label} 작업에 공통 적용</span>
-              <span className="mset-info-line">✓ <strong>프로젝트별 설정</strong>: 해당 프로젝트에만 우선 적용 (기본 설정보다 우선)</span>
-            </div>
-          </div>
-
-          <div className="mset-edit-ft">
-            <span className="mset-ft-target-label">저장 대상</span>
-            <select className="preg-input mset-ft-target-select" defaultValue="basic">
-              <option value="basic">기본 설정 (모든 {curType.label} 작업)</option>
-              <option value="project">{s.servTitle || '현재 프로젝트'}</option>
-            </select>
-            <span className="mset-ft-spacer" />
-            <button className="proto-log-btn">취소</button>
-            <button className="proto-log-btn proto-log-btn--save">저장하기</button>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
-      {/* ─── 용어집 ─── */}
+      {/* ─── 용어집 섹션 ─── */}
       <p className="proto-section-title" style={{ marginTop: '24px' }}>용어집 — 적용된 용어집</p>
-      <div className="proto-manual-cards">
+      <div className="mset-glossary-wrap">
         {glossaries.length === 0 ? (
           <div className="proto-log-empty">적용된 용어집이 없습니다.</div>
         ) : glossaries.map((m, i) => (
@@ -1211,6 +1166,67 @@ function ManualGlossaryTab({ s }) {
       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
         총 {glossaries.length}개 용어집 적용됨 · 용어집 추가는 정식 서비스에서 지원 예정
       </p>
+
+      {/* ─── 기본 세팅 편집 모달 ─── */}
+      {editModal && draft && (
+        <div className="pm-overlay" onClick={closeModal}>
+          <div className="pm-modal mset-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">⚙ {curType.label} 기본 세팅 편집</span>
+              <button className="preg-x-btn" onClick={closeModal}>✕</button>
+            </div>
+
+            <div className="mset-modal-body">
+              <div className="mset-grid">
+                <div className="pm-workspy-field">
+                  <label className="preg-label">줄 수 설정</label>
+                  <select className="preg-input" value={draft.lineCount} onChange={(e) => setD('lineCount', e.target.value)}>
+                    <option>기본 1줄</option>
+                    <option>기본 1줄 (2줄 허용)</option>
+                    <option>기본 2줄</option>
+                  </select>
+                  <span className="mset-field-hint">* 기본적으로 1줄로 생성하되, 필요시 2줄까지 허용합니다.</span>
+                </div>
+                <div className="pm-workspy-field">
+                  <label className="preg-label">줄당 글자 수 제한</label>
+                  <div className="mset-suffix-input">
+                    <input className="preg-input" type="number" min="1" value={draft.charLimit} onChange={(e) => setD('charLimit', e.target.value)} />
+                    <span className="mset-suffix">자</span>
+                  </div>
+                  <span className="mset-field-hint">* 공백 포함 글자 수 기준입니다.</span>
+                </div>
+              </div>
+
+              <div className="mset-grid">
+                <ManualToggleCard label="분절 옵션 1 — 문장 단위 분절 우선" desc="문장 부호(. ? !) 기준으로 자막을 나눕니다." on={draft.sentenceFirst} onToggle={() => toggleD('sentenceFirst')} />
+                <ManualToggleCard label="분절 옵션 2 — 싱크 너비 초과 시 문맥 분절" desc="시간이 부족할 경우 문맥에 맞게 다음 싱크로 넘깁니다." on={draft.syncOverflow} onToggle={() => toggleD('syncOverflow')} />
+                <ManualToggleCard label="발화 내용 반영 — 추임새·감탄사" desc="'음', '아', '그' 등의 불필요한 추임새를 포함합니다." on={draft.fillers} onToggle={() => toggleD('fillers')} />
+                <ManualToggleCard label="속도 제어 — CPS 자동 계산" desc="초당 글자 수가 기준을 넘지 않도록 자동 조절합니다." on={draft.cpsAuto} onToggle={() => toggleD('cpsAuto')} />
+                <ManualToggleCard label="화자 설정 — 화자 구분 설정" desc="발화자별로 화자명을 구분해 표기합니다." on={draft.speaker} onToggle={() => toggleD('speaker')} />
+                <ManualToggleCard label="비언어적 요소 — 효과음·배경음 표기" desc="(박수), (웃음) 등 비언어적 요소를 표기합니다." on={draft.nonverbal} onToggle={() => toggleD('nonverbal')} />
+              </div>
+
+              <div className="mset-info-banner">
+                <span className="mset-info-icon">ⓘ</span>
+                <div className="mset-info-text">
+                  <span className="mset-info-title">저장 범위 안내</span>
+                  <span className="mset-info-line">✓ <strong>기본 설정</strong>: 모든 {curType.label} 작업에 공통 적용</span>
+                  <span className="mset-info-line">✓ <strong>프로젝트별 설정</strong>: 해당 프로젝트에만 우선 적용 (기본 설정보다 우선)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pm-modal-ft">
+              <select className="preg-input mset-ft-target-select" defaultValue="basic" style={{ flex: 1, maxWidth: '260px' }}>
+                <option value="basic">기본 설정 (모든 {curType.label} 작업)</option>
+                <option value="project">{s.servTitle || '현재 프로젝트'}</option>
+              </select>
+              <button className="proto-log-btn" onClick={closeModal}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={saveModal}>저장하기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
