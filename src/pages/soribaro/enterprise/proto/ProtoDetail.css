@@ -2493,3 +2493,258 @@
   flex-direction: column;
   gap: 14px;
 }
+
+/* ─── 용어집 관리 모달 ─── */
+.gls-modal {
+  max-width: 940px;
+  width: 100%;
+  height: 90vh;
+  max-height: 760px;
+}
+
+.gls-modal-hd-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gls-project-chip {
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--surface-light);
+}
+
+.gls-modal-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* 좌측 통계 패널 */
+.gls-stats-panel {
+  width: 220px;
+  min-width: 220px;
+  padding: 16px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface-light);
+}
+
+.gls-stats-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.gls-stat-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gls-stat-card--pending { background: #fffbeb; border-color: #fcd34d; }
+.gls-stat-card--approved { background: #f0fdf4; border-color: #86efac; }
+.gls-stat-card--rejected { background: #fff1f2; border-color: #fca5a5; }
+
+.gls-stat-row {
+  display: flex;
+  gap: 8px;
+}
+
+.gls-stat-card--half {
+  flex: 1;
+}
+
+.gls-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.gls-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gls-stat-pending  { color: #d97706; }
+.gls-stat-approved { color: #16a34a; }
+.gls-stat-rejected { color: #dc2626; }
+
+.gls-stat-card--half .gls-stat-value { font-size: 18px; }
+
+.gls-category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.gls-criteria-card { gap: 8px; }
+
+.gls-criteria-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gls-criteria-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.gls-criteria-val {
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+/* 우측 테이블 패널 */
+.gls-table-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.gls-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.gls-table-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.gls-table-filters {
+  display: flex;
+  gap: 6px;
+}
+
+.gls-filter-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.gls-filter-btn:hover { background: var(--surface-light); }
+
+.gls-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.gls-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.gls-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-light);
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.gls-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.1s;
+}
+
+.gls-table tbody tr:last-child { border-bottom: none; }
+.gls-table tbody tr:hover { background: var(--surface-light); }
+
+.gls-table td { padding: 10px 12px; color: var(--text-primary); }
+
+.gls-row--approved { background: #f0fdf4; }
+.gls-row--rejected { background: #fff1f2; opacity: 0.7; }
+
+.gls-term-original { color: var(--text-secondary); }
+.gls-term-arrow { color: var(--text-secondary); margin: 0 2px; }
+.gls-term-changed { font-weight: 600; color: var(--accent-color); }
+.gls-term-category {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.gls-td-center { text-align: center; }
+.gls-td-actions { white-space: nowrap; }
+
+.gls-conf { font-weight: 700; }
+.gls-conf--high { color: #16a34a; }
+.gls-conf--mid  { color: #d97706; }
+.gls-conf--low  { color: #dc2626; }
+
+.gls-approve-btn, .gls-reject-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: opacity 0.15s;
+}
+
+.gls-approve-btn { background: #dcfce7; color: #16a34a; margin-right: 4px; }
+.gls-approve-btn:hover { background: #bbf7d0; }
+.gls-reject-btn  { background: #fee2e2; color: #dc2626; }
+.gls-reject-btn:hover { background: #fecaca; }
+
+.gls-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.gls-status--approved { background: #dcfce7; color: #16a34a; }
+.gls-status--rejected { background: #fee2e2; color: #dc2626; }
+
+/* 모달 푸터 */
+.gls-modal-ft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gls-approve-all-btn { background: #dcfce7 !important; color: #16a34a !important; border-color: #86efac !important; }
+.gls-reject-sel-btn  { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; }
