@@ -1277,10 +1277,12 @@ function ManualGlossaryTab({ s }) {
         <div className="pm-overlay" onClick={closeGlsModal}>
           <div className="pm-modal gls-modal" onClick={(e) => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">📚 프로젝트별 용어집 AI 학습 결과 승인</span>
+              <span className="pm-modal-title">용어집 AI 학습 결과 승인</span>
               <div className="gls-modal-hd-right">
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>현재 프로젝트:</span>
-                <span className="gls-project-chip">VOD &nbsp; {s.client || '한양사이버대학교'}</span>
+                <span className="gls-project-chip">
+                  <span className="gls-project-type">VOD</span>
+                  {s.client || '한양사이버대학교'}
+                </span>
                 <button className="preg-x-btn" onClick={closeGlsModal}>✕</button>
               </div>
             </div>
@@ -1288,27 +1290,27 @@ function ManualGlossaryTab({ s }) {
             <div className="gls-modal-body">
               {/* 좌측: 통계 패널 */}
               <div className="gls-stats-panel">
-                <p className="gls-stats-title">📊 프로젝트 학습 통계</p>
-                <div className="gls-stat-card gls-stat-card--total">
+                <p className="proto-section-title" style={{ margin: '0 0 8px' }}>프로젝트 학습 통계</p>
+                <div className="gls-stat-card">
                   <span className="gls-stat-label">총 추출 용어 수</span>
                   <span className="gls-stat-value">{glossary?.termCount ?? terms.length}개</span>
                 </div>
                 <div className="gls-stat-card gls-stat-card--pending">
-                  <span className="gls-stat-label">⏱ 승인 대기</span>
+                  <span className="gls-stat-label">승인 대기</span>
                   <span className="gls-stat-value gls-stat-pending">{terms.filter((t) => t.status === 'pending').length}개</span>
                 </div>
                 <div className="gls-stat-row">
                   <div className="gls-stat-card gls-stat-card--half gls-stat-card--approved">
-                    <span className="gls-stat-label">✅ 승인됨</span>
+                    <span className="gls-stat-label">승인됨</span>
                     <span className="gls-stat-value gls-stat-approved">{terms.filter((t) => t.status === 'approved').length}</span>
                   </div>
                   <div className="gls-stat-card gls-stat-card--half gls-stat-card--rejected">
-                    <span className="gls-stat-label">❌ 거부됨</span>
+                    <span className="gls-stat-label">거부됨</span>
                     <span className="gls-stat-value gls-stat-rejected">{terms.filter((t) => t.status === 'rejected').length}</span>
                   </div>
                 </div>
                 <div className="gls-stat-card">
-                  <span className="gls-stat-label">🏷 특화 용어 카테고리</span>
+                  <span className="gls-stat-label">특화 용어 카테고리</span>
                   <div className="gls-category-chips">
                     {[...new Set(terms.map((t) => t.category))].map((c) => (
                       <span key={c} className="mset-summary-chip">{c}</span>
@@ -1316,7 +1318,7 @@ function ManualGlossaryTab({ s }) {
                   </div>
                 </div>
                 <div className="gls-stat-card gls-criteria-card">
-                  <span className="gls-stat-label">⚙ AI 학습 추출 기준</span>
+                  <span className="gls-stat-label">AI 학습 추출 기준</span>
                   <div className="gls-criteria-rows">
                     <div className="gls-criteria-row"><span>최소 등장 빈도</span><span className="gls-criteria-val">10회 이상</span></div>
                     <div className="gls-criteria-row"><span>최소 신뢰도</span><span className="gls-criteria-val">85% 이상</span></div>
@@ -1328,10 +1330,13 @@ function ManualGlossaryTab({ s }) {
               {/* 우측: 용어 목록 테이블 */}
               <div className="gls-table-panel">
                 <div className="gls-table-header">
-                  <p className="gls-table-title">승인 대기 용어 목록 <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 400 }}>({s.client || 'VOD-한양사이버대학교'})</span></p>
+                  <p className="gls-table-title">
+                    승인 대기 용어 목록
+                    <span className="gls-table-subtitle">({s.client || 'VOD-한양사이버대학교'})</span>
+                  </p>
                   <div className="gls-table-filters">
-                    <button className="gls-filter-btn">▼ 카테고리 필터</button>
-                    <button className="gls-filter-btn">⇅ 빈도순</button>
+                    <button className="proto-log-btn gls-filter-btn">카테고리 필터</button>
+                    <button className="proto-log-btn gls-filter-btn">빈도순</button>
                   </div>
                 </div>
                 <div className="gls-table-wrap">
@@ -1378,11 +1383,11 @@ function ManualGlossaryTab({ s }) {
             </div>
 
             <div className="pm-modal-ft gls-modal-ft">
-              <button className="proto-log-btn proto-log-btn--save gls-approve-all-btn" onClick={approveAll}>✓ 전체 일괄 승인</button>
-              <button className="proto-log-btn gls-reject-sel-btn" onClick={rejectSelected}>🗑 선택 항목 거부</button>
+              <button className="proto-log-btn gls-approve-all-btn" onClick={approveAll}>전체 일괄 승인</button>
+              <button className="proto-log-btn gls-reject-sel-btn" onClick={rejectSelected}>선택 항목 거부</button>
               <div style={{ flex: 1 }} />
               <button className="proto-log-btn" onClick={closeGlsModal}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save" onClick={saveGlossary}>💾 변경사항 저장</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={saveGlossary}>변경사항 저장</button>
             </div>
           </div>
         </div>
