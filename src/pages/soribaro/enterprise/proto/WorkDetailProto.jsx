@@ -721,6 +721,7 @@ function ProjectManageTab({ s }) {
   const [projects, setProjects] = useState(initProjects);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProjName, setNewProjName] = useState('');
+  const [newProjForm, setNewProjForm] = useState({ workers: '1', unitPrice: '내부 기준 적용', recruitStart: '', recruitEnd: '', workStart: '', workEnd: '' });
   const [fileModalFor, setFileModalFor] = useState(null);
   const [assignModal, setAssignModal] = useState(null);
   const [fileAssignModal, setFileAssignModal] = useState(null);
@@ -800,30 +801,65 @@ function ProjectManageTab({ s }) {
     ? new Set(projects.filter(p => p.id !== fileModalFor).flatMap(p => (p.projFiles || []).map(f => f.fileNo)))
     : new Set();
 
+  const cancelAddForm = () => { setShowAddForm(false); setNewProjName(''); setNewProjForm({ workers: '1', unitPrice: '내부 기준 적용', recruitStart: '', recruitEnd: '', workStart: '', workEnd: '' }); };
+  const setNpf = (k, v) => setNewProjForm(prev => ({ ...prev, [k]: v }));
+
+  if (showAddForm) {
+    return (
+      <div className="proto-tab-panel">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
+          <button className="proto-log-btn proto-log-btn--save" onClick={cancelAddForm}>취소</button>
+        </div>
+        <div className="pm-workspy-field">
+          <label className="preg-label">프로젝트명 *</label>
+          <input className="preg-input" value={newProjName} onChange={e => setNewProjName(e.target.value)} placeholder="회의록 전사 프로젝트" autoFocus onKeyDown={e => e.key === 'Enter' && createProject()} />
+        </div>
+        <div className="pm-workspy-row">
+          <div className="pm-workspy-field">
+            <label className="preg-label">작업자 수 *</label>
+            <input className="preg-input" type="number" min="1" value={newProjForm.workers} onChange={e => setNpf('workers', e.target.value)} />
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">단가 *</label>
+            <input className="preg-input" value={newProjForm.unitPrice} onChange={e => setNpf('unitPrice', e.target.value)} />
+          </div>
+        </div>
+        <div className="pm-workspy-row">
+          <div className="pm-workspy-field">
+            <label className="preg-label">모집 시작</label>
+            <input className="preg-input" type="datetime-local" value={newProjForm.recruitStart} onChange={e => setNpf('recruitStart', e.target.value)} />
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">모집 종료</label>
+            <input className="preg-input" type="datetime-local" value={newProjForm.recruitEnd} onChange={e => setNpf('recruitEnd', e.target.value)} />
+          </div>
+        </div>
+        <div className="pm-workspy-row">
+          <div className="pm-workspy-field">
+            <label className="preg-label">작업 시작</label>
+            <input className="preg-input" type="datetime-local" value={newProjForm.workStart} onChange={e => setNpf('workStart', e.target.value)} />
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">작업 종료</label>
+            <input className="preg-input" type="datetime-local" value={newProjForm.workEnd} onChange={e => setNpf('workEnd', e.target.value)} />
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+          <button className="proto-log-btn" style={{ opacity: 0.45, cursor: 'not-allowed' }} disabled>과목 등록</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="proto-tab-panel">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
-        {showAddForm ? (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input
-              className="preg-input"
-              style={{ width: '220px', marginBottom: 0 }}
-              value={newProjName}
-              onChange={e => setNewProjName(e.target.value)}
-              placeholder="프로젝트명을 입력하세요"
-              autoFocus
-              onKeyDown={e => e.key === 'Enter' && createProject()}
-            />
-            <button className="proto-log-btn proto-log-btn--save" onClick={createProject}>등록</button>
-            <button className="proto-log-btn" onClick={() => { setShowAddForm(false); setNewProjName(''); }}>취소</button>
-          </div>
-        ) : (
-          <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
-        )}
+        <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
       </div>
 
-      {projects.length === 0 && !showAddForm && (
+      {projects.length === 0 && (
         <div className="proto-empty-state">
           <span style={{ fontSize: '30px' }}>📂</span>
           <p style={{ margin: '6px 0 2px', fontWeight: 500 }}>프로젝트를 등록하여 주세요.</p>
