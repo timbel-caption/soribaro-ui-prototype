@@ -2048,3 +2048,81 @@
   background: rgba(251,191,36,0.18);
   color: #fbbf24;
 }
+
+/* ─── 웍스파이 헤더 칩 ─── */
+.pm-total-time-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(99,102,241,0.15);
+  color: #818cf8;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pm-wspy-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.pm-wspy-chip--period {
+  background: rgba(16,185,129,0.1);
+  border-color: rgba(16,185,129,0.3);
+  color: #10b981;
+}
+
+/* ─── 파일 작업자/검수자 칩 ─── */
+.pm-file-worker-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 14px;
+  font-size: 11px;
+  color: var(--text-primary);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-file-worker-chip--reviewer {
+  background: rgba(16,185,129,0.1);
+  border-color: rgba(16,185,129,0.3);
+}
+
+.pm-file-worker-remove {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.pm-file-worker-remove:hover { color: #ef4444; }
+
+/* ─── 수정 연필 아이콘 ─── */
+.pm-edit-icon {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.pm-edit-icon:hover { opacity: 1; color: var(--accent-color); }
