@@ -8,6 +8,7 @@ import { createFileDifficulty, deleteFileDifficulty } from '../../../../api/v9/f
 import { upsertCodeDetail, deleteCodeDetail } from '../../../../api/v8/commcode';
 import { toast } from '../../../../stores/toastStore';
 import { useTranslation } from 'react-i18next';
+import { getRequestTypes, addRequestType, deleteRequestType } from '../manageProtoStore';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -20,8 +21,71 @@ const priceFormatter = (params, currencyUnit = '원') => {
 };
 
 // ============================================================
-// 의뢰유형 관리 공용 컴포넌트 (모달·상세 패널 공유)
+// 의뢰유형 관리 — manageProtoStore 기반 (엔터프라이즈 관리와 동일 데이터 공유)
+// 계약구분 설정 기능 없이 의뢰유형 목록 추가/삭제만 제공
 // ============================================================
+function ProtoRequestTypeManager({ compact, t }) {
+  const [types, setTypes] = useState(getRequestTypes());
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newCd, setNewCd] = useState('');
+  const [newNm, setNewNm] = useState('');
+
+  const handleAdd = useCallback(() => {
+    if (!newNm.trim()) { alert(t('manage.pricing.priceTable.alertRequestTypeNameRequired')); return; }
+    const id = `rt-${Date.now()}`;
+    addRequestType({ id, code: newCd.trim().toUpperCase(), name: newNm.trim(), contractTypes: [] });
+    setTypes(getRequestTypes());
+    setNewCd('');
+    setNewNm('');
+    setShowAddForm(false);
+  }, [newCd, newNm, t]);
+
+  const handleDelete = useCallback((id, name) => {
+    if (!window.confirm(t('manage.pricing.priceTable.confirmRequestTypeDelete', { code: name }))) return;
+    deleteRequestType(id);
+    setTypes(getRequestTypes());
+  }, [t]);
+
+  return (
+    <div className={compact ? 'bss-manager-compact' : ''}>
+      {types.length > 0 ? (
+        <div className="bss-type-list">
+          {types.map((rt) => (
+            <div key={rt.id} className="difficulty-item">
+              <div>
+                <span className="difficulty-name">{rt.name}</span>
+                {rt.code && <span className="difficulty-desc">{rt.code}</span>}
+              </div>
+              <button className="btn-icon" onClick={() => handleDelete(rt.id, rt.name)}>✕</button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="empty-text">{t('manage.pricing.priceTable.noRequestTypes')}</p>
+      )}
+      {!showAddForm ? (
+        <button className="btn-ghost" onClick={() => setShowAddForm(true)} style={{ marginTop: '8px', width: '100%' }}>
+          {t('manage.pricing.priceTable.add')}
+        </button>
+      ) : (
+        <div className="difficulty-add-row" style={{ marginTop: '8px', flexDirection: 'column', alignItems: 'stretch' }}>
+          <input type="text" value={newCd} onChange={(e) => setNewCd(e.target.value)} placeholder={t('manage.pricing.priceTable.requestTypeCodePlaceholder')} maxLength={8} />
+          <input type="text" value={newNm} onChange={(e) => setNewNm(e.target.value)} placeholder={t('manage.pricing.priceTable.requestTypeNamePlaceholder')} />
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button className="btn-ghost" onClick={() => { setShowAddForm(false); setNewCd(''); setNewNm(''); }} style={{ flex: 1 }}>
+              {t('manage.common.cancel')}
+            </button>
+            <button className="btn-primary" onClick={handleAdd} style={{ flex: 1 }}>
+              {t('manage.pricing.priceTable.add')}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// BssTypeManager는 단가표 등록/수정 모달 내 BSS_TYPE 선택 드롭다운 보조용으로만 유지
 function BssTypeManager({ bssTypeOptions, refreshBssTypeOptions, compact, t }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCd, setNewCd] = useState('');
@@ -517,7 +581,7 @@ function PriceTableDetailView({ table, onBack, refreshPriceTables, fileDifficult
             </div>
             {bssSectionOpen && (
               <div className="panel-card-body">
-                <BssTypeManager bssTypeOptions={bssTypeOptions} refreshBssTypeOptions={refreshBssTypeOptions} t={t} />
+                <ProtoRequestTypeManager t={t} />
               </div>
             )}
           </div>

@@ -9,6 +9,7 @@ import '../enterprise/proto/ProtoDetail.css';
 export default function MeetingWorkPage() {
   const [samples, setSamples] = useState(() => getMeetingSamples());
   const [showRegister, setShowRegister] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const refreshSamples = () => setSamples([...getMeetingSamples()]);
 
@@ -64,12 +65,21 @@ export default function MeetingWorkPage() {
           <h1 className="page-title">회의록 작업관리</h1>
           <p className="page-description">회의록 작업을 관리합니다</p>
         </div>
-        <button className="proto-register-page-btn" onClick={() => setShowRegister(true)}>
-          + 새 프로젝트 등록
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            className="btn-ghost"
+            style={{ fontSize: '13px' }}
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? '진행중만 보기' : '전체 보기'}
+          </button>
+          <button className="proto-register-page-btn" onClick={() => setShowRegister(true)}>
+            + 새 프로젝트 등록
+          </button>
+        </div>
       </div>
 
-      <MeetingListDashboard samples={samples} onSamplesChange={refreshSamples} />
+      <MeetingListDashboard samples={samples} onSamplesChange={refreshSamples} showAll={showAll} />
 
       {showRegister && (
         <MeetingRegisterModal onClose={() => { setShowRegister(false); refreshSamples(); }} onSubmit={handleRegister} />

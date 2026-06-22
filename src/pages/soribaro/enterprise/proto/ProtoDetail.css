@@ -1663,3 +1663,279 @@
   line-height: 1.7;
   margin: 0;
 }
+
+/* ─── 프로젝트 관리 탭 (pm-*) ─── */
+.pm-project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pm-project-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pm-project-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--surface-light);
+  cursor: pointer;
+  flex-wrap: wrap;
+  transition: background 0.12s;
+}
+.pm-project-header:hover { filter: brightness(0.97); }
+
+.pm-expand-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.pm-project-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pm-work-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-left: 4px;
+}
+
+.pm-assign-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.pm-assign-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pm-chip {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.pm-chip--worker {
+  background: rgba(96,165,250,0.12);
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+.pm-chip--worker:hover { background: rgba(96,165,250,0.22); }
+.pm-chip--reviewer {
+  background: rgba(167,139,250,0.12);
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+.pm-chip--reviewer:hover { background: rgba(167,139,250,0.22); }
+
+.pm-project-body {
+  padding: 14px 16px;
+  background: var(--bg-primary);
+}
+
+.pm-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.pm-btn {
+  padding: 5px 12px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.pm-btn:hover { background: var(--surface-light); color: var(--text-primary); }
+
+.pm-btn--active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--bg-primary);
+}
+.pm-btn--active:hover { opacity: 0.85; background: var(--accent-color); color: var(--bg-primary); }
+
+.pm-btn--danger {
+  margin-left: auto;
+  border-color: #f87171;
+  color: #f87171;
+}
+.pm-btn--danger:hover { background: rgba(248,113,113,0.1); }
+
+/* 파일 상태 뱃지 */
+.pm-status-done    { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; background:rgba(34,197,94,0.15); color:#4ade80; }
+.pm-status-working { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; background:rgba(96,165,250,0.15); color:#60a5fa; }
+.pm-status-wait    { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; background:var(--bg-hover); color:var(--text-muted); }
+
+/* 행별 관리 버튼 */
+.pm-row-btn {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.pm-row-btn--work   { background: rgba(96,165,250,0.1); border-color: #60a5fa; color: #60a5fa; }
+.pm-row-btn--work:hover { background: rgba(96,165,250,0.22); }
+.pm-row-btn--review { background: rgba(167,139,250,0.1); border-color: #a78bfa; color: #a78bfa; }
+.pm-row-btn--review:hover { background: rgba(167,139,250,0.22); }
+.pm-row-btn--del    { background: none; border-color: var(--border-color); color: var(--text-muted); }
+.pm-row-btn--del:hover  { background: rgba(248,113,113,0.1); border-color: #f87171; color: #f87171; }
+
+/* 메시지 섹션 */
+.pm-msg-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.pm-msg-item {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pm-msg-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: var(--surface-light);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.12s;
+}
+.pm-msg-toggle:hover { background: var(--bg-hover); }
+
+.pm-msg-arrow {
+  font-size: 9px;
+  color: var(--text-muted);
+  width: 10px;
+}
+
+.pm-msg-empty-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.pm-msg-content {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.6;
+}
+
+/* 파일 선택 모달 */
+.pm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pm-modal {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.pm-modal--sm { max-width: 360px; }
+
+.pm-modal-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.pm-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pm-modal-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 10px 20px 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.pm-file-select-table {
+  flex: 1;
+  overflow-y: auto;
+  margin: 10px 20px 0;
+  border-radius: 8px;
+}
+
+.pm-modal-ft {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.pm-used-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(251,191,36,0.18);
+  color: #fbbf24;
+}

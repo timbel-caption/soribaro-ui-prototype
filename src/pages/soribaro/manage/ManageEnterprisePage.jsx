@@ -4,7 +4,7 @@ import { usePageParams } from '../../../hooks/usePageParams';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { getEnterpriseList } from '../../../api/v9/enterprise';
-import { getRequestTypes, addRequestType, deleteRequestType } from './manageProtoStore';
+import { getRequestTypes, addRequestType, deleteRequestType, addContractType, removeContractType } from './manageProtoStore';
 import { useTranslation } from 'react-i18next';
 import '../../../styles/notion-list.css';
 import './ManageEnterprisePage.css';
@@ -13,23 +13,41 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 function RequestTypeManageModal({ onClose }) {
   const [types, setTypes] = useState(getRequestTypes());
-  const [newName, setNewName] = useState('');
-  const [newContracts, setNewContracts] = useState('');
+  const [selectedId, setSelectedId] = useState(() => getRequestTypes()[0]?.id ?? null);
+  const [newTypeName, setNewTypeName] = useState('');
+  const [newTypeCode, setNewTypeCode] = useState('');
+  const [newContractType, setNewContractType] = useState('');
 
-  const handleAdd = () => {
-    if (!newName.trim()) return;
-    addRequestType({
-      id: `rt-${Date.now()}`,
-      name: newName.trim(),
-      contractTypes: newContracts.split(',').map((s) => s.trim()).filter(Boolean),
-    });
-    setTypes(getRequestTypes());
-    setNewName('');
-    setNewContracts('');
+  const selectedType = types.find((t) => t.id === selectedId);
+
+  const handleAddType = () => {
+    if (!newTypeName.trim()) return;
+    const id = `rt-${Date.now()}`;
+    addRequestType({ id, code: newTypeCode.trim().toUpperCase(), name: newTypeName.trim(), contractTypes: [] });
+    const updated = getRequestTypes();
+    setTypes(updated);
+    setSelectedId(id);
+    setNewTypeName('');
+    setNewTypeCode('');
   };
 
-  const handleDelete = (id) => {
+  const handleDeleteType = (e, id) => {
+    e.stopPropagation();
     deleteRequestType(id);
+    const updated = getRequestTypes();
+    setTypes(updated);
+    if (selectedId === id) setSelectedId(updated[0]?.id ?? null);
+  };
+
+  const handleAddContract = () => {
+    if (!newContractType.trim() || !selectedId) return;
+    addContractType(selectedId, newContractType.trim());
+    setTypes(getRequestTypes());
+    setNewContractType('');
+  };
+
+  const handleDeleteContract = (ct) => {
+    removeContractType(selectedId, ct);
     setTypes(getRequestTypes());
   };
 
@@ -41,21 +59,55 @@ function RequestTypeManageModal({ onClose }) {
           <button className="preg-x-btn" onClick={onClose}>✕</button>
         </div>
         <div className="req-type-modal-body">
-          {types.map((rt) => (
-            <div key={rt.id} className="req-type-row">
-              <span className="req-type-name">{rt.name}</span>
-              <div className="req-type-contracts">
-                {rt.contractTypes.map((ct) => (
-                  <span key={ct} className="req-type-contract-tag">{ct}</span>
-                ))}
-              </div>
-              <button className="proto-note-cancel-btn" onClick={() => handleDelete(rt.id)}>삭제</button>
+          {/* 왼쪽: 의뢰유형 목록 */}
+          <div className="req-type-panel-left">
+            <div className="req-type-list">
+              {types.map((rt) => (
+                <div
+                  key={rt.id}
+                  className={`req-type-item${selectedId === rt.id ? ' selected' : ''}`}
+                  onClick={() => setSelectedId(rt.id)}
+                >
+                  <span className="req-type-item-name">
+                    {rt.name}
+                    {rt.code && <span className="req-type-code-badge">{rt.code}</span>}
+                  </span>
+                  <button className="req-type-item-delete" onClick={(e) => handleDeleteType(e, rt.id)}>✕</button>
+                </div>
+              ))}
             </div>
-          ))}
-          <div className="req-type-add-form">
-            <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="유형명 (예: 자막)" />
-            <input value={newContracts} onChange={(e) => setNewContracts(e.target.value)} placeholder="계약구분 (쉼표로 구분, 예: 단건계약, 연간계약)" />
-            <button className="proto-note-save-btn" style={{ alignSelf: 'flex-end', padding: '6px 14px' }} onClick={handleAdd}>추가</button>
+            <div className="req-type-bottom-add">
+              <input value={newTypeCode} onChange={(e) => setNewTypeCode(e.target.value)} placeholder="코드" maxLength={8} />
+              <input value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)} placeholder="유형명" onKeyDown={(e) => e.key === 'Enter' && handleAddType()} />
+            </div>
+          </div>
+
+          {/* 오른쪽: 계약구분 */}
+          <div className="req-type-panel-right">
+            <div className="req-type-right-title">계약구분</div>
+            {selectedType ? (
+              <>
+                <div className="req-type-contract-list">
+                  {selectedType.contractTypes.map((ct) => (
+                    <div key={ct} className="req-type-contract-item">
+                      <span>{ct}</span>
+                      <button className="req-type-contract-delete" onClick={() => handleDeleteContract(ct)}>x</button>
+                    </div>
+                  ))}
+                </div>
+                <div className="req-type-contract-add-row">
+                  <input
+                    value={newContractType}
+                    onChange={(e) => setNewContractType(e.target.value)}
+                    placeholder="계약구분 입력"
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddContract()}
+                  />
+                  <button className="req-type-add-btn" onClick={handleAddContract}>+</button>
+                </div>
+              </>
+            ) : (
+              <p className="req-type-empty">좌측에서 의뢰유형을 선택하세요</p>
+            )}
           </div>
         </div>
         <div className="req-type-modal-footer">

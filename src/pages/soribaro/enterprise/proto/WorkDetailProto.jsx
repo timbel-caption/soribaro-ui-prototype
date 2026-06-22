@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries } from './protoStore';
+import { updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
@@ -9,8 +9,8 @@ import '../../../../styles/notion-list.css';
 import './ProtoDetail.css';
 
 const TAB_LABELS = [
-  '기본정보', '파일관리', '프로젝트 관리', '배정관리', '매뉴얼·용어집 세팅',
-  '작업툴 진행현황', 'AI QC 결과 요약', '납품관리', '정산확인', '이력/메모',
+  '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
+  'AI QC 결과 요약', '납품관리', '정산확인', '이력/메모',
 ];
 
 const STATUS_MAP = {
@@ -169,7 +169,11 @@ function BasicInfoTab({ s }) {
       : [])
   );
 
-  const syncNotes = (next) => { setNoteEntries(next); updateSampleNoteEntries(s.id, next); };
+  const syncNotes = (next) => {
+    setNoteEntries(next);
+    updateSampleNoteEntries(s.id, next);
+    if (!isVod) updateSampleSpecialNote(s.id, next[next.length - 1]?.content ?? '');
+  };
   const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
 
   const row1 = [
@@ -225,49 +229,24 @@ function BasicInfoTab({ s }) {
       </div>
 
       <div className="proto-basic-extra-row">
-        {isVod ? (
-          <>
-            <EditableLogCard
-              variant="note"
-              icon="★"
-              iconClass="proto-basic-extra-icon--star"
-              title="특이사항"
-              entries={noteEntries}
-              author={authorName}
-              onChange={syncNotes}
-            />
-            <EditableLogCard
-              variant="memo"
-              icon="≡"
-              iconClass="proto-basic-extra-icon--memo"
-              title="내부 메모"
-              entries={memoEntries}
-              author={authorName}
-              onChange={syncMemos}
-            />
-          </>
-        ) : (
-          <>
-            <div className="proto-basic-extra-card proto-basic-extra-card--note">
-              <div className="proto-basic-extra-header">
-                <span className="proto-basic-extra-icon proto-basic-extra-icon--star">★</span>
-                <span className="proto-basic-extra-title">특이사항</span>
-              </div>
-              <div className="proto-basic-extra-body proto-basic-extra-body--note">
-                {s.specialNote || s.remark || '-'}
-              </div>
-            </div>
-            <div className="proto-basic-extra-card proto-basic-extra-card--memo">
-              <div className="proto-basic-extra-header">
-                <span className="proto-basic-extra-icon proto-basic-extra-icon--memo">≡</span>
-                <span className="proto-basic-extra-title">내부 메모</span>
-              </div>
-              <div className="proto-basic-extra-body proto-basic-extra-body--memo">
-                {s.internalMemo || '-'}
-              </div>
-            </div>
-          </>
-        )}
+        <EditableLogCard
+          variant="note"
+          icon="★"
+          iconClass="proto-basic-extra-icon--star"
+          title="특이사항"
+          entries={noteEntries}
+          author={authorName}
+          onChange={syncNotes}
+        />
+        <EditableLogCard
+          variant="memo"
+          icon="≡"
+          iconClass="proto-basic-extra-icon--memo"
+          title="내부 메모"
+          entries={memoEntries}
+          author={authorName}
+          onChange={syncMemos}
+        />
       </div>
 
       <div className="proto-basic-status-history">
@@ -491,232 +470,365 @@ function FileManageTab({ s }) {
 }
 
 // ─── 탭 3: 프로젝트 관리 ───
-const WEEK_STATUSES = ['미수령', '수령완료', '작업중', '검수중', '완료'];
 
-function addWeeks(dateStr, n) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d + n * 7);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
+function FileSelectModal({ files, usedFileNos, onConfirm, onClose }) {
+  const [selected, setSelected] = useState(new Set());
 
-function weekStatusBadge(status) {
-  const map = {
-    '완료':    'proto-badge-done',
-    '검수중':  'proto-badge-check',
-    '작업중':  'proto-badge-working',
-    '수령완료':'proto-badge-recv',
-    '미수령':  'proto-badge-wait',
-  };
-  return <span className={map[status] || 'proto-badge-wait'}>{status}</span>;
-}
-
-function ProjectManageTab({ s }) {
-  const [subjects, setSubjects] = useState(s.subjects || []);
-  const [expandedId, setExpandedId] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', totalWeeks: 14, startDate: '', worker: '', reviewer: '' });
-
-  const setF = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
-
-  const syncStore = (updated) => {
-    setSubjects(updated);
-    updateSampleSubjects(s.id, updated);
-  };
-
-  const addSubject = () => {
-    if (!form.name.trim() || !form.startDate) return;
-    const newSubj = {
-      id: `subj-${Date.now()}`,
-      name: form.name.trim(),
-      totalWeeks: Number(form.totalWeeks) || 14,
-      startDate: form.startDate,
-      worker: form.worker.trim(),
-      reviewer: form.reviewer.trim(),
-      weekStatuses: {},
-    };
-    syncStore([...subjects, newSubj]);
-    setForm({ name: '', totalWeeks: 14, startDate: '', worker: '', reviewer: '' });
-    setShowForm(false);
-    setExpandedId(newSubj.id);
-  };
-
-  const updateWeekStatus = (subjId, week, status) => {
-    syncStore(subjects.map(subj =>
-      subj.id === subjId
-        ? { ...subj, weekStatuses: { ...subj.weekStatuses, [week]: status } }
-        : subj
-    ));
-  };
-
-  const getProgress = (subj) => {
-    const done = Object.values(subj.weekStatuses || {}).filter(st => st === '완료').length;
-    return { done, total: subj.totalWeeks, pct: Math.round((done / subj.totalWeeks) * 100) };
-  };
-
-  const isFormValid = form.name.trim() && form.startDate;
+  const toggle = (fileNo) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(fileNo) ? next.delete(fileNo) : next.add(fileNo);
+    return next;
+  });
 
   return (
-    <div className="proto-tab-panel">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
-        <button
-          className="proto-file-add-btn"
-          onClick={() => setShowForm(v => !v)}
-        >
-          {showForm ? '취소' : '+ 프로젝트 추가'}
-        </button>
-      </div>
-
-      {showForm && (
-        <div className="proto-subj-form">
-          <div className="proto-subj-form-grid">
-            <div className="proto-subj-form-field proto-subj-form-field--full">
-              <label>과목명 <span className="preg-required">*</span></label>
-              <input className="preg-input" value={form.name} onChange={setF('name')} placeholder="예: 지구과학개론" />
-            </div>
-            <div className="proto-subj-form-field">
-              <label>총 주차수</label>
-              <input className="preg-input" type="number" min={1} max={52} value={form.totalWeeks} onChange={setF('totalWeeks')} />
-            </div>
-            <div className="proto-subj-form-field">
-              <label>1주차 예상 수령일 <span className="preg-required">*</span></label>
-              <input className="preg-input" type="date" value={form.startDate} onChange={setF('startDate')} />
-            </div>
-            <div className="proto-subj-form-field">
-              <label>담당 전사자</label>
-              <input className="preg-input" value={form.worker} onChange={setF('worker')} placeholder="전사자 이름" />
-            </div>
-            <div className="proto-subj-form-field">
-              <label>담당 검수자</label>
-              <input className="preg-input" value={form.reviewer} onChange={setF('reviewer')} placeholder="검수자 이름" />
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <button
-              className={`preg-submit-btn${!isFormValid ? ' preg-submit-btn--disabled' : ''}`}
-              disabled={!isFormValid}
-              onClick={addSubject}
-            >
-              과목 등록
-            </button>
-          </div>
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal" onClick={e => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">파일 선택</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
         </div>
-      )}
-
-      {subjects.length === 0 && !showForm && (
-        <div className="proto-empty-state">
-          <span style={{ fontSize: '30px' }}>📂</span>
-          <p style={{ margin: '6px 0 2px', fontWeight: 500 }}>등록된 과목이 없습니다.</p>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>과목을 추가하면 주차별 작업 일정을 한눈에 관리할 수 있습니다.</p>
+        <p className="pm-modal-hint">이미 다른 프로젝트에 사용 중인 파일은 선택할 수 없습니다.</p>
+        <div className="proto-table-wrap pm-file-select-table">
+          <table className="proto-table">
+            <thead>
+              <tr>
+                <th style={{ width: 36 }}></th>
+                <th>파일명</th>
+                <th className="text-center">재생시간</th>
+                <th className="text-center">파일크기</th>
+              </tr>
+            </thead>
+            <tbody>
+              {files.length === 0 ? (
+                <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>파일관리 탭에 등록된 파일이 없습니다.</td></tr>
+              ) : files.map(f => {
+                const used = usedFileNos.has(f.fileNo);
+                return (
+                  <tr key={f.fileNo}>
+                    <td className="text-center">
+                      <input type="checkbox" checked={selected.has(f.fileNo)} disabled={used} onChange={() => !used && toggle(f.fileNo)} />
+                    </td>
+                    <td style={{ color: used ? 'var(--text-muted)' : undefined }}>
+                      {f.fileName}
+                      {used && <span className="pm-used-tag">사용중</span>}
+                    </td>
+                    <td className="text-center" style={{ color: used ? 'var(--text-muted)' : undefined }}>{f.duration}</td>
+                    <td className="text-center" style={{ color: used ? 'var(--text-muted)' : undefined }}>{f.size}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
-
-      <div className="proto-subj-list">
-        {subjects.map((subj) => {
-          const prog = getProgress(subj);
-          const isExpanded = expandedId === subj.id;
-          const endDate = addWeeks(subj.startDate, subj.totalWeeks - 1);
-
-          return (
-            <div key={subj.id} className="proto-subj-card">
-              <div
-                className="proto-subj-card-header"
-                onClick={() => setExpandedId(isExpanded ? null : subj.id)}
-              >
-                <div className="proto-subj-card-left">
-                  <span className="proto-subj-name">{subj.name}</span>
-                  <span className="proto-subj-meta">총 {subj.totalWeeks}주차</span>
-                  {subj.worker  && <span className="proto-subj-meta">전사 {subj.worker}</span>}
-                  {subj.reviewer && <span className="proto-subj-meta">검수 {subj.reviewer}</span>}
-                  <span className="proto-subj-meta">{subj.startDate} ~ {endDate}</span>
-                </div>
-                <div className="proto-subj-card-right">
-                  <div className="proto-subj-progress">
-                    <div className="proto-subj-progress-bar">
-                      <div className="proto-subj-progress-fill" style={{ width: `${prog.pct}%` }} />
-                    </div>
-                    <span className="proto-subj-progress-text">{prog.done}/{prog.total}주차 완료</span>
-                  </div>
-                  <span className="proto-subj-toggle">{isExpanded ? '▲' : '▼'}</span>
-                </div>
-              </div>
-
-              {isExpanded && (
-                <div className="proto-subj-weeks">
-                  <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
-                    <table className="proto-table">
-                      <thead>
-                        <tr>
-                          <th className="text-center" style={{ width: '70px' }}>주차</th>
-                          <th className="text-center">예상 수령일</th>
-                          <th className="text-center" style={{ width: '160px' }}>상태</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Array.from({ length: subj.totalWeeks }, (_, i) => {
-                          const week = i + 1;
-                          const expDate = addWeeks(subj.startDate, i);
-                          const status = subj.weekStatuses?.[week] || '미수령';
-                          return (
-                            <tr key={week}>
-                              <td className="text-center" style={{ fontWeight: 500 }}>{week}주차</td>
-                              <td className="text-center">{expDate}</td>
-                              <td className="text-center">
-                                <select
-                                  className="proto-week-status-select"
-                                  value={status}
-                                  onChange={(e) => updateWeekStatus(subj.id, week, e.target.value)}
-                                >
-                                  {WEEK_STATUSES.map(st => <option key={st} value={st}>{st}</option>)}
-                                </select>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button
+            className="proto-log-btn proto-log-btn--save"
+            onClick={() => { if (selected.size > 0) onConfirm(selected); }}
+            disabled={selected.size === 0}
+          >
+            선택 완료 ({selected.size}개)
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── 탭 4: 배정관리 ───
-function AssignManageTab({ s }) {
+function AssignPickModal({ title, current, onConfirm, onClose }) {
+  const [name, setName] = useState(current || '');
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--sm" onClick={e => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">{title}</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+        <div style={{ padding: '16px 20px' }}>
+          <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>이름</label>
+          <input
+            className="preg-input"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="이름을 입력하세요"
+            autoFocus
+            onKeyDown={e => e.key === 'Enter' && onConfirm(name.trim())}
+          />
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(name.trim())}>확인</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const SEED_PROJ_FILES = [
+  { fileNo: 'seed-1', fileName: '20260512135718_2026-12 피해교원 진술_심의장.wav', split: '분할', range: '00:07:55 ~ 00:44:05', workTime: '00:36:05', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00' },
+  { fileNo: 'seed-2', fileName: '20260512144220_2026-12 관련학생 진술_심의장.wav', split: '-',    range: '',                     workTime: '00:17:57', status: '검수완료', progress: 55,  lastWork: '2026-06-11 16:00' },
+  { fileNo: 'seed-3', fileName: '20260512151913_2026-12 심의_심의장.wav',           split: '-',    range: '',                     workTime: '00:17:58', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00' },
+];
+
+function ProjectManageTab({ s }) {
+  const initProjects = () => {
+    const subjs = s.subjects || [];
+    if (subjs.length > 0) return subjs;
+    if (s.bssTypeName === '회의록') {
+      return [{
+        id: 'proj-seed-001',
+        name: '회의록 전사 프로젝트',
+        status: '작업완료',
+        workTime: '1:12:00',
+        worker: '',
+        reviewer: '',
+        workspyRegistered: true,
+        projFiles: SEED_PROJ_FILES,
+        messages: { admin: '', worker: '', reviewer: '' },
+        expanded: true,
+      }];
+    }
+    return [];
+  };
+
+  const [projects, setProjects] = useState(initProjects);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newProjName, setNewProjName] = useState('');
+  const [fileModalFor, setFileModalFor] = useState(null);
+  const [assignModal, setAssignModal] = useState(null);
+  const [expandedMsgs, setExpandedMsgs] = useState({});
+
+  const syncStore = (updated) => {
+    setProjects(updated);
+    updateSampleSubjects(s.id, updated);
+  };
+
+  const toggleExpand = (projId) => syncStore(projects.map(p => p.id === projId ? { ...p, expanded: !p.expanded } : p));
+  const deleteProject = (projId) => syncStore(projects.filter(p => p.id !== projId));
+  const toggleWorkspy = (projId) => syncStore(projects.map(p => p.id === projId ? { ...p, workspyRegistered: !p.workspyRegistered } : p));
+
+  const addProjectFiles = (projId, fileNos) => {
+    const newFiles = s.files
+      .filter(f => fileNos.has(f.fileNo))
+      .map(f => ({ fileNo: f.fileNo, fileName: f.fileName, split: '-', range: '', workTime: '-', status: '작업중', progress: 0, lastWork: '-' }));
+    syncStore(projects.map(p =>
+      p.id === projId ? { ...p, projFiles: [...(p.projFiles || []), ...newFiles] } : p
+    ));
+    setFileModalFor(null);
+  };
+
+  const setAssign = (projId, type, name) => {
+    syncStore(projects.map(p => p.id === projId ? { ...p, [type]: name } : p));
+    setAssignModal(null);
+  };
+
+  const createProject = () => {
+    if (!newProjName.trim()) return;
+    syncStore([...projects, {
+      id: `proj-${Date.now()}`,
+      name: newProjName.trim(),
+      status: '작업중',
+      workTime: '0:00:00',
+      worker: '',
+      reviewer: '',
+      workspyRegistered: false,
+      projFiles: [],
+      messages: { admin: '', worker: '', reviewer: '' },
+      expanded: true,
+    }]);
+    setNewProjName('');
+    setShowAddForm(false);
+  };
+
+  const toggleMsg = (projId, key) => {
+    const k = `${projId}-${key}`;
+    setExpandedMsgs(prev => ({ ...prev, [k]: !prev[k] }));
+  };
+
+  const fileSelectUsedNos = fileModalFor
+    ? new Set(projects.filter(p => p.id !== fileModalFor).flatMap(p => (p.projFiles || []).map(f => f.fileNo)))
+    : new Set();
+
   return (
     <div className="proto-tab-panel">
-      <p className="proto-section-title">작업자 배정 현황</p>
-      <div className="proto-table-wrap">
-        <table className="proto-table">
-          <thead>
-            <tr>
-              <th>파일번호</th>
-              <th>파일명</th>
-              <th>담당자</th>
-              <th className="text-center">역할</th>
-              <th className="text-center">배정일</th>
-              <th className="text-center">작업상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {s.assignments.map((a, i) => (
-              <tr key={i}>
-                <td className="text-center">{a.fileNo}</td>
-                <td>{a.fileName}</td>
-                <td>{a.worker}</td>
-                <td className="text-center">{a.role}</td>
-                <td className="text-center">{a.assignDttm}</td>
-                <td className="text-center">{assignBadge(a.status)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
+        {showAddForm ? (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              className="preg-input"
+              style={{ width: '220px', marginBottom: 0 }}
+              value={newProjName}
+              onChange={e => setNewProjName(e.target.value)}
+              placeholder="프로젝트명을 입력하세요"
+              autoFocus
+              onKeyDown={e => e.key === 'Enter' && createProject()}
+            />
+            <button className="proto-log-btn proto-log-btn--save" onClick={createProject}>등록</button>
+            <button className="proto-log-btn" onClick={() => { setShowAddForm(false); setNewProjName(''); }}>취소</button>
+          </div>
+        ) : (
+          <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
+        )}
       </div>
+
+      {projects.length === 0 && !showAddForm && (
+        <div className="proto-empty-state">
+          <span style={{ fontSize: '30px' }}>📂</span>
+          <p style={{ margin: '6px 0 2px', fontWeight: 500 }}>프로젝트를 등록하여 주세요.</p>
+        </div>
+      )}
+
+      <div className="pm-project-list">
+        {projects.map(proj => (
+          <div key={proj.id} className="pm-project-card">
+            <div className="pm-project-header" onClick={() => toggleExpand(proj.id)}>
+              <span className="pm-expand-icon">{proj.expanded ? '▼' : '▶'}</span>
+              <span className="pm-project-name">{proj.name}</span>
+              <span className={`proto-status-badge ${proj.status === '작업완료' ? 'proto-status-done' : 'proto-status-working'}`}>
+                {proj.status}
+              </span>
+              <span className="pm-work-time">작업 시간 {proj.workTime}</span>
+              <span className="pm-assign-area">
+                <span className="pm-assign-label">작업자</span>
+                <button
+                  className="pm-chip pm-chip--worker"
+                  onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'worker' }); }}
+                >
+                  {proj.worker || '작업자 배정'}
+                </button>
+                <span className="pm-assign-label">검수자</span>
+                <button
+                  className="pm-chip pm-chip--reviewer"
+                  onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'reviewer' }); }}
+                >
+                  {proj.reviewer || '검수자 배정'}
+                </button>
+              </span>
+            </div>
+
+            {proj.expanded && (
+              <div className="pm-project-body">
+                <div className="pm-action-bar">
+                  <button className="pm-btn">수정</button>
+                  <button className="pm-btn" onClick={() => setFileModalFor(proj.id)}>+ 파일 추가</button>
+                  <button
+                    className={`pm-btn${proj.workspyRegistered ? ' pm-btn--active' : ''}`}
+                    onClick={() => toggleWorkspy(proj.id)}
+                  >
+                    {proj.workspyRegistered ? '웍스파이 등록됨' : '웍스파이 등록'}
+                  </button>
+                  {proj.workspyRegistered && (
+                    <>
+                      <button className="pm-btn">모집인원 조회</button>
+                      <button className="pm-btn">웍스파이 마감</button>
+                    </>
+                  )}
+                  <button className="pm-btn pm-btn--danger" onClick={() => deleteProject(proj.id)}>프로젝트 삭제</button>
+                </div>
+
+                <div className="proto-table-wrap">
+                  <table className="proto-table">
+                    <thead>
+                      <tr>
+                        <th>파일명</th>
+                        <th className="text-center">분할</th>
+                        <th className="text-center">구간</th>
+                        <th className="text-center">작업시간</th>
+                        <th className="text-center">상태</th>
+                        <th style={{ minWidth: '160px' }}>진행 현황</th>
+                        <th className="text-center">마지막 작업<br/>(제출일)</th>
+                        <th className="text-center">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(proj.projFiles || []).length === 0 ? (
+                        <tr>
+                          <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>
+                            "+ 파일 추가"를 눌러 파일을 추가하세요.
+                          </td>
+                        </tr>
+                      ) : (proj.projFiles || []).map(f => (
+                        <tr key={f.fileNo}>
+                          <td style={{ fontSize: '13px' }}>{f.fileName}</td>
+                          <td className="text-center">{f.split}</td>
+                          <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{f.range || '-'}</td>
+                          <td className="text-center" style={{ fontSize: '12px' }}>{f.workTime}</td>
+                          <td className="text-center">
+                            <span className={f.status === '검수완료' ? 'pm-status-done' : f.status === '작업중' ? 'pm-status-working' : 'pm-status-wait'}>
+                              {f.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="proto-progress-wrap">
+                              <div className="proto-progress-bar">
+                                <div className={`proto-progress-fill${f.progress === 100 ? ' complete' : ''}`} style={{ width: `${f.progress}%` }} />
+                              </div>
+                              <span className="proto-progress-text">{f.progress}%</span>
+                            </div>
+                          </td>
+                          <td className="text-center" style={{ fontSize: '12px' }}>{f.lastWork}</td>
+                          <td className="text-center">
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                              <button className="pm-row-btn pm-row-btn--work">작업시작</button>
+                              <button className="pm-row-btn pm-row-btn--review">검수시작</button>
+                              <button className="pm-row-btn pm-row-btn--del">삭제</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pm-msg-section">
+                  {[
+                    { key: 'admin', label: '관리자 메시지' },
+                    { key: 'worker', label: '작업자 메시지' },
+                    { key: 'reviewer', label: '검수 메시지' },
+                  ].map(({ key, label }) => {
+                    const mk = `${proj.id}-${key}`;
+                    const open = expandedMsgs[mk];
+                    const msg = proj.messages?.[key] || '';
+                    return (
+                      <div key={key} className="pm-msg-item">
+                        <button className="pm-msg-toggle" onClick={() => toggleMsg(proj.id, key)}>
+                          <span className="pm-msg-arrow">{open ? '▼' : '▶'}</span>
+                          <span>{label}</span>
+                          {!msg && <span className="pm-msg-empty-hint">내용 없음</span>}
+                        </button>
+                        {open && (
+                          <div className="pm-msg-content">
+                            {msg || <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>등록된 메시지가 없습니다.</span>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {fileModalFor && (
+        <FileSelectModal
+          files={s.files}
+          usedFileNos={fileSelectUsedNos}
+          onConfirm={(selected) => addProjectFiles(fileModalFor, selected)}
+          onClose={() => setFileModalFor(null)}
+        />
+      )}
+
+      {assignModal && (
+        <AssignPickModal
+          title={assignModal.type === 'worker' ? '작업자 배정' : '검수자 배정'}
+          current={projects.find(p => p.id === assignModal.projId)?.[assignModal.type] || ''}
+          onConfirm={(name) => setAssign(assignModal.projId, assignModal.type, name)}
+          onClose={() => setAssignModal(null)}
+        />
+      )}
     </div>
   );
 }
@@ -744,64 +856,7 @@ function ManualGlossaryTab({ s }) {
   );
 }
 
-// ─── 탭 5: 작업툴 진행현황 ───
-function WorkProgressTab({ s }) {
-  const handleOpenTool = (fileName) => {
-    window.alert(`[프로토타입 안내]\n작업툴은 정식 서비스 단계에서 연동 예정입니다.\n\n파일: ${fileName}`);
-  };
-
-  return (
-    <div className="proto-tab-panel">
-      <p className="proto-section-title">파일별 작업툴 진행 현황</p>
-      <div className="proto-table-wrap">
-        <table className="proto-table">
-          <thead>
-            <tr>
-              <th>파일번호</th>
-              <th>파일명</th>
-              <th>담당자</th>
-              <th style={{ minWidth: '180px' }}>진행률</th>
-              <th className="text-center">마지막 작업</th>
-              <th className="text-center">작업툴</th>
-            </tr>
-          </thead>
-          <tbody>
-            {s.workProgress.map((w) => (
-              <tr key={w.fileNo + w.worker}>
-                <td className="text-center">{w.fileNo}</td>
-                <td>{w.fileName}</td>
-                <td>{w.worker}</td>
-                <td>
-                  <div className="proto-progress-wrap">
-                    <div className="proto-progress-bar">
-                      <div
-                        className={`proto-progress-fill${w.progress === 100 ? ' complete' : ''}`}
-                        style={{ width: `${w.progress}%` }}
-                      />
-                    </div>
-                    <span className="proto-progress-text">{w.progress}%</span>
-                  </div>
-                </td>
-                <td className="text-center" style={{ fontSize: '12px' }}>{w.lastWork}</td>
-                <td className="text-center">
-                  <button
-                    className="proto-worktool-btn"
-                    onClick={() => handleOpenTool(w.fileName)}
-                    disabled={w.progress === 0}
-                  >
-                    작업툴 열기
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ─── 탭 6: AI QC 결과 요약 ───
+// ─── 탭 5: AI QC 결과 요약 ───
 function AiQcTab({ s }) {
   const scoreClass = s.qcScore >= 90 ? 'proto-qc-score-good' : s.qcScore >= 80 ? 'proto-qc-score-ok' : 'proto-qc-score-bad';
   const totalErrors = s.qcResults.reduce((acc, r) => acc + r.count, 0);
@@ -1008,9 +1063,7 @@ export default function WorkDetailProto({ samples, backPath }) {
     <BasicInfoTab s={s} />,
     <FileManageTab s={s} />,
     <ProjectManageTab s={s} />,
-    <AssignManageTab s={s} />,
     <ManualGlossaryTab s={s} />,
-    <WorkProgressTab s={s} />,
     <AiQcTab s={s} />,
     <DeliveryTab s={s} />,
     <SettlementTab s={s} />,
