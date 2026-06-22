@@ -2403,3 +2403,82 @@
   .mset-layout { grid-template-columns: 1fr; }
   .mset-grid { grid-template-columns: 1fr; }
 }
+
+/* ─── 매뉴얼 목록 (카드 행) ─── */
+.mset-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.mset-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 8px;
+}
+
+.mset-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+.mset-list-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 72px;
+}
+
+.mset-list-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.mset-list-updated {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.mset-list-edit-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ─── 용어집 스크롤 래퍼 ─── */
+.mset-glossary-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 8px;
+}
+
+/* ─── 기본 세팅 편집 모달 ─── */
+.mset-modal {
+  max-width: 600px;
+  width: 100%;
+}
+
+.mset-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
