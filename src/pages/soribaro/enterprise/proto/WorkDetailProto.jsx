@@ -60,7 +60,7 @@ function nowStamp() {
 }
 
 // ─── 특이사항 / 내부 메모: 작성자·시각 로그가 남는 추가·수정·삭제 카드 ───
-function EditableLogCard({ variant, icon, iconClass, title, entries, author, onChange }) {
+function EditableLogCard({ variant, icon, iconClass, title, entries, author, onChange, hideAdd }) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -90,7 +90,7 @@ function EditableLogCard({ variant, icon, iconClass, title, entries, author, onC
       <div className="proto-basic-extra-header">
         <span className={`proto-basic-extra-icon ${iconClass}`}>{icon}</span>
         <span className="proto-basic-extra-title">{title}</span>
-        <button className="proto-log-add-btn" onClick={() => { setAdding(true); setDraft(''); }} title="추가">+</button>
+        {!hideAdd && <button className="proto-log-add-btn" onClick={() => { setAdding(true); setDraft(''); }} title="추가">+</button>}
       </div>
       <div className={`proto-basic-extra-body proto-basic-extra-body--${variant}`}>
         {adding && (
@@ -242,6 +242,7 @@ function BasicInfoTab({ s }) {
           entries={noteEntries}
           author={authorName}
           onChange={syncNotes}
+          hideAdd={!isVod}
         />
         <EditableLogCard
           variant="memo"
@@ -251,6 +252,7 @@ function BasicInfoTab({ s }) {
           entries={memoEntries}
           author={authorName}
           onChange={syncMemos}
+          hideAdd={!isVod}
         />
       </div>
 
