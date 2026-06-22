@@ -421,7 +421,7 @@ function FileManageTab({ s }) {
         </button>
       </div>
 
-      <div className="proto-table-wrap">
+      <div className="proto-table-wrap proto-table-wrap--scroll">
         <table className="proto-table">
           <thead>
             <tr>
@@ -740,7 +740,7 @@ function ProjectManageTab({ s }) {
                   <button className="pm-btn pm-btn--danger" onClick={() => deleteProject(proj.id)}>프로젝트 삭제</button>
                 </div>
 
-                <div className="proto-table-wrap">
+                <div className="proto-table-wrap proto-table-wrap--scroll">
                   <table className="proto-table">
                     <thead>
                       <tr>
@@ -929,7 +929,7 @@ function DeliveryTab({ s }) {
   return (
     <div className="proto-tab-panel">
       <p className="proto-section-title">납품 현황</p>
-      <div className="proto-table-wrap">
+      <div className="proto-table-wrap proto-table-wrap--scroll">
         <table className="proto-table">
           <thead>
             <tr>
