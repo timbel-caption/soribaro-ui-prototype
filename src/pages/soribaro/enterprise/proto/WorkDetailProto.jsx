@@ -688,9 +688,9 @@ function WorkspyRegisterModal({ proj, onConfirm, onClose }) {
 }
 
 const SEED_PROJ_FILES = [
-  { fileNo: 'seed-1', fileName: '20260512135718_2026-12 피해교원 진술_심의장.wav', split: '분할', range: '00:07:55 ~ 00:44:05', workTime: '00:36:05', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00' },
-  { fileNo: 'seed-2', fileName: '20260512144220_2026-12 관련학생 진술_심의장.wav', split: '-',    range: '',                     workTime: '00:17:57', status: '검수완료', progress: 55,  lastWork: '2026-06-11 16:00' },
-  { fileNo: 'seed-3', fileName: '20260512151913_2026-12 심의_심의장.wav',           split: '-',    range: '',                     workTime: '00:17:58', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00' },
+  { fileNo: 'seed-1', fileName: '20260512135718_2026-12 피해교원 진술_심의장.wav', split: '분할', range: '00:07:55 ~ 00:44:05', workTime: '00:36:05', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00', worker: '유진_작업자(dbwls0681@naver.com)', reviewer: '' },
+  { fileNo: 'seed-2', fileName: '20260512144220_2026-12 관련학생 진술_심의장.wav', split: '-',    range: '',                     workTime: '00:17:57', status: '검수완료', progress: 55,  lastWork: '2026-06-11 16:00', worker: '박현정_0459(phj951124@naver.com)', reviewer: '' },
+  { fileNo: 'seed-3', fileName: '20260512151913_2026-12 심의_심의장.wav',           split: '-',    range: '',                     workTime: '00:17:58', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00', worker: '헌정은(yataome81@naver.com)', reviewer: '' },
 ];
 
 function ProjectManageTab({ s }) {
@@ -723,6 +723,7 @@ function ProjectManageTab({ s }) {
   const [newProjName, setNewProjName] = useState('');
   const [fileModalFor, setFileModalFor] = useState(null);
   const [assignModal, setAssignModal] = useState(null);
+  const [fileAssignModal, setFileAssignModal] = useState(null);
   const [expandedMsgs, setExpandedMsgs] = useState({});
   const [workspyModal, setWorkspyModal] = useState(null);
 
@@ -740,10 +741,27 @@ function ProjectManageTab({ s }) {
     setWorkspyModal(null);
   };
 
+  const setFileAssign = (projId, fileNo, type, name) => {
+    syncStore(projects.map(p =>
+      p.id === projId
+        ? { ...p, projFiles: (p.projFiles || []).map(f => f.fileNo === fileNo ? { ...f, [type]: name } : f) }
+        : p
+    ));
+    setFileAssignModal(null);
+  };
+
+  const removeFileWorker = (projId, fileNo, type) =>
+    syncStore(projects.map(p =>
+      p.id === projId
+        ? { ...p, projFiles: (p.projFiles || []).map(f => f.fileNo === fileNo ? { ...f, [type]: '' } : f) }
+        : p
+    ));
+
+
   const addProjectFiles = (projId, fileNos) => {
     const newFiles = s.files
       .filter(f => fileNos.has(f.fileNo))
-      .map(f => ({ fileNo: f.fileNo, fileName: f.fileName, split: '-', range: '', workTime: '-', status: '작업중', progress: 0, lastWork: '-' }));
+      .map(f => ({ fileNo: f.fileNo, fileName: f.fileName, split: '-', range: '', workTime: '-', status: '작업중', progress: 0, lastWork: '-', worker: '', reviewer: '' }));
     syncStore(projects.map(p =>
       p.id === projId ? { ...p, projFiles: [...(p.projFiles || []), ...newFiles] } : p
     ));
@@ -821,23 +839,31 @@ function ProjectManageTab({ s }) {
               <span className={`proto-status-badge ${proj.status === '작업완료' ? 'proto-status-done' : 'proto-status-working'}`}>
                 {proj.status}
               </span>
-              <span className="pm-work-time">작업 시간 {calcProjWorkTime(proj.projFiles)}</span>
-              <span className="pm-assign-area">
-                <span className="pm-assign-label">작업자</span>
-                <button
-                  className="pm-chip pm-chip--worker"
-                  onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'worker' }); }}
-                >
-                  {proj.worker || '작업자 배정'}
-                </button>
-                <span className="pm-assign-label">검수자</span>
-                <button
-                  className="pm-chip pm-chip--reviewer"
-                  onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'reviewer' }); }}
-                >
-                  {proj.reviewer || '검수자 배정'}
-                </button>
-              </span>
+              <span className="pm-total-time-chip">총 {calcProjWorkTime(proj.projFiles)}</span>
+              {proj.workspyRegistered && proj.workspyData && (() => {
+                const d = proj.workspyData;
+                const fmtD = (iso) => iso ? iso.split('T')[0].replace(/-/g, '.') : '-';
+                return (
+                  <>
+                    <span className="pm-wspy-chip">작업자 {d.workers}명</span>
+                    <span className="pm-wspy-chip">단가 {d.unitPrice}원</span>
+                    <span className="pm-wspy-chip pm-wspy-chip--period">모집 {fmtD(d.recruitStart)} ~ {fmtD(d.recruitEnd)}</span>
+                    <span className="pm-wspy-chip pm-wspy-chip--period">작업 {fmtD(d.workStart)} ~ {fmtD(d.workEnd)}</span>
+                  </>
+                );
+              })()}
+              {!proj.workspyRegistered && (
+                <span className="pm-assign-area">
+                  <span className="pm-assign-label">작업자</span>
+                  <button className="pm-chip pm-chip--worker" onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'worker' }); }}>
+                    {proj.worker || '작업자 배정'}
+                  </button>
+                  <span className="pm-assign-label">검수자</span>
+                  <button className="pm-chip pm-chip--reviewer" onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'reviewer' }); }}>
+                    {proj.reviewer || '검수자 배정'}
+                  </button>
+                </span>
+              )}
             </div>
 
             {proj.expanded && (
@@ -869,8 +895,17 @@ function ProjectManageTab({ s }) {
                         <th className="text-center">구간</th>
                         <th className="text-center">작업시간</th>
                         <th className="text-center">상태</th>
-                        <th style={{ minWidth: '160px' }}>진행 현황</th>
-                        <th className="text-center">마지막 작업<br/>(제출일)</th>
+                        {proj.workspyRegistered ? (
+                          <>
+                            <th style={{ minWidth: '200px' }}>작업자</th>
+                            <th style={{ minWidth: '160px' }}>검수자</th>
+                          </>
+                        ) : (
+                          <>
+                            <th style={{ minWidth: '160px' }}>진행 현황</th>
+                            <th className="text-center">마지막 작업<br/>(제출일)</th>
+                          </>
+                        )}
                         <th className="text-center">관리</th>
                       </tr>
                     </thead>
@@ -886,21 +921,55 @@ function ProjectManageTab({ s }) {
                           <td style={{ fontSize: '13px' }}>{f.fileName}</td>
                           <td className="text-center">{f.split}</td>
                           <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{f.range || '-'}</td>
-                          <td className="text-center" style={{ fontSize: '12px' }}>{f.workTime}</td>
+                          <td className="text-center" style={{ fontSize: '12px' }}>
+                            {f.workTime}
+                            {proj.workspyRegistered && <span className="pm-edit-icon" title="수정">✏</span>}
+                          </td>
                           <td className="text-center">
-                            <span className={f.status === '검수완료' ? 'pm-status-done' : f.status === '작업중' ? 'pm-status-working' : 'pm-status-wait'}>
+                            <span className={f.status === '검수완료' ? 'pm-status-done' : f.status === '작업완료' ? 'pm-status-done' : f.status === '작업중' ? 'pm-status-working' : 'pm-status-wait'}>
                               {f.status}
                             </span>
                           </td>
-                          <td>
-                            <div className="proto-progress-wrap">
-                              <div className="proto-progress-bar">
-                                <div className={`proto-progress-fill${f.progress === 100 ? ' complete' : ''}`} style={{ width: `${f.progress}%` }} />
-                              </div>
-                              <span className="proto-progress-text">{f.progress}%</span>
-                            </div>
-                          </td>
-                          <td className="text-center" style={{ fontSize: '12px' }}>{f.lastWork}</td>
+                          {proj.workspyRegistered ? (
+                            <>
+                              <td>
+                                {f.worker ? (
+                                  <span className="pm-file-worker-chip">
+                                    {f.worker}
+                                    <button className="pm-file-worker-remove" onClick={() => removeFileWorker(proj.id, f.fileNo, 'worker')}>✕</button>
+                                  </span>
+                                ) : (
+                                  <button className="pm-chip pm-chip--worker" onClick={() => setFileAssignModal({ projId: proj.id, fileNo: f.fileNo, type: 'worker' })}>
+                                    작업자 배정
+                                  </button>
+                                )}
+                              </td>
+                              <td>
+                                {f.reviewer ? (
+                                  <span className="pm-file-worker-chip pm-file-worker-chip--reviewer">
+                                    {f.reviewer}
+                                    <button className="pm-file-worker-remove" onClick={() => removeFileWorker(proj.id, f.fileNo, 'reviewer')}>✕</button>
+                                  </span>
+                                ) : (
+                                  <button className="pm-chip pm-chip--reviewer" onClick={() => setFileAssignModal({ projId: proj.id, fileNo: f.fileNo, type: 'reviewer' })}>
+                                    검수자 배정
+                                  </button>
+                                )}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td>
+                                <div className="proto-progress-wrap">
+                                  <div className="proto-progress-bar">
+                                    <div className={`proto-progress-fill${f.progress === 100 ? ' complete' : ''}`} style={{ width: `${f.progress}%` }} />
+                                  </div>
+                                  <span className="proto-progress-text">{f.progress}%</span>
+                                </div>
+                              </td>
+                              <td className="text-center" style={{ fontSize: '12px' }}>{f.lastWork}</td>
+                            </>
+                          )}
                           <td className="text-center">
                             <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
                               <button className="pm-row-btn pm-row-btn--work">작업시작</button>
@@ -962,6 +1031,16 @@ function ProjectManageTab({ s }) {
           onClose={() => setAssignModal(null)}
         />
       )}
+
+      {fileAssignModal && (
+        <AssignPickModal
+          title={fileAssignModal.type === 'worker' ? '작업자 배정' : '검수자 배정'}
+          current={projects.find(p => p.id === fileAssignModal.projId)?.projFiles?.find(f => f.fileNo === fileAssignModal.fileNo)?.[fileAssignModal.type] || ''}
+          onConfirm={(name) => setFileAssign(fileAssignModal.projId, fileAssignModal.fileNo, fileAssignModal.type, name)}
+          onClose={() => setFileAssignModal(null)}
+        />
+      )}
+
 
       {workspyModal && (
         <WorkspyRegisterModal
