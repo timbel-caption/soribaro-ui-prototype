@@ -1054,23 +1054,162 @@ function ProjectManageTab({ s }) {
 }
 
 // ─── 탭 4: 매뉴얼·용어집 세팅 ───
+
+// 작업 유형별 매뉴얼 기본 세팅 시드 (UI 데모용 정적 더미)
+const MANUAL_WORK_TYPES = [
+  { key: 'VOD', code: 'V', label: 'VOD' },
+  { key: 'MEDIA', code: 'M', label: '미디어' },
+  { key: 'SDH', code: 'S', label: 'SDH' },
+  { key: 'EDU', code: 'E', label: '교육지원청' },
+  { key: 'COUNCIL', code: 'A', label: '의회' },
+];
+
+const MANUAL_SETTING_SEED = {
+  VOD:     { lineCount: '기본 1줄 (2줄 허용)', charLimit: '20', sentenceFirst: true,  syncOverflow: true,  fillers: false, cpsAuto: true,  speaker: true,  nonverbal: true,  updatedAt: '2026.04.06 14:30' },
+  MEDIA:   { lineCount: '기본 2줄',           charLimit: '16', sentenceFirst: true,  syncOverflow: false, fillers: true,  cpsAuto: true,  speaker: false, nonverbal: true,  updatedAt: '2026.03.28 11:05' },
+  SDH:     { lineCount: '기본 2줄',           charLimit: '17', sentenceFirst: false, syncOverflow: true,  fillers: true,  cpsAuto: false, speaker: true,  nonverbal: true,  updatedAt: '2026.03.12 09:40' },
+  EDU:     { lineCount: '기본 1줄 (2줄 허용)', charLimit: '24', sentenceFirst: true,  syncOverflow: true,  fillers: false, cpsAuto: true,  speaker: true,  nonverbal: false, updatedAt: '2026.02.20 16:22' },
+  COUNCIL: { lineCount: '기본 1줄',           charLimit: '30', sentenceFirst: true,  syncOverflow: false, fillers: false, cpsAuto: false, speaker: true,  nonverbal: false, updatedAt: '2026.01.30 10:10' },
+};
+
+// 토글 카드 (제목 + 설명, 켜짐/꺼짐)
+function ManualToggleCard({ label, desc, on, onToggle }) {
+  return (
+    <button type="button" className={`mset-toggle-card${on ? ' mset-toggle-card--on' : ''}`} onClick={onToggle}>
+      <span className="mset-toggle-dot" />
+      <span className="mset-toggle-text">
+        <span className="mset-toggle-label">{label}</span>
+        <span className="mset-toggle-desc">{desc}</span>
+      </span>
+    </button>
+  );
+}
+
 function ManualGlossaryTab({ s }) {
+  const [activeType, setActiveType] = useState('VOD');
+  const [settings, setSettings] = useState(MANUAL_SETTING_SEED);
+
+  const cur = settings[activeType];
+  const curType = MANUAL_WORK_TYPES.find((t) => t.key === activeType);
+  const set = (k, v) => setSettings((prev) => ({ ...prev, [activeType]: { ...prev[activeType], [k]: v } }));
+  const toggle = (k) => set(k, !cur[k]);
+
+  // 좌측 요약 칩 (현재 선택된 유형 기준)
+  const summaryChips = [
+    cur.lineCount.replace(' (2줄 허용)', '').replace('기본 ', ''),
+    `${cur.charLimit}자 제한`,
+    cur.sentenceFirst ? '문장 단위' : '싱크 우선',
+    cur.speaker ? '화자 구분' : '화자 미구분',
+  ];
+
+  // 용어집은 적용된 용어집 카드(glossary)만 표시
+  const glossaries = (s.manuals || []).filter((m) => m.type !== '매뉴얼');
+
   return (
     <div className="proto-tab-panel">
-      <p className="proto-section-title">적용된 매뉴얼 · 용어집</p>
+      {/* ─── 매뉴얼 세팅 ─── */}
+      <p className="proto-section-title">매뉴얼 — 작업 유형별 기본 세팅</p>
+      <div className="mset-layout">
+        {/* 좌측: 작업 유형 선택 */}
+        <div className="mset-side">
+          <p className="mset-side-title">작업 유형 선택</p>
+          <div className="mset-type-list">
+            {MANUAL_WORK_TYPES.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                className={`mset-type-item${activeType === t.key ? ' mset-type-item--active' : ''}`}
+                onClick={() => setActiveType(t.key)}
+              >
+                <span className="mset-type-code">{t.code}</span>
+                <span className="mset-type-label">{t.label}</span>
+                <span className="mset-type-arrow">›</span>
+              </button>
+            ))}
+          </div>
+          <div className="mset-summary">
+            <p className="mset-summary-title">{curType.label} 설정 요약</p>
+            <div className="mset-summary-chips">
+              {summaryChips.map((c, i) => (
+                <span key={i} className="mset-summary-chip">{c}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 우측: 선택된 유형 편집 */}
+        <div className="mset-edit">
+          <div className="mset-edit-head">
+            <span className="mset-edit-title">⚙ {curType.label} 기본 세팅 편집</span>
+            <span className="mset-edit-updated">🕘 최종 수정: {cur.updatedAt}</span>
+          </div>
+
+          <div className="mset-grid">
+            <div className="pm-workspy-field">
+              <label className="preg-label">줄 수 설정</label>
+              <select className="preg-input" value={cur.lineCount} onChange={(e) => set('lineCount', e.target.value)}>
+                <option>기본 1줄</option>
+                <option>기본 1줄 (2줄 허용)</option>
+                <option>기본 2줄</option>
+              </select>
+              <span className="mset-field-hint">* 기본적으로 1줄로 생성하되, 필요시 2줄까지 허용합니다.</span>
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">줄당 글자 수 제한</label>
+              <div className="mset-suffix-input">
+                <input className="preg-input" type="number" min="1" value={cur.charLimit} onChange={(e) => set('charLimit', e.target.value)} />
+                <span className="mset-suffix">자</span>
+              </div>
+              <span className="mset-field-hint">* 공백 포함 글자 수 기준입니다.</span>
+            </div>
+          </div>
+
+          <div className="mset-grid">
+            <ManualToggleCard label="분절 옵션 1 — 문장 단위 분절 우선" desc="문장 부호(. ? !) 기준으로 자막을 나눕니다." on={cur.sentenceFirst} onToggle={() => toggle('sentenceFirst')} />
+            <ManualToggleCard label="분절 옵션 2 — 싱크 너비 초과 시 문맥 분절" desc="시간이 부족할 경우 문맥에 맞게 다음 싱크로 넘깁니다." on={cur.syncOverflow} onToggle={() => toggle('syncOverflow')} />
+            <ManualToggleCard label="발화 내용 반영 — 추임새·감탄사" desc="'음', '아', '그' 등의 불필요한 추임새를 포함합니다." on={cur.fillers} onToggle={() => toggle('fillers')} />
+            <ManualToggleCard label="속도 제어 — CPS 자동 계산" desc="초당 글자 수가 기준을 넘지 않도록 자동 조절합니다." on={cur.cpsAuto} onToggle={() => toggle('cpsAuto')} />
+            <ManualToggleCard label="화자 설정 — 화자 구분 설정" desc="발화자별로 화자명을 구분해 표기합니다." on={cur.speaker} onToggle={() => toggle('speaker')} />
+            <ManualToggleCard label="비언어적 요소 — 효과음·배경음 표기" desc="(박수), (웃음) 등 비언어적 요소를 표기합니다." on={cur.nonverbal} onToggle={() => toggle('nonverbal')} />
+          </div>
+
+          <div className="mset-info-banner">
+            <span className="mset-info-icon">ⓘ</span>
+            <div className="mset-info-text">
+              <span className="mset-info-title">저장 범위 안내</span>
+              <span className="mset-info-line">✓ <strong>기본 설정</strong>: 모든 {curType.label} 작업에 공통 적용</span>
+              <span className="mset-info-line">✓ <strong>프로젝트별 설정</strong>: 해당 프로젝트에만 우선 적용 (기본 설정보다 우선)</span>
+            </div>
+          </div>
+
+          <div className="mset-edit-ft">
+            <span className="mset-ft-target-label">저장 대상</span>
+            <select className="preg-input mset-ft-target-select" defaultValue="basic">
+              <option value="basic">기본 설정 (모든 {curType.label} 작업)</option>
+              <option value="project">{s.servTitle || '현재 프로젝트'}</option>
+            </select>
+            <span className="mset-ft-spacer" />
+            <button className="proto-log-btn">취소</button>
+            <button className="proto-log-btn proto-log-btn--save">저장하기</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── 용어집 ─── */}
+      <p className="proto-section-title" style={{ marginTop: '24px' }}>용어집 — 적용된 용어집</p>
       <div className="proto-manual-cards">
-        {s.manuals.map((m, i) => (
+        {glossaries.length === 0 ? (
+          <div className="proto-log-empty">적용된 용어집이 없습니다.</div>
+        ) : glossaries.map((m, i) => (
           <div key={i} className="proto-manual-card">
-            <span className={`proto-manual-card-type ${m.type === '매뉴얼' ? 'manual' : 'glossary'}`}>
-              {m.type}
-            </span>
+            <span className="proto-manual-card-type glossary">{m.type}</span>
             <span className="proto-manual-card-name">{m.name}</span>
             <span className="proto-manual-card-date">적용일 {m.appliedDate}</span>
           </div>
         ))}
       </div>
       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-        총 {s.manuals.length}개 항목 적용됨 · 매뉴얼/용어집 추가는 정식 서비스에서 지원 예정
+        총 {glossaries.length}개 용어집 적용됨 · 용어집 추가는 정식 서비스에서 지원 예정
       </p>
     </div>
   );
