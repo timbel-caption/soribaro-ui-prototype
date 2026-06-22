@@ -1114,6 +1114,29 @@ const EMPTY_MANUAL = {
   sentenceFirst: true, syncOverflow: true, fillers: false, cpsAuto: true, speaker: true, nonverbal: false,
 };
 
+// 용어집 — 적용된 용어집 시드 (단일, null이면 미적용)
+const GLOSSARY_APPLIED_SEED = {
+  id: 'g-1',
+  name: 'VOD 프로젝트 용어집 v1',
+  projectName: '한양사이버대학교',
+  appliedAt: '2026.04.06 14:30',
+  termCount: 156,
+  approvedCount: 110,
+  pendingCount: 42,
+  rejectedCount: 4,
+  categories: ['과목명', '교수명', '전문용어', '온라인 강의'],
+};
+
+// 용어집 — 승인 대기 용어 목록 시드
+const GLOSSARY_TERM_SEED = [
+  { id: 'gt-1', original: '교육학 개론', changed: '교육학개론',      category: '과목명',   freq: 145, conf: 99, status: 'pending' },
+  { id: 'gt-2', original: '김철수교수',  changed: '김철수 교수',     category: '교수명',   freq: 112, conf: 98, status: 'pending' },
+  { id: 'gt-3', original: '온라인강의',  changed: '온라인 강의',     category: '전문용어', freq: 89,  conf: 95, status: 'pending' },
+  { id: 'gt-4', original: '한양 사이버 대학교', changed: '한양사이버대학교', category: '고유명사', freq: 76, conf: 96, status: 'pending' },
+  { id: 'gt-5', original: '메타 버스',  changed: '메타버스',        category: '전문용어', freq: 42,  conf: 89, status: 'pending' },
+  { id: 'gt-6', original: '플립 러닝',  changed: '플립러닝',        category: '전문용어', freq: 38,  conf: 87, status: 'pending' },
+];
+
 // 토글 카드 (제목 + 설명, 켜짐/꺼짐)
 function ManualToggleCard({ label, desc, on, onToggle }) {
   return (
@@ -1151,6 +1174,35 @@ function ManualGlossaryTab({ s }) {
     closeModal();
   };
 
+  // 용어집 상태
+  const [glossary, setGlossary] = useState(GLOSSARY_APPLIED_SEED); // null이면 미적용
+  const [glsModalOpen, setGlsModalOpen] = useState(false);
+  const [terms, setTerms] = useState(GLOSSARY_TERM_SEED);
+
+  const openGlsModal = () => setGlsModalOpen(true);
+  const closeGlsModal = () => setGlsModalOpen(false);
+  const removeGlossary = () => { setGlossary(null); setTerms(GLOSSARY_TERM_SEED); };
+
+  const approveTerm = (id) => setTerms((prev) => prev.map((t) => t.id === id ? { ...t, status: 'approved' } : t));
+  const rejectTerm  = (id) => setTerms((prev) => prev.map((t) => t.id === id ? { ...t, status: 'rejected' } : t));
+  const approveAll  = () => setTerms((prev) => prev.map((t) => t.status === 'pending' ? { ...t, status: 'approved' } : t));
+  const rejectSelected = () => setTerms((prev) => prev.map((t) => t.status === 'pending' ? { ...t, status: 'rejected' } : t));
+
+  const saveGlossary = () => {
+    const approved = terms.filter((t) => t.status === 'approved').length;
+    const rejected = terms.filter((t) => t.status === 'rejected').length;
+    const pending  = terms.filter((t) => t.status === 'pending').length;
+    const stamp = manualStamp();
+    setGlossary((prev) => ({
+      ...(prev || { id: `g-${Date.now()}`, name: 'VOD 프로젝트 용어집', projectName: s.client || '프로젝트', termCount: terms.length, categories: [...new Set(terms.map((t) => t.category))] }),
+      approvedCount: approved,
+      rejectedCount: rejected,
+      pendingCount: pending,
+      appliedAt: stamp,
+    }));
+    closeGlsModal();
+  };
+
   const setD = (k, v) => setDraft((prev) => ({ ...prev, [k]: v }));
   const toggleD = (k) => setD(k, !draft[k]);
 
@@ -1163,9 +1215,6 @@ function ManualGlossaryTab({ s }) {
     m.sentenceFirst ? '문장 단위' : '싱크 우선',
     m.speaker ? '화자 구분' : '화자 미구분',
   ];
-
-  // 용어집 (glossary 타입만)
-  const glossaries = (s.manuals || []).filter((m) => m.type !== '매뉴얼');
 
   return (
     <div className="proto-tab-panel">
@@ -1197,21 +1246,147 @@ function ManualGlossaryTab({ s }) {
       </p>
 
       {/* ─── 용어집 섹션 ─── */}
-      <p className="proto-section-title" style={{ marginTop: '24px' }}>용어집 — 적용된 용어집</p>
-      <div className="mset-glossary-wrap">
-        {glossaries.length === 0 ? (
-          <div className="proto-log-empty">적용된 용어집이 없습니다.</div>
-        ) : glossaries.map((m, i) => (
-          <div key={i} className="proto-manual-card">
-            <span className="proto-manual-card-type glossary">{m.type}</span>
-            <span className="proto-manual-card-name">{m.name}</span>
-            <span className="proto-manual-card-date">적용일 {m.appliedDate}</span>
+      <div className="mset-section-header" style={{ marginTop: '24px' }}>
+        <p className="proto-section-title" style={{ margin: 0 }}>용어집 — 적용된 용어집 <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 400 }}>(최대 1개)</span></p>
+        <button className="proto-log-btn proto-log-btn--save mset-add-btn" onClick={openGlsModal}>{glossary ? '관리/수정' : '+ 추가'}</button>
+      </div>
+      <div className="mset-list-wrap">
+        {!glossary ? (
+          <div className="proto-log-empty">적용된 용어집이 없습니다. "추가"를 눌러 용어집을 설정하세요.</div>
+        ) : (
+          <div className="mset-list-row">
+            <span className="proto-manual-card-type glossary">용어집</span>
+            <span className="mset-list-label">{glossary.name}</span>
+            <div className="mset-list-chips">
+              <span className="mset-summary-chip">승인 {glossary.approvedCount}개</span>
+              <span className="mset-summary-chip">대기 {glossary.pendingCount}개</span>
+              <span className="mset-summary-chip">거부 {glossary.rejectedCount}개</span>
+            </div>
+            <span className="mset-list-updated">최종 수정: {glossary.appliedAt}</span>
+            <button className="proto-log-btn proto-log-btn--save mset-list-edit-btn" onClick={openGlsModal}>관리</button>
+            <button className="proto-log-btn mset-list-del-btn" onClick={removeGlossary}>삭제</button>
           </div>
-        ))}
+        )}
       </div>
       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-        총 {glossaries.length}개 용어집 적용됨 · 용어집 추가는 정식 서비스에서 지원 예정
+        {glossary ? `용어집 1개 적용됨 · 총 ${glossary.termCount}개 용어 (승인 ${glossary.approvedCount}개)` : '적용된 용어집 없음'}
       </p>
+
+      {/* ─── 용어집 관리 모달 ─── */}
+      {glsModalOpen && (
+        <div className="pm-overlay" onClick={closeGlsModal}>
+          <div className="pm-modal gls-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">📚 프로젝트별 용어집 AI 학습 결과 승인</span>
+              <div className="gls-modal-hd-right">
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>현재 프로젝트:</span>
+                <span className="gls-project-chip">VOD &nbsp; {s.client || '한양사이버대학교'}</span>
+                <button className="preg-x-btn" onClick={closeGlsModal}>✕</button>
+              </div>
+            </div>
+
+            <div className="gls-modal-body">
+              {/* 좌측: 통계 패널 */}
+              <div className="gls-stats-panel">
+                <p className="gls-stats-title">📊 프로젝트 학습 통계</p>
+                <div className="gls-stat-card gls-stat-card--total">
+                  <span className="gls-stat-label">총 추출 용어 수</span>
+                  <span className="gls-stat-value">{glossary?.termCount ?? terms.length}개</span>
+                </div>
+                <div className="gls-stat-card gls-stat-card--pending">
+                  <span className="gls-stat-label">⏱ 승인 대기</span>
+                  <span className="gls-stat-value gls-stat-pending">{terms.filter((t) => t.status === 'pending').length}개</span>
+                </div>
+                <div className="gls-stat-row">
+                  <div className="gls-stat-card gls-stat-card--half gls-stat-card--approved">
+                    <span className="gls-stat-label">✅ 승인됨</span>
+                    <span className="gls-stat-value gls-stat-approved">{terms.filter((t) => t.status === 'approved').length}</span>
+                  </div>
+                  <div className="gls-stat-card gls-stat-card--half gls-stat-card--rejected">
+                    <span className="gls-stat-label">❌ 거부됨</span>
+                    <span className="gls-stat-value gls-stat-rejected">{terms.filter((t) => t.status === 'rejected').length}</span>
+                  </div>
+                </div>
+                <div className="gls-stat-card">
+                  <span className="gls-stat-label">🏷 특화 용어 카테고리</span>
+                  <div className="gls-category-chips">
+                    {[...new Set(terms.map((t) => t.category))].map((c) => (
+                      <span key={c} className="mset-summary-chip">{c}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="gls-stat-card gls-criteria-card">
+                  <span className="gls-stat-label">⚙ AI 학습 추출 기준</span>
+                  <div className="gls-criteria-rows">
+                    <div className="gls-criteria-row"><span>최소 등장 빈도</span><span className="gls-criteria-val">10회 이상</span></div>
+                    <div className="gls-criteria-row"><span>최소 신뢰도</span><span className="gls-criteria-val">85% 이상</span></div>
+                    <div className="gls-criteria-row"><span>일치율</span><span className="gls-criteria-val">70% 이상</span></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 우측: 용어 목록 테이블 */}
+              <div className="gls-table-panel">
+                <div className="gls-table-header">
+                  <p className="gls-table-title">승인 대기 용어 목록 <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 400 }}>({s.client || 'VOD-한양사이버대학교'})</span></p>
+                  <div className="gls-table-filters">
+                    <button className="gls-filter-btn">▼ 카테고리 필터</button>
+                    <button className="gls-filter-btn">⇅ 빈도순</button>
+                  </div>
+                </div>
+                <div className="gls-table-wrap">
+                  <table className="gls-table">
+                    <thead>
+                      <tr>
+                        <th>패턴 (기존 → 변경)</th>
+                        <th>빈도</th>
+                        <th>신뢰도</th>
+                        <th>승인/거부</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {terms.map((t) => (
+                        <tr key={t.id} className={t.status !== 'pending' ? `gls-row--${t.status}` : ''}>
+                          <td>
+                            <span className="gls-term-original">{t.original}</span>
+                            <span className="gls-term-arrow"> → </span>
+                            <span className="gls-term-changed">{t.changed}</span>
+                            <span className="gls-term-category">{t.category}</span>
+                          </td>
+                          <td className="gls-td-center">{t.freq}회</td>
+                          <td className="gls-td-center">
+                            <span className={`gls-conf ${t.conf >= 95 ? 'gls-conf--high' : t.conf >= 90 ? 'gls-conf--mid' : 'gls-conf--low'}`}>{t.conf}%</span>
+                          </td>
+                          <td className="gls-td-center gls-td-actions">
+                            {t.status === 'pending' ? (
+                              <>
+                                <button className="gls-approve-btn" onClick={() => approveTerm(t.id)}>✓</button>
+                                <button className="gls-reject-btn" onClick={() => rejectTerm(t.id)}>✕</button>
+                              </>
+                            ) : t.status === 'approved' ? (
+                              <span className="gls-status-badge gls-status--approved">승인됨</span>
+                            ) : (
+                              <span className="gls-status-badge gls-status--rejected">거부됨</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div className="pm-modal-ft gls-modal-ft">
+              <button className="proto-log-btn proto-log-btn--save gls-approve-all-btn" onClick={approveAll}>✓ 전체 일괄 승인</button>
+              <button className="proto-log-btn gls-reject-sel-btn" onClick={rejectSelected}>🗑 선택 항목 거부</button>
+              <div style={{ flex: 1 }} />
+              <button className="proto-log-btn" onClick={closeGlsModal}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={saveGlossary}>💾 변경사항 저장</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── 매뉴얼 추가/수정 모달 ─── */}
       {modalOpen && draft && (
