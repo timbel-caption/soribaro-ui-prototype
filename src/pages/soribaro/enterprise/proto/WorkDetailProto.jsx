@@ -709,7 +709,7 @@ function ProjectManageTab({ s }) {
         workTime: '1:12:00',
         worker: '',
         reviewer: '',
-        workspyRegistered: true,
+        workspyRegistered: false,
         projFiles: SEED_PROJ_FILES,
         messages: { admin: '', worker: '', reviewer: '' },
         expanded: true,
