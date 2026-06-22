@@ -757,6 +757,7 @@ function ProjectManageTab({ s }) {
         : p
     ));
 
+
   const addProjectFiles = (projId, fileNos) => {
     const newFiles = s.files
       .filter(f => fileNos.has(f.fileNo))
@@ -1039,6 +1040,7 @@ function ProjectManageTab({ s }) {
           onClose={() => setFileAssignModal(null)}
         />
       )}
+
 
       {workspyModal && (
         <WorkspyRegisterModal
