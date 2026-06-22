@@ -85,6 +85,7 @@
 /* ─── 상세 페이지 ─── */
 .proto-detail-page {
   max-width: 1200px;
+  overflow-y: auto;
 }
 
 .proto-page-header {
