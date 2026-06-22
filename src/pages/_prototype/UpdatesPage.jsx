@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-22',
     author: '정기태',
+    title: 'VOD 상세 파일관리·프로젝트 관리·납품관리 탭 테이블 세로 스크롤 추가',
+    description:
+      '파일 목록, 프로젝트별 파일 목록, 납품 현황 테이블이 길어질 때 세로 스크롤로 내려볼 수 있도록 max-height와 overflow-y: auto를 적용하고, 테이블 헤더를 sticky로 고정했습니다.',
+  },
+  {
+    date: '2026-06-22',
+    author: '정기태',
     title: 'VOD 상세 탭 전환 후 특이사항·메모·프로젝트 데이터 유지',
     description:
       '탭 전환 시 BasicInfoTab·ProjectManageTab이 재마운트되면서 추가한 특이사항·내부 메모·프로젝트 목록이 초기화되던 문제를 수정했습니다. useState 초기화 시 stale prop 대신 protoStore의 최신값을 읽도록 변경했습니다.',
