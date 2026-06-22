@@ -2126,3 +2126,280 @@
 }
 
 .pm-edit-icon:hover { opacity: 1; color: var(--accent-color); }
+
+/* ─── 매뉴얼 세팅 (작업 유형별 기본 세팅 편집) ─── */
+.mset-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.mset-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mset-side-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.mset-type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mset-type-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.mset-type-item:hover { border-color: var(--accent-color); }
+
+.mset-type-item--active {
+  border-color: var(--accent-color);
+  background: rgba(99,102,241,0.1);
+}
+
+.mset-type-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.mset-type-item--active .mset-type-code {
+  background: var(--accent-color);
+  color: var(--bg-primary);
+}
+
+.mset-type-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mset-type-arrow {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+.mset-type-item--active .mset-type-arrow { color: var(--accent-color); }
+
+.mset-summary {
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-light);
+}
+
+.mset-summary-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.mset-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mset-summary-chip {
+  padding: 3px 9px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* 우측 편집 영역 */
+.mset-edit {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mset-edit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mset-edit-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mset-edit-updated {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mset-field-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mset-suffix-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mset-suffix-input .preg-input { padding-right: 30px; }
+
+.mset-suffix {
+  position: absolute;
+  right: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* 토글 카드 */
+.mset-toggle-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.mset-toggle-card:hover { border-color: var(--accent-color); }
+
+.mset-toggle-card--on { border-color: rgba(99,102,241,0.5); }
+
+.mset-toggle-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.mset-toggle-card--on .mset-toggle-dot {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.mset-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mset-toggle-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mset-toggle-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* 안내 배너 */
+.mset-info-banner {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.2);
+}
+
+.mset-info-icon {
+  color: var(--accent-color);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.mset-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mset-info-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mset-info-line {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 편집 푸터 */
+.mset-edit-ft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.mset-ft-target-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.mset-ft-target-select {
+  max-width: 280px;
+}
+
+.mset-ft-spacer { flex: 1; }
+
+@media (max-width: 820px) {
+  .mset-layout { grid-template-columns: 1fr; }
+  .mset-grid { grid-template-columns: 1fr; }
+}
