@@ -74,7 +74,7 @@ export default function MeetingWorkPage() {
             {showAll ? '진행중만 보기' : '전체 보기'}
           </button>
           <button className="proto-register-page-btn" onClick={() => setShowRegister(true)}>
-            + 새 프로젝트 등록
+            + 새 의뢰 등록
           </button>
         </div>
       </div>

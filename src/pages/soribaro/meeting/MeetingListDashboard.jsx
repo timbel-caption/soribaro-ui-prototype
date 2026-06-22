@@ -40,7 +40,7 @@ function computeStats(samples) {
   return { inProgress, working, checking, checkDone, settleWait };
 }
 
-function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterEntNm, filterContractType, searchText, showAll }) {
+function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterContractType, searchCondition, searchText, showAll }) {
   if (!showAll && s.overallStatus === 'DONE') return false;
   const date = (s.regDttm || '').slice(0, 10);
   if (filterFrom && date < filterFrom) return false;
@@ -48,15 +48,14 @@ function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlemen
   if (filterStatus && s.overallStatus !== filterStatus) return false;
   if (filterSettlement && s.settlement?.status !== filterSettlement) return false;
   if (filterContractType && s.contractType !== filterContractType) return false;
-  if (filterEntNm.trim()) {
-    const q = filterEntNm.trim().toLowerCase();
-    if (!(s.entNm || '').toLowerCase().includes(q)) return false;
-  }
   if (searchText.trim()) {
     const q = searchText.trim().toLowerCase();
-    const haystack = [s.entNm, s.contractType, s.membNm, String(s.round ?? ''), s.specialNote]
-      .map((v) => (v || '').toLowerCase()).join(' ');
-    if (!haystack.includes(q)) return false;
+    let hay = '';
+    if (searchCondition === '업체명')    hay = (s.entNm || '').toLowerCase();
+    else if (searchCondition === '작업자명') hay = (s.membNm || '').toLowerCase();
+    else if (searchCondition === '회차')    hay = String(s.round ?? '').toLowerCase();
+    else if (searchCondition === '담당자명') hay = (s.managerNm || '').toLowerCase();
+    if (!hay.includes(q)) return false;
   }
   return true;
 }
@@ -74,8 +73,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const [filterTo, setFilterTo] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterSettlement, setFilterSettlement] = useState('');
-  const [filterEntNm, setFilterEntNm] = useState('');
   const [filterContractType, setFilterContractType] = useState('');
+  const [searchCondition, setSearchCondition] = useState('업체명');
   const [searchText, setSearchText] = useState('');
   const [pendingSearch, setPendingSearch] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
@@ -84,7 +83,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const handleSearch = () => setSearchText(pendingSearch);
 
   const filtered = samples.filter((s) =>
-    matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterEntNm, filterContractType, searchText, showAll })
+    matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterContractType, searchCondition, searchText, showAll })
   );
   const st = computeStats(samples);
   const alerts = computeAlerts(samples);
@@ -118,10 +117,29 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const cancelNote = () => setEditingNoteId(null);
 
+  const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
+
+  const pagination = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
+      <select className="filter-select" style={{ width: '70px', height: '30px' }} defaultValue="20">
+        <option value="20">20건</option>
+        <option value="50">50건</option>
+        <option value="100">100건</option>
+      </select>
+      <button className="proto-log-btn" style={{ padding: '3px 8px' }}>‹</button>
+      {[1,2,3,4,5].map(n => (
+        <button key={n} className="proto-log-btn" style={{ padding: '3px 10px', ...(n === 1 ? { background: 'var(--accent-color)', color: '#fff', borderColor: 'var(--accent-color)' } : {}) }}>{n}</button>
+      ))}
+      <button className="proto-log-btn" style={{ padding: '3px 8px' }}>›</button>
+      <button className="proto-log-btn" style={{ padding: '3px 8px' }}>»</button>
+      <span style={{ marginLeft: '4px' }}>1/25</span>
+    </div>
+  );
+
   const tableBody = (
     <tbody>
       {filtered.length === 0 ? (
-        <tr><td colSpan={11} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
+        <tr><td colSpan={12} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
       ) : (
         filtered.map((s) => {
           const subStatus = s.subfileStatus || '미요청';
@@ -169,6 +187,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               </td>
               <td className="text-center">{statusBadge(s.overallStatus)}</td>
               <td className="text-center">{settleBadge(s.settlement.status)}</td>
+              <td className="text-center">{s.actualDeliveryDate || '-'}</td>
               <td className="text-center">
                 <button
                   className="proto-dash-detail-btn"
@@ -197,6 +216,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th style={{ minWidth: '140px' }}>특이사항</th>
         <th className="text-center">상태</th>
         <th className="text-center">정산</th>
+        <th className="text-center">실제 납품일</th>
         <th className="text-center" style={{ width: '72px' }}></th>
       </tr>
     </thead>
@@ -236,9 +256,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
               </select>
             </div>
-            <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} type="text" value={filterEntNm} onChange={(e) => setFilterEntNm(e.target.value)} placeholder="업체명" />
-            <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
-            <div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <select className="filter-select" value={searchCondition} onChange={(e) => setSearchCondition(e.target.value)}>
+                {searchConditionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <input className="filter-input" style={{ flex: 1 }} type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
               <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 24px' }} onClick={handleSearch}>검색</button>
             </div>
           </div>
@@ -248,20 +270,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               {tableBody}
             </table>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
-            <select className="filter-select" style={{ width: '70px', height: '30px' }} defaultValue="20">
-              <option value="20">20건</option>
-              <option value="50">50건</option>
-              <option value="100">100건</option>
-            </select>
-            <button className="proto-log-btn" style={{ padding: '3px 8px' }}>‹</button>
-            {[1,2,3,4,5].map(n => (
-              <button key={n} className="proto-log-btn" style={{ padding: '3px 10px', ...(n === 1 ? { background: 'var(--accent-color)', color: '#fff', borderColor: 'var(--accent-color)' } : {}) }}>{n}</button>
-            ))}
-            <button className="proto-log-btn" style={{ padding: '3px 8px' }}>›</button>
-            <button className="proto-log-btn" style={{ padding: '3px 8px' }}>»</button>
-            <span style={{ marginLeft: '4px' }}>1/25</span>
-          </div>
+          {pagination}
         </div>
       </div>
     );
@@ -307,16 +316,19 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             <option value="">계약구분 전체</option>
             {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
           </select>
-          <input className="filter-input" type="text" value={filterEntNm} onChange={(e) => setFilterEntNm(e.target.value)} placeholder="업체명" />
+          <select className="filter-select" value={searchCondition} onChange={(e) => setSearchCondition(e.target.value)}>
+            {searchConditionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
           <input className="filter-input" type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
           <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 14px' }} onClick={handleSearch}>검색</button>
         </div>
-        <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
+        <div className="proto-table-wrap" style={{ marginBottom: '8px' }}>
           <table className="proto-table">
             {tableHead}
             {tableBody}
           </table>
         </div>
+        {pagination}
       </div>
 
       <div className="proto-dash-status-bottom">
