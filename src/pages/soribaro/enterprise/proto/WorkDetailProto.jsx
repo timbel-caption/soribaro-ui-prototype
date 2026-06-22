@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
+import { getVodSamples, getMeetingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
@@ -293,11 +293,15 @@ function secToDuration(sec) {
 }
 
 function FileManageTab({ s }) {
-  const [files, setFiles] = useState(s.files);
+  const isVod = s.bssTypeName !== '회의록';
+  // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
+  const [files, setFiles] = useState(() => {
+    const store = isVod ? getVodSamples() : getMeetingSamples();
+    return store.find((v) => v.id === s.id)?.files ?? s.files;
+  });
   const [dragOver, setDragOver] = useState(false);
   const [checked, setChecked] = useState(new Set());
   const fileInputRef = useRef();
-  const isVod = s.bssTypeName !== '회의록';
 
   // 파일 한 개의 미디어 재생시간을 브라우저 API로 추출 ('HH:MM:SS')
   const extractDuration = (file) => new Promise((resolve) => {

@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-22',
     author: '정기태',
+    title: 'VOD 파일관리 탭 탭 전환 후 업로드 파일 목록 유지',
+    description:
+      '탭 전환 시 FileManageTab이 재마운트되면서 업로드 파일 목록이 초기화되던 문제를 수정했습니다. useState 초기화 시 stale prop 대신 protoStore의 최신값을 읽도록 변경했습니다.',
+  },
+  {
+    date: '2026-06-22',
+    author: '정기태',
     title: 'VOD 프로젝트 관리 탭 프로젝트 목록에 스크롤 추가',
     description:
       '프로젝트 현황 목록이 많을 때 우측 스크롤로 내려볼 수 있도록 .proto-subj-list에 max-height와 overflow-y: auto를 적용했습니다.',
