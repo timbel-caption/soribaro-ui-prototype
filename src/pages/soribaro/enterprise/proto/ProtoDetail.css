@@ -2457,6 +2457,16 @@
   white-space: nowrap;
 }
 
+.mset-list-del-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.mset-add-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* ─── 용어집 스크롤 래퍼 ─── */
 .mset-glossary-wrap {
   display: flex;

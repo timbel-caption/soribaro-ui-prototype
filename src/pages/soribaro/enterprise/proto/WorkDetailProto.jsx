@@ -1064,12 +1064,17 @@ const MANUAL_WORK_TYPES = [
   { key: 'COUNCIL', code: 'A', label: '의회' },
 ];
 
-const MANUAL_SETTING_SEED = {
-  VOD:     { lineCount: '기본 1줄 (2줄 허용)', charLimit: '20', sentenceFirst: true,  syncOverflow: true,  fillers: false, cpsAuto: true,  speaker: true,  nonverbal: true,  updatedAt: '2026.04.06 14:30' },
-  MEDIA:   { lineCount: '기본 2줄',           charLimit: '16', sentenceFirst: true,  syncOverflow: false, fillers: true,  cpsAuto: true,  speaker: false, nonverbal: true,  updatedAt: '2026.03.28 11:05' },
-  SDH:     { lineCount: '기본 2줄',           charLimit: '17', sentenceFirst: false, syncOverflow: true,  fillers: true,  cpsAuto: false, speaker: true,  nonverbal: true,  updatedAt: '2026.03.12 09:40' },
-  EDU:     { lineCount: '기본 1줄 (2줄 허용)', charLimit: '24', sentenceFirst: true,  syncOverflow: true,  fillers: false, cpsAuto: true,  speaker: true,  nonverbal: false, updatedAt: '2026.02.20 16:22' },
-  COUNCIL: { lineCount: '기본 1줄',           charLimit: '30', sentenceFirst: true,  syncOverflow: false, fillers: false, cpsAuto: false, speaker: true,  nonverbal: false, updatedAt: '2026.01.30 10:10' },
+// 적용된 매뉴얼 목록 시드 (UI 데모용 정적 더미)
+const MANUAL_APPLIED_SEED = [
+  { id: 'm-1', name: 'VOD 기본 매뉴얼 v2',  typeKey: 'VOD',   lineCount: '기본 1줄 (2줄 허용)', charLimit: '20', sentenceFirst: true,  syncOverflow: true,  fillers: false, cpsAuto: true,  speaker: true,  nonverbal: true,  updatedAt: '2026.04.06 14:30' },
+  { id: 'm-2', name: '미디어 자막 표준',     typeKey: 'MEDIA', lineCount: '기본 2줄',           charLimit: '16', sentenceFirst: true,  syncOverflow: false, fillers: true,  cpsAuto: true,  speaker: false, nonverbal: true,  updatedAt: '2026.03.28 11:05' },
+  { id: 'm-3', name: 'SDH 접근성 가이드',    typeKey: 'SDH',   lineCount: '기본 2줄',           charLimit: '17', sentenceFirst: false, syncOverflow: true,  fillers: true,  cpsAuto: false, speaker: true,  nonverbal: true,  updatedAt: '2026.03.12 09:40' },
+];
+
+// 새 매뉴얼 기본값
+const EMPTY_MANUAL = {
+  name: '', typeKey: 'VOD', lineCount: '기본 1줄 (2줄 허용)', charLimit: '20',
+  sentenceFirst: true, syncOverflow: true, fillers: false, cpsAuto: true, speaker: true, nonverbal: false,
 };
 
 // 토글 카드 (제목 + 설명, 켜짐/꺼짐)
@@ -1085,40 +1090,48 @@ function ManualToggleCard({ label, desc, on, onToggle }) {
   );
 }
 
-function ManualGlossaryTab({ s }) {
-  const [settings, setSettings] = useState(MANUAL_SETTING_SEED);
-  const [editModal, setEditModal] = useState(null); // typeKey or null
+// 현재 시각을 'YYYY.MM.DD HH:MM' 형식으로 반환 (매뉴얼 최종 수정 표기용)
+function manualStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
-  // 편집 중인 유형의 draft (모달 열릴 때 복사, 저장 시 반영)
+function ManualGlossaryTab({ s }) {
+  const [manuals, setManuals] = useState(MANUAL_APPLIED_SEED);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null); // null이면 추가, id면 수정
   const [draft, setDraft] = useState(null);
 
-  const openModal = (typeKey) => {
-    setDraft({ ...settings[typeKey] });
-    setEditModal(typeKey);
-  };
+  const openAdd = () => { setEditingId(null); setDraft({ ...EMPTY_MANUAL }); setModalOpen(true); };
+  const openEdit = (m) => { setEditingId(m.id); setDraft({ ...m }); setModalOpen(true); };
+  const closeModal = () => { setModalOpen(false); setDraft(null); setEditingId(null); };
 
-  const closeModal = () => { setEditModal(null); setDraft(null); };
+  const removeManual = (id) => setManuals((prev) => prev.filter((m) => m.id !== id));
 
   const saveModal = () => {
-    setSettings((prev) => ({ ...prev, [editModal]: { ...draft, updatedAt: new Date().toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\. /g, '.').replace(', ', ' ') } }));
+    if (!draft.name.trim()) return;
+    const stamp = manualStamp();
+    if (editingId) {
+      setManuals((prev) => prev.map((m) => (m.id === editingId ? { ...draft, updatedAt: stamp } : m)));
+    } else {
+      setManuals((prev) => [...prev, { ...draft, id: `m-${Date.now()}`, updatedAt: stamp }]);
+    }
     closeModal();
   };
 
   const setD = (k, v) => setDraft((prev) => ({ ...prev, [k]: v }));
   const toggleD = (k) => setD(k, !draft[k]);
 
-  const curType = editModal ? MANUAL_WORK_TYPES.find((t) => t.key === editModal) : null;
+  const typeLabel = (key) => MANUAL_WORK_TYPES.find((t) => t.key === key)?.label || key;
 
-  // 요약 칩 계산 (각 유형)
-  const chips = (key) => {
-    const c = settings[key];
-    return [
-      c.lineCount.replace(' (2줄 허용)', '').replace('기본 ', ''),
-      `${c.charLimit}자`,
-      c.sentenceFirst ? '문장 단위' : '싱크 우선',
-      c.speaker ? '화자 구분' : '화자 미구분',
-    ];
-  };
+  // 매뉴얼 카드 요약 칩
+  const chips = (m) => [
+    m.lineCount.replace(' (2줄 허용)', '').replace('기본 ', ''),
+    `${m.charLimit}자`,
+    m.sentenceFirst ? '문장 단위' : '싱크 우선',
+    m.speaker ? '화자 구분' : '화자 미구분',
+  ];
 
   // 용어집 (glossary 타입만)
   const glossaries = (s.manuals || []).filter((m) => m.type !== '매뉴얼');
@@ -1127,28 +1140,30 @@ function ManualGlossaryTab({ s }) {
     <div className="proto-tab-panel">
       {/* ─── 매뉴얼 섹션 ─── */}
       <div className="mset-section-header">
-        <p className="proto-section-title" style={{ margin: 0 }}>매뉴얼 — 작업 유형별 기본 세팅</p>
+        <p className="proto-section-title" style={{ margin: 0 }}>매뉴얼 — 적용된 매뉴얼</p>
+        <button className="proto-log-btn proto-log-btn--save mset-add-btn" onClick={openAdd}>+ 추가/수정</button>
       </div>
       <div className="mset-list-wrap">
-        {MANUAL_WORK_TYPES.map((t) => {
-          const c = settings[t.key];
-          return (
-            <div key={t.key} className="mset-list-row">
-              <span className="mset-type-code">{t.code}</span>
-              <span className="mset-list-label">{t.label}</span>
-              <div className="mset-list-chips">
-                {chips(t.key).map((ch, i) => (
-                  <span key={i} className="mset-summary-chip">{ch}</span>
-                ))}
-              </div>
-              <span className="mset-list-updated">최종 수정: {c.updatedAt}</span>
-              <button className="proto-log-btn proto-log-btn--save mset-list-edit-btn" onClick={() => openModal(t.key)}>
-                세팅 수정
-              </button>
+        {manuals.length === 0 ? (
+          <div className="proto-log-empty">적용된 매뉴얼이 없습니다. "추가/수정"을 눌러 매뉴얼을 추가하세요.</div>
+        ) : manuals.map((m) => (
+          <div key={m.id} className="mset-list-row">
+            <span className="proto-manual-card-type manual">{typeLabel(m.typeKey)}</span>
+            <span className="mset-list-label">{m.name}</span>
+            <div className="mset-list-chips">
+              {chips(m).map((ch, i) => (
+                <span key={i} className="mset-summary-chip">{ch}</span>
+              ))}
             </div>
-          );
-        })}
+            <span className="mset-list-updated">최종 수정: {m.updatedAt}</span>
+            <button className="proto-log-btn proto-log-btn--save mset-list-edit-btn" onClick={() => openEdit(m)}>수정</button>
+            <button className="proto-log-btn mset-list-del-btn" onClick={() => removeManual(m.id)}>삭제</button>
+          </div>
+        ))}
       </div>
+      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+        총 {manuals.length}개 매뉴얼 적용됨
+      </p>
 
       {/* ─── 용어집 섹션 ─── */}
       <p className="proto-section-title" style={{ marginTop: '24px' }}>용어집 — 적용된 용어집</p>
@@ -1167,16 +1182,31 @@ function ManualGlossaryTab({ s }) {
         총 {glossaries.length}개 용어집 적용됨 · 용어집 추가는 정식 서비스에서 지원 예정
       </p>
 
-      {/* ─── 기본 세팅 편집 모달 ─── */}
-      {editModal && draft && (
+      {/* ─── 매뉴얼 추가/수정 모달 ─── */}
+      {modalOpen && draft && (
         <div className="pm-overlay" onClick={closeModal}>
           <div className="pm-modal mset-modal" onClick={(e) => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">⚙ {curType.label} 기본 세팅 편집</span>
+              <span className="pm-modal-title">⚙ {editingId ? '매뉴얼 수정' : '매뉴얼 추가'}</span>
               <button className="preg-x-btn" onClick={closeModal}>✕</button>
             </div>
 
             <div className="mset-modal-body">
+              <div className="mset-grid">
+                <div className="pm-workspy-field">
+                  <label className="preg-label">매뉴얼 이름 *</label>
+                  <input className="preg-input" value={draft.name} onChange={(e) => setD('name', e.target.value)} placeholder="예) VOD 기본 매뉴얼 v2" autoFocus />
+                </div>
+                <div className="pm-workspy-field">
+                  <label className="preg-label">작업 유형</label>
+                  <select className="preg-input" value={draft.typeKey} onChange={(e) => setD('typeKey', e.target.value)}>
+                    {MANUAL_WORK_TYPES.map((t) => (
+                      <option key={t.key} value={t.key}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div className="mset-grid">
                 <div className="pm-workspy-field">
                   <label className="preg-label">줄 수 설정</label>
@@ -1209,20 +1239,16 @@ function ManualGlossaryTab({ s }) {
               <div className="mset-info-banner">
                 <span className="mset-info-icon">ⓘ</span>
                 <div className="mset-info-text">
-                  <span className="mset-info-title">저장 범위 안내</span>
-                  <span className="mset-info-line">✓ <strong>기본 설정</strong>: 모든 {curType.label} 작업에 공통 적용</span>
-                  <span className="mset-info-line">✓ <strong>프로젝트별 설정</strong>: 해당 프로젝트에만 우선 적용 (기본 설정보다 우선)</span>
+                  <span className="mset-info-title">저장 안내</span>
+                  <span className="mset-info-line">✓ 저장하면 <strong>적용된 매뉴얼 목록</strong>에 추가되어 작업 시 기본 세팅으로 사용됩니다.</span>
+                  <span className="mset-info-line">✓ 같은 작업 유형에 여러 매뉴얼을 등록해 버전별로 관리할 수 있습니다.</span>
                 </div>
               </div>
             </div>
 
             <div className="pm-modal-ft">
-              <select className="preg-input mset-ft-target-select" defaultValue="basic" style={{ flex: 1, maxWidth: '260px' }}>
-                <option value="basic">기본 설정 (모든 {curType.label} 작업)</option>
-                <option value="project">{s.servTitle || '현재 프로젝트'}</option>
-              </select>
               <button className="proto-log-btn" onClick={closeModal}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save" onClick={saveModal}>저장하기</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={saveModal} disabled={!draft.name.trim()}>저장하기</button>
             </div>
           </div>
         </div>
