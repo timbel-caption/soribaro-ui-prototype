@@ -120,6 +120,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const toDetailPath = (protoPath) =>
     protoPath.replace('/soribaro/enterprise/meeting-proto/', '/soribaro/meeting/detail/');
 
+  const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
+
   const pagination = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
       <select className="filter-select" style={{ width: '70px', height: '30px' }} defaultValue="20">
