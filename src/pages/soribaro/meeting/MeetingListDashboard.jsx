@@ -118,6 +118,155 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const cancelNote = () => setEditingNoteId(null);
 
+  const tableBody = (
+    <tbody>
+      {filtered.length === 0 ? (
+        <tr><td colSpan={11} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
+      ) : (
+        filtered.map((s) => {
+          const subStatus = s.subfileStatus || '미요청';
+          const isEditingNote = editingNoteId === s.id;
+          return (
+            <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(s.protoPath)}>
+              <td className="text-center">{formatRegDate(s.regDttm)}</td>
+              <td style={{ fontWeight: 600 }}>{s.entNm}</td>
+              <td className="text-center">{s.contractType || '-'}</td>
+              <td className="text-center">{s.round != null ? `제${s.round}차` : '-'}</td>
+              <td className="text-center">{s.totalPlayTm || '-'}</td>
+              <td className="text-center">{s.dueDate}</td>
+              <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                <button
+                  className={`proto-subfile-btn ${SUBFILE_CLS[subStatus]}`}
+                  onClick={() => cycleSubfile(s)}
+                  title={`현재: ${subStatus} (클릭하여 변경)`}
+                >
+                  {SUBFILE_ICON[subStatus]} {subStatus}
+                </button>
+              </td>
+              <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
+                {isEditingNote ? (
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <input
+                      className="proto-note-inline-input"
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') commitNote(s); if (e.key === 'Escape') cancelNote(); }}
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button className="proto-note-save-btn" onClick={() => commitNote(s)}>✓</button>
+                    <button className="proto-note-cancel-btn" onClick={cancelNote}>✕</button>
+                  </div>
+                ) : (
+                  <div
+                    className="proto-note-cell"
+                    title={s.specialNote || ''}
+                    onClick={(e) => startEditNote(s, e)}
+                  >
+                    {s.specialNote || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
+                  </div>
+                )}
+              </td>
+              <td className="text-center">{statusBadge(s.overallStatus)}</td>
+              <td className="text-center">{settleBadge(s.settlement.status)}</td>
+              <td className="text-center">
+                <button
+                  className="proto-dash-detail-btn"
+                  onClick={(e) => { e.stopPropagation(); navigate(s.protoPath); }}
+                >
+                  상세보기
+                </button>
+              </td>
+            </tr>
+          );
+        })
+      )}
+    </tbody>
+  );
+
+  const tableHead = (
+    <thead>
+      <tr>
+        <th className="text-center">의뢰일자</th>
+        <th>업체명</th>
+        <th className="text-center">계약구분</th>
+        <th className="text-center">회차</th>
+        <th className="text-center">의뢰시간</th>
+        <th className="text-center">납품기한</th>
+        <th className="text-center">서브파일요청</th>
+        <th style={{ minWidth: '140px' }}>특이사항</th>
+        <th className="text-center">상태</th>
+        <th className="text-center">정산</th>
+        <th className="text-center" style={{ width: '72px' }}></th>
+      </tr>
+    </thead>
+  );
+
+  if (showAll) {
+    return (
+      <div className="proto-dashboard">
+        <div className="proto-dash-header">
+          <span className="proto-label-chip">5차 고도화</span>
+          <span className="proto-dash-title">프로토타입 샘플 현황</span>
+          <span className="proto-notice-chip">실제 데이터 미연동</span>
+        </div>
+
+        <div className="proto-dash-projects">
+          <p className="proto-dash-section-title" style={{ marginBottom: '8px' }}>전체 현황</p>
+          <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="filter-bar" style={{ marginBottom: 0 }}>
+              <input className="filter-date" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} title="의뢰일 시작" />
+              <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
+              <input className="filter-date" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} title="의뢰일 종료" />
+              <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="">상태 전체</option>
+                <option value="WORKING">작업중</option>
+                <option value="CHECKING">검수중</option>
+                <option value="DONE">완료</option>
+              </select>
+              <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>
+                <option value="">정산 전체</option>
+                <option value="정산전">정산전</option>
+                <option value="정산대기">정산대기</option>
+                <option value="부분정산">부분정산</option>
+                <option value="정산완료">정산완료</option>
+              </select>
+              <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
+                <option value="">계약구분 전체</option>
+                {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
+              </select>
+            </div>
+            <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} type="text" value={filterEntNm} onChange={(e) => setFilterEntNm(e.target.value)} placeholder="업체명" />
+            <input className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
+            <div>
+              <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 24px' }} onClick={handleSearch}>검색</button>
+            </div>
+          </div>
+          <div className="proto-table-wrap" style={{ marginBottom: '12px' }}>
+            <table className="proto-table">
+              {tableHead}
+              {tableBody}
+            </table>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
+            <select className="filter-select" style={{ width: '70px', height: '30px' }} defaultValue="20">
+              <option value="20">20건</option>
+              <option value="50">50건</option>
+              <option value="100">100건</option>
+            </select>
+            <button className="proto-log-btn" style={{ padding: '3px 8px' }}>‹</button>
+            {[1,2,3,4,5].map(n => (
+              <button key={n} className="proto-log-btn" style={{ padding: '3px 10px', ...(n === 1 ? { background: 'var(--accent-color)', color: '#fff', borderColor: 'var(--accent-color)' } : {}) }}>{n}</button>
+            ))}
+            <button className="proto-log-btn" style={{ padding: '3px 8px' }}>›</button>
+            <button className="proto-log-btn" style={{ padding: '3px 8px' }}>»</button>
+            <span style={{ marginLeft: '4px' }}>1/25</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="proto-dashboard">
       <div className="proto-dash-header">
@@ -138,21 +287,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       <div className="proto-dash-projects">
         <p className="proto-dash-section-title" style={{ marginBottom: '8px' }}>진행 의뢰 현황</p>
         <div className="filter-bar" style={{ marginBottom: '12px' }}>
-          <input
-            className="filter-date"
-            type="date"
-            value={filterFrom}
-            onChange={(e) => setFilterFrom(e.target.value)}
-            title="의뢰일 시작"
-          />
+          <input className="filter-date" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} title="의뢰일 시작" />
           <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
-          <input
-            className="filter-date"
-            type="date"
-            value={filterTo}
-            onChange={(e) => setFilterTo(e.target.value)}
-            title="의뢰일 종료"
-          />
+          <input className="filter-date" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} title="의뢰일 종료" />
           <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">상태 전체</option>
             <option value="WORKING">작업중</option>
@@ -170,103 +307,14 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             <option value="">계약구분 전체</option>
             {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
           </select>
-          <input
-            className="filter-input"
-            type="text"
-            value={filterEntNm}
-            onChange={(e) => setFilterEntNm(e.target.value)}
-            placeholder="업체명"
-          />
-          <input
-            className="filter-input"
-            type="text"
-            value={pendingSearch}
-            onChange={(e) => setPendingSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-            placeholder="검색어"
-          />
+          <input className="filter-input" type="text" value={filterEntNm} onChange={(e) => setFilterEntNm(e.target.value)} placeholder="업체명" />
+          <input className="filter-input" type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
           <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 14px' }} onClick={handleSearch}>검색</button>
         </div>
         <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
           <table className="proto-table">
-            <thead>
-              <tr>
-                <th className="text-center">의뢰일자</th>
-                <th>업체명</th>
-                <th className="text-center">계약구분</th>
-                <th className="text-center">회차</th>
-                <th className="text-center">의뢰시간</th>
-                <th className="text-center">납품기한</th>
-                <th className="text-center">서브파일요청</th>
-                <th style={{ minWidth: '140px' }}>특이사항</th>
-                <th className="text-center">상태</th>
-                <th className="text-center">정산</th>
-                <th className="text-center" style={{ width: '72px' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={11} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
-              ) : (
-                filtered.map((s) => {
-                  const subStatus = s.subfileStatus || '미요청';
-                  const isEditingNote = editingNoteId === s.id;
-                  return (
-                    <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(s.protoPath)}>
-                      <td className="text-center">{formatRegDate(s.regDttm)}</td>
-                      <td style={{ fontWeight: 600 }}>{s.entNm}</td>
-                      <td className="text-center">{s.contractType || '-'}</td>
-                      <td className="text-center">{s.round != null ? `제${s.round}차` : '-'}</td>
-                      <td className="text-center">{s.totalPlayTm || '-'}</td>
-                      <td className="text-center">{s.dueDate}</td>
-                      <td className="text-center" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          className={`proto-subfile-btn ${SUBFILE_CLS[subStatus]}`}
-                          onClick={() => cycleSubfile(s)}
-                          title={`현재: ${subStatus} (클릭하여 변경)`}
-                        >
-                          {SUBFILE_ICON[subStatus]} {subStatus}
-                        </button>
-                      </td>
-                      <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
-                        {isEditingNote ? (
-                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            <input
-                              className="proto-note-inline-input"
-                              value={noteInput}
-                              onChange={(e) => setNoteInput(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') commitNote(s); if (e.key === 'Escape') cancelNote(); }}
-                              autoFocus
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <button className="proto-note-save-btn" onClick={() => commitNote(s)}>✓</button>
-                            <button className="proto-note-cancel-btn" onClick={cancelNote}>✕</button>
-                          </div>
-                        ) : (
-                          <div
-                            className="proto-note-cell"
-                            title={s.specialNote || ''}
-                            onClick={(e) => startEditNote(s, e)}
-                          >
-                            {s.specialNote || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
-                          </div>
-                        )}
-                      </td>
-                      <td className="text-center">{statusBadge(s.overallStatus)}</td>
-                      <td className="text-center">{settleBadge(s.settlement.status)}</td>
-                      <td className="text-center">
-                        <button
-                          className="proto-dash-detail-btn"
-                          onClick={(e) => { e.stopPropagation(); navigate(s.protoPath); }}
-                        >
-                          상세보기
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
+            {tableHead}
+            {tableBody}
           </table>
         </div>
       </div>
