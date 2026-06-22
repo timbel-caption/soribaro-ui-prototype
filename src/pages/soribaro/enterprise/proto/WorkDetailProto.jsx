@@ -157,17 +157,22 @@ function BasicInfoTab({ s }) {
   const isVod = s.bssTypeName !== '회의록';
   const authorName = useUserStore((st) => st.user?.membNm) || '관리자';
 
-  // 기존 문자열 더미값을 첫 로그 항목으로 시드 (없으면 빈 목록)
-  const [noteEntries, setNoteEntries] = useState(() =>
-    s.noteEntries ?? ((s.specialNote || s.remark)
-      ? [{ id: 'note-seed', author: '관리자', dttm: s.regDttm || '', content: s.specialNote || s.remark }]
-      : [])
-  );
-  const [memoEntries, setMemoEntries] = useState(() =>
-    s.memoEntries ?? (s.internalMemo
-      ? [{ id: 'memo-seed', author: '관리자', dttm: s.regDttm || '', content: s.internalMemo }]
-      : [])
-  );
+  // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
+  const [noteEntries, setNoteEntries] = useState(() => {
+    const store = isVod ? getVodSamples() : getMeetingSamples();
+    const cur = store.find((v) => v.id === s.id);
+    const entries = cur?.noteEntries ?? s.noteEntries;
+    if (entries) return entries;
+    const seed = s.specialNote || s.remark;
+    return seed ? [{ id: 'note-seed', author: '관리자', dttm: s.regDttm || '', content: seed }] : [];
+  });
+  const [memoEntries, setMemoEntries] = useState(() => {
+    const store = isVod ? getVodSamples() : getMeetingSamples();
+    const cur = store.find((v) => v.id === s.id);
+    const entries = cur?.memoEntries ?? s.memoEntries;
+    if (entries) return entries;
+    return s.internalMemo ? [{ id: 'memo-seed', author: '관리자', dttm: s.regDttm || '', content: s.internalMemo }] : [];
+  });
 
   const syncNotes = (next) => {
     setNoteEntries(next);
@@ -575,8 +580,12 @@ const SEED_PROJ_FILES = [
 ];
 
 function ProjectManageTab({ s }) {
+  const isVodProj = s.bssTypeName !== '회의록';
   const initProjects = () => {
-    const subjs = s.subjects || [];
+    // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
+    const store = isVodProj ? getVodSamples() : getMeetingSamples();
+    const cur = store.find((v) => v.id === s.id);
+    const subjs = cur?.subjects || s.subjects || [];
     if (subjs.length > 0) return subjs;
     if (s.bssTypeName === '회의록') {
       return [{
