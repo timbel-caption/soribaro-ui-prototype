@@ -41,7 +41,7 @@ export default function MeetingWorkPage() {
       specialNote: form.specialNote || '',
       internalMemo: '',
       statusHistory: [{ date: form.regDate || today, label: '접수' }],
-      protoPath: `/soribaro/enterprise/meeting-proto/${newId}`,
+      protoPath: `/soribaro/meeting/detail/${newId}`,
       files: files.map((f, i) => ({ fileNo: i + 1, fileName: f.name, duration: '-', size: f.size, uploadDttm: today })),
       assignments: [],
       manuals: [],

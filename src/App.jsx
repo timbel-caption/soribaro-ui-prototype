@@ -32,6 +32,7 @@ import EnterpriseWorkDetailPage from './pages/soribaro/enterprise/EnterpriseWork
 // [5차 고도화 프로토타입]
 import VodWorkDetailProto from './pages/soribaro/enterprise/proto/VodWorkDetailProto';
 import MeetingWorkDetailProto from './pages/soribaro/enterprise/proto/MeetingWorkDetailProto';
+import MeetingMenuDetailProto from './pages/soribaro/meeting/MeetingMenuDetailProto';
 
 // 소리바로 - 번역 페이지
 import TranslationWorkPage from './pages/soribaro/translation/TranslationWorkPage';
@@ -263,6 +264,7 @@ function AppRoutes() {
         {/* [5차 고도화 프로토타입] 샘플 상세 */}
         <Route path="soribaro/enterprise/vod-proto/:id" element={<VodWorkDetailProto />} />
         <Route path="soribaro/enterprise/meeting-proto/:id" element={<MeetingWorkDetailProto />} />
+        <Route path="soribaro/meeting/detail/:id" element={<MeetingMenuDetailProto />} />
 
         {/* 소리바로 - 서비스관리 (관리자 전용) */}
         <Route path="soribaro/manage/enterprise" element={<AdminRoute><ManageEnterprisePage /></AdminRoute>} />

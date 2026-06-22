@@ -117,7 +117,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const cancelNote = () => setEditingNoteId(null);
 
-  const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
+  const toDetailPath = (protoPath) =>
+    protoPath.replace('/soribaro/enterprise/meeting-proto/', '/soribaro/meeting/detail/');
 
   const pagination = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
@@ -145,7 +146,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           const subStatus = s.subfileStatus || '미요청';
           const isEditingNote = editingNoteId === s.id;
           return (
-            <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(s.protoPath)}>
+            <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
               <td style={{ fontWeight: 600 }}>{s.entNm}</td>
               <td className="text-center">{s.contractType || '-'}</td>
@@ -191,7 +192,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <td className="text-center">
                 <button
                   className="proto-dash-detail-btn"
-                  onClick={(e) => { e.stopPropagation(); navigate(s.protoPath); }}
+                  onClick={(e) => { e.stopPropagation(); navigate(toDetailPath(s.protoPath)); }}
                 >
                   상세보기
                 </button>
