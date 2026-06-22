@@ -1064,12 +1064,8 @@ const MANUAL_WORK_TYPES = [
   { key: 'COUNCIL', code: 'A', label: '의회' },
 ];
 
-// 적용된 매뉴얼 목록 시드 (UI 데모용 정적 더미)
-const MANUAL_APPLIED_SEED = [
-  { id: 'm-1', name: 'VOD 기본 매뉴얼 v2',  typeKey: 'VOD',   lineCount: '기본 1줄 (2줄 허용)', charLimit: '20', sentenceFirst: true,  syncOverflow: true,  fillers: false, cpsAuto: true,  speaker: true,  nonverbal: true,  updatedAt: '2026.04.06 14:30' },
-  { id: 'm-2', name: '미디어 자막 표준',     typeKey: 'MEDIA', lineCount: '기본 2줄',           charLimit: '16', sentenceFirst: true,  syncOverflow: false, fillers: true,  cpsAuto: true,  speaker: false, nonverbal: true,  updatedAt: '2026.03.28 11:05' },
-  { id: 'm-3', name: 'SDH 접근성 가이드',    typeKey: 'SDH',   lineCount: '기본 2줄',           charLimit: '17', sentenceFirst: false, syncOverflow: true,  fillers: true,  cpsAuto: false, speaker: true,  nonverbal: true,  updatedAt: '2026.03.12 09:40' },
-];
+// 적용된 매뉴얼 시드 (1개만 가능, UI 데모용 정적 더미)
+const MANUAL_APPLIED_SEED = { id: 'm-1', name: 'VOD 기본 매뉴얼 v2', typeKey: 'VOD', lineCount: '기본 1줄 (2줄 허용)', charLimit: '20', sentenceFirst: true, syncOverflow: true, fillers: false, cpsAuto: true, speaker: true, nonverbal: true, updatedAt: '2026.04.06 14:30' };
 
 // 새 매뉴얼 기본값
 const EMPTY_MANUAL = {
@@ -1098,25 +1094,19 @@ function manualStamp() {
 }
 
 function ManualGlossaryTab({ s }) {
-  const [manuals, setManuals] = useState(MANUAL_APPLIED_SEED);
+  const [manual, setManual] = useState(MANUAL_APPLIED_SEED); // 단일 매뉴얼 (null이면 미적용)
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null); // null이면 추가, id면 수정
   const [draft, setDraft] = useState(null);
 
-  const openAdd = () => { setEditingId(null); setDraft({ ...EMPTY_MANUAL }); setModalOpen(true); };
-  const openEdit = (m) => { setEditingId(m.id); setDraft({ ...m }); setModalOpen(true); };
-  const closeModal = () => { setModalOpen(false); setDraft(null); setEditingId(null); };
+  const openModal = () => { setDraft(manual ? { ...manual } : { ...EMPTY_MANUAL }); setModalOpen(true); };
+  const closeModal = () => { setModalOpen(false); setDraft(null); };
 
-  const removeManual = (id) => setManuals((prev) => prev.filter((m) => m.id !== id));
+  const removeManual = () => setManual(null);
 
   const saveModal = () => {
     if (!draft.name.trim()) return;
     const stamp = manualStamp();
-    if (editingId) {
-      setManuals((prev) => prev.map((m) => (m.id === editingId ? { ...draft, updatedAt: stamp } : m)));
-    } else {
-      setManuals((prev) => [...prev, { ...draft, id: `m-${Date.now()}`, updatedAt: stamp }]);
-    }
+    setManual({ ...draft, id: manual?.id || `m-${Date.now()}`, updatedAt: stamp });
     closeModal();
   };
 
@@ -1140,29 +1130,29 @@ function ManualGlossaryTab({ s }) {
     <div className="proto-tab-panel">
       {/* ─── 매뉴얼 섹션 ─── */}
       <div className="mset-section-header">
-        <p className="proto-section-title" style={{ margin: 0 }}>매뉴얼 — 적용된 매뉴얼</p>
-        <button className="proto-log-btn proto-log-btn--save mset-add-btn" onClick={openAdd}>+ 추가/수정</button>
+        <p className="proto-section-title" style={{ margin: 0 }}>매뉴얼 — 적용된 매뉴얼 <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 400 }}>(최대 1개)</span></p>
+        <button className="proto-log-btn proto-log-btn--save mset-add-btn" onClick={openModal}>{manual ? '수정' : '+ 추가'}</button>
       </div>
       <div className="mset-list-wrap">
-        {manuals.length === 0 ? (
-          <div className="proto-log-empty">적용된 매뉴얼이 없습니다. "추가/수정"을 눌러 매뉴얼을 추가하세요.</div>
-        ) : manuals.map((m) => (
-          <div key={m.id} className="mset-list-row">
-            <span className="proto-manual-card-type manual">{typeLabel(m.typeKey)}</span>
-            <span className="mset-list-label">{m.name}</span>
+        {!manual ? (
+          <div className="proto-log-empty">적용된 매뉴얼이 없습니다. "추가"를 눌러 매뉴얼을 설정하세요.</div>
+        ) : (
+          <div className="mset-list-row">
+            <span className="proto-manual-card-type manual">{typeLabel(manual.typeKey)}</span>
+            <span className="mset-list-label">{manual.name}</span>
             <div className="mset-list-chips">
-              {chips(m).map((ch, i) => (
+              {chips(manual).map((ch, i) => (
                 <span key={i} className="mset-summary-chip">{ch}</span>
               ))}
             </div>
-            <span className="mset-list-updated">최종 수정: {m.updatedAt}</span>
-            <button className="proto-log-btn proto-log-btn--save mset-list-edit-btn" onClick={() => openEdit(m)}>수정</button>
-            <button className="proto-log-btn mset-list-del-btn" onClick={() => removeManual(m.id)}>삭제</button>
+            <span className="mset-list-updated">최종 수정: {manual.updatedAt}</span>
+            <button className="proto-log-btn proto-log-btn--save mset-list-edit-btn" onClick={openModal}>수정</button>
+            <button className="proto-log-btn mset-list-del-btn" onClick={removeManual}>삭제</button>
           </div>
-        ))}
+        )}
       </div>
       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-        총 {manuals.length}개 매뉴얼 적용됨
+        {manual ? '매뉴얼 1개 적용됨' : '적용된 매뉴얼 없음'}
       </p>
 
       {/* ─── 용어집 섹션 ─── */}
@@ -1187,7 +1177,7 @@ function ManualGlossaryTab({ s }) {
         <div className="pm-overlay" onClick={closeModal}>
           <div className="pm-modal mset-modal" onClick={(e) => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">⚙ {editingId ? '매뉴얼 수정' : '매뉴얼 추가'}</span>
+              <span className="pm-modal-title">⚙ {manual ? '매뉴얼 수정' : '매뉴얼 추가'}</span>
               <button className="preg-x-btn" onClick={closeModal}>✕</button>
             </div>
 
@@ -1240,8 +1230,8 @@ function ManualGlossaryTab({ s }) {
                 <span className="mset-info-icon">ⓘ</span>
                 <div className="mset-info-text">
                   <span className="mset-info-title">저장 안내</span>
-                  <span className="mset-info-line">✓ 저장하면 <strong>적용된 매뉴얼 목록</strong>에 추가되어 작업 시 기본 세팅으로 사용됩니다.</span>
-                  <span className="mset-info-line">✓ 같은 작업 유형에 여러 매뉴얼을 등록해 버전별로 관리할 수 있습니다.</span>
+                  <span className="mset-info-line">✓ 저장하면 <strong>적용된 매뉴얼</strong>로 설정되어 작업 시 기본 세팅으로 사용됩니다.</span>
+                  <span className="mset-info-line">✓ 적용되는 매뉴얼은 1개만 가능하며, 저장 시 기존 매뉴얼이 교체됩니다.</span>
                 </div>
               </div>
             </div>
