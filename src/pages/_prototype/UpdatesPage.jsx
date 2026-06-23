@@ -17,6 +17,13 @@ const UPDATES = [
   {
     date: '2026-06-23',
     author: '정기태',
+    title: '작업툴 AI QC 버튼 미표시 수정 (toolbarVisibility deep merge 누락)',
+    description:
+      'settingsStore의 persist merge 함수가 toolbarVisibility를 shallow merge하여 브라우저 localStorage에 저장된 이전 설정이 새 키(aiQc)를 덮어쓰던 문제를 수정했습니다. waveform·layoutByMode와 동일하게 toolbarVisibility도 deep merge하도록 변경했습니다.',
+  },
+  {
+    date: '2026-06-23',
+    author: '정기태',
     title: '작업툴 AI QC 기능 추가',
     description:
       '툴바에 AI QC 버튼을 추가했습니다. 클릭 시 우측에 AI QC 결과 패널이 열리며, 확정 오류(싱크 오류·글자 수 오류·CPS 오류·용어집 불일치 등)는 빨간 배경, 의심 구간(문맥 어색·발화 불명확·발화 누락 가능)은 주황 배경으로 자막 카드가 하이라이트됩니다. 패널에는 오류 유형별 필터 칩, 이슈 목록, 핵심 기능 요약 카드가 포함됩니다.',
