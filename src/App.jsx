@@ -88,7 +88,8 @@ function WorkToolGate({ children }) {
   const isAllowed =
     mode === 'training' ||
     (mode === 'merge' && !!searchParams.get('servCd')) ||
-    mode === 'local';
+    mode === 'local' ||
+    mode === 'vod';
   if (!isAllowed) {
     return (
       <div style={{
