@@ -114,6 +114,7 @@ export const useSettingsStore = create(
         toolbarVisibility: {
           history: true,
           accuracy: true,
+          aiQc: true,
           netflixQc: true,
           speaker: true,
           boilerplate: true,

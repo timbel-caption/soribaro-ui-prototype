@@ -108,6 +108,92 @@ import {
 import "flag-icons/css/flag-icons.min.css";
 import "./SubtitleList.css";
 
+// ─── AI QC 더미 데이터 ────────────────────────────────────────────────────────
+const AI_QC_ISSUES = [
+  { id: 1, kind: "error", type: "CPS 오류", text: "00:01:23,450 → 00:01:25,200\n자막이 CPS 기준(17)을 초과합니다.", time: "00:01:23" },
+  { id: 2, kind: "error", type: "글자 수 오류", text: "00:02:10,100 → 00:02:12,300\n한 줄 최대 글자 수(16자)를 초과합니다.", time: "00:02:10" },
+  { id: 3, kind: "error", type: "싱크 오류", text: "00:03:45,800 → 00:03:45,600\n시작 시간이 종료 시간보다 늦습니다.", time: "00:03:45" },
+  { id: 4, kind: "error", type: "용어집 불일치", text: "00:05:02,000 → 00:05:04,500\n'캐릭터' → 용어집 기준 '캐릭터(character)'", time: "00:05:02" },
+  { id: 5, kind: "error", type: "줄 수 오류", text: "00:06:30,200 → 00:06:33,100\n줄 수가 최대(2줄)를 초과합니다.", time: "00:06:30" },
+  { id: 6, kind: "suspect", type: "문맥 어색", text: "00:08:14,400 → 00:08:16,900\n발화 맥락과 어울리지 않을 가능성이 있습니다.", time: "00:08:14" },
+  { id: 7, kind: "suspect", type: "발화 불명확", text: "00:10:22,700 → 00:10:25,300\n노이즈·웅얼거림으로 발화 내용이 불명확합니다.", time: "00:10:22" },
+  { id: 8, kind: "suspect", type: "발화 누락 가능", text: "00:12:55,100 → 00:12:58,600\n자막 없이 발화가 감지된 구간입니다.", time: "00:12:55" },
+  { id: 9, kind: "suspect", type: "문맥 어색", text: "00:15:03,200 → 00:15:06,400\n앞 자막과 이어지는 맥락이 자연스럽지 않습니다.", time: "00:15:03" },
+];
+
+const AI_QC_FILTERS = ["전체", "확정 오류", "의심 구간", "띄어쓰기", "맞춤법", "CPS"];
+
+// 자막 index → ai-qc 종류 (더미: 0~4 확정 오류, 5~8 의심 구간)
+const AI_QC_INDEX_MAP = { 0: "error", 1: "error", 2: "error", 3: "error", 4: "error", 5: "suspect", 6: "suspect", 7: "suspect", 8: "suspect" };
+
+function AiQcPanel({ filter, onFilterChange, onClose }) {
+  const errorCount = AI_QC_ISSUES.filter((i) => i.kind === "error").length;
+  const suspectCount = AI_QC_ISSUES.filter((i) => i.kind === "suspect").length;
+
+  const filtered = AI_QC_ISSUES.filter((issue) => {
+    if (filter === "전체") return true;
+    if (filter === "확정 오류") return issue.kind === "error";
+    if (filter === "의심 구간") return issue.kind === "suspect";
+    if (filter === "CPS") return issue.type === "CPS 오류";
+    if (filter === "띄어쓰기") return issue.type === "띄어쓰기 오류";
+    if (filter === "맞춤법") return issue.type === "맞춤법 오류";
+    return true;
+  });
+
+  return (
+    <div className="ai-qc-panel">
+      <div className="ai-qc-panel-header">
+        <span className="ai-qc-panel-title">AI QC 결과 필터</span>
+        <div className="ai-qc-panel-counts">
+          <span className="ai-qc-count-error">총 오류: {errorCount}건</span>
+          <span className="ai-qc-count-suspect">의심: {suspectCount}건</span>
+        </div>
+        <button className="ai-qc-panel-close" onClick={onClose}>×</button>
+      </div>
+
+      <div className="ai-qc-filters">
+        {AI_QC_FILTERS.map((f) => (
+          <button
+            key={f}
+            className={`ai-qc-filter-chip${filter === f ? " active" : ""}`}
+            onClick={() => onFilterChange(f)}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div className="ai-qc-issue-list">
+        {filtered.map((issue) => (
+          <div key={issue.id} className="ai-qc-issue-item">
+            <span className="ai-qc-issue-num">#{issue.id}</span>
+            <span className="ai-qc-issue-icon">
+              {issue.kind === "error" ? "🔴" : "🟠"}
+            </span>
+            <div className="ai-qc-issue-body">
+              <div className={`ai-qc-issue-type ${issue.kind}`}>{issue.type}</div>
+              <div className="ai-qc-issue-text">{issue.text.split("\n")[1]}</div>
+              <div className="ai-qc-issue-time">{issue.time}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="ai-qc-feature-cards">
+        <div className="ai-qc-feature-cards-title">핵심 기능</div>
+        <div className="ai-qc-feature-grid">
+          <div className="ai-qc-feature-card">라인별 QC 표시</div>
+          <div className="ai-qc-feature-card">오류 유형별 필터</div>
+          <div className="ai-qc-feature-card">해당 라인 바로 이동</div>
+          <div className="ai-qc-feature-card">확인 후 즉시 수정</div>
+          <div className="ai-qc-feature-card full-width">확정 오류·의심 구간 색상 하이라이트</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 const BLOCKED_EDIT_SHORTCUT_IDS = new Set([
   "outSync",
   "mergePrev",
@@ -460,6 +546,7 @@ const SubtitleItem = memo(
     onSpeakerDropdownRef,
     onContextMenu,
     isContextTarget = false,
+    aiQcKind,
   }) {
     const subtitle = useSubtitleStore(
       (s) => getSubtitleById(s.subtitles, subtitleId),
@@ -1490,7 +1577,7 @@ const SubtitleItem = memo(
     return (
       <div
         ref={setRefs}
-        className={`subtitle-card ${isSelected ? "selected" : ""} ${isActive ? "active" : ""} ${validationResult?.severity ? `validation-${validationResult.severity}` : ""} ${searchMatch ? "search-match" : ""} ${isContextTarget ? "context-target" : ""}`}
+        className={`subtitle-card ${isSelected ? "selected" : ""} ${isActive ? "active" : ""} ${validationResult?.severity ? `validation-${validationResult.severity}` : ""} ${aiQcKind ? `ai-qc-${aiQcKind}` : ""} ${searchMatch ? "search-match" : ""} ${isContextTarget ? "context-target" : ""}`}
         tabIndex={isSelected ? 0 : -1}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
@@ -1878,6 +1965,7 @@ function VirtualRowInner({
   subtitleReviewTagMap,
   subtitleCommentMap,
   contextTargetId,
+  aiQcMap,
   ...rest
 }) {
   const subtitleId = subtitleIds[index];
@@ -1913,6 +2001,7 @@ function VirtualRowInner({
           itemRef={onItemRef}
           forceEditing={forceEditing}
           validationResult={validationResults[subtitleId]}
+          aiQcKind={aiQcMap?.[indexById.get(subtitleId)]}
           searchMatch={searchMatchMap[subtitleId]}
           appliedReviewTags={subtitleReviewTagMap[subtitleId] || EMPTY_ARRAY}
           appliedComments={subtitleCommentMap[subtitleId] || EMPTY_ARRAY}
@@ -2149,6 +2238,8 @@ function SubtitleList({ mediaRef, workCategory = null }) {
   const [selectedFormat, setSelectedFormat] = useState(null);
   const [selectedTargetField, setSelectedTargetField] = useState("text");
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showAiQcPanel, setShowAiQcPanel] = useState(false);
+  const [aiQcFilter, setAiQcFilter] = useState("전체");
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -5750,6 +5841,14 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                 {t("subtitle.accuracy")}
               </button>
             )}
+            {toolbarVisibility.aiQc && (
+              <button
+                onClick={() => setShowAiQcPanel((v) => !v)}
+                className={`subtitle-btn ai-qc${showAiQcPanel ? " active" : ""}`}
+              >
+                AI QC
+              </button>
+            )}
             {toolbarVisibility.netflixQc && (
               <button onClick={openNetflixQC} className="subtitle-btn netflix-qc">
                 Netflix QC
@@ -6455,6 +6554,7 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                   onMediaSeek: seekMedia,
                   forceEditingId: inlineEditingId,
                   validationResults,
+                  aiQcMap: showAiQcPanel ? AI_QC_INDEX_MAP : undefined,
                   speakers,
                   isTranslatorMode: computedIsTranslatorMode,
                   showMiddleText: computedShowMiddleText,
@@ -6748,6 +6848,15 @@ function SubtitleList({ mediaRef, workCategory = null }) {
       />
 
       {/* 분할파일 병합검수 — 분할 경계 자막 겹침 해결 (STT 모달 UI 재사용) */}
+      {/* AI QC 패널 */}
+      {showAiQcPanel && (
+        <AiQcPanel
+          filter={aiQcFilter}
+          onFilterChange={setAiQcFilter}
+          onClose={() => setShowAiQcPanel(false)}
+        />
+      )}
+
       {mergeConflict && (
         <SttMergeConflictModal
           isOpen
