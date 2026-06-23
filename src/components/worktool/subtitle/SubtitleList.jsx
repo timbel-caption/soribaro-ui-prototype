@@ -121,7 +121,7 @@ const AI_QC_ISSUES = [
   { id: 9, kind: "suspect", type: "문맥 어색", text: "00:15:03,200 → 00:15:06,400\n앞 자막과 이어지는 맥락이 자연스럽지 않습니다.", time: "00:15:03" },
 ];
 
-const AI_QC_FILTERS = ["전체", "확정 오류", "의심 구간", "띄어쓰기", "맞춤법", "CPS"];
+const AI_QC_FILTERS = ["전체", "확정 오류", "의심 구간"];
 
 // 자막 index → { kind, type, desc } 더미 매핑 (0~4: 확정 오류, 5~8: 의심 구간)
 const AI_QC_INDEX_MAP = {
@@ -157,6 +157,72 @@ function AiQcInlineFilter({ filter, onFilterChange, onClose }) {
         ))}
       </div>
       <button className="ai-qc-inline-close" onClick={onClose}>×</button>
+    </div>
+  );
+}
+// AI QC 수정 제안 더미 데이터 (오류 type → 제안 텍스트)
+const AI_QC_SUGGESTIONS = {
+  "CPS 오류":       { suggested: "매번 재무보고서 작성할 때\n숫자 정리는 끝도 없고", reason: "CPS 기준(17)을 초과합니다. 자막을 두 줄로 분리하면 가독성이 향상됩니다." },
+  "글자 수 오류":   { suggested: "표현은 막막하셨죠?", reason: "한 줄 최대 글자 수(16자)를 초과합니다. 줄 바꿈으로 분리해 주세요." },
+  "싱크 오류":      { suggested: "시작: 00:03:45,600\n종료: 00:03:47,200", reason: "시작 시간이 종료 시간보다 늦습니다. 시간 순서를 교정했습니다." },
+  "용어집 불일치":  { suggested: "캐릭터(character)", reason: "용어집 기준 표기로 수정합니다. '캐릭터' → '캐릭터(character)'" },
+  "줄 수 오류":     { suggested: "숫자 정리는 끝도 없고\n표현은 막막하셨죠?", reason: "줄 수가 최대(2줄)를 초과합니다. 3줄을 2줄로 압축했습니다." },
+  "문맥 어색":      { suggested: "발화 맥락을 확인하여\n자연스러운 표현으로 수정하세요.", reason: "발화 맥락과 어울리지 않을 가능성이 있습니다. 전후 자막 흐름을 확인해 주세요." },
+  "발화 불명확":    { suggested: "[불명확]", reason: "노이즈·웅얼거림으로 발화 내용이 불명확합니다. 원본 음성을 다시 확인해 주세요." },
+  "발화 누락 가능": { suggested: "(무음 처리 또는 직접 입력)", reason: "자막 없이 발화가 감지된 구간입니다. 해당 구간 오디오를 확인해 주세요." },
+};
+
+function AiQcSuggestModal({ issue, subtitle, onClose }) {
+  if (!issue || !subtitle) return null;
+  const suggestion = AI_QC_SUGGESTIONS[issue.type] || {
+    suggested: "(AI 제안 없음)",
+    reason: issue.desc,
+  };
+  return (
+    <div className="ai-qc-modal-overlay" onClick={onClose}>
+      <div className="ai-qc-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="ai-qc-modal-header">
+          <span className={`ai-qc-modal-badge ai-qc-modal-badge-${issue.kind}`}>
+            {issue.kind === "error" ? "확정 오류" : "의심 구간"}
+          </span>
+          <span className="ai-qc-modal-type">{issue.type}</span>
+          <button className="ai-qc-modal-x" onClick={onClose}>×</button>
+        </div>
+        <div className="ai-qc-modal-body">
+          <div className="ai-qc-modal-section">
+            <div className="ai-qc-modal-section-label">현재 자막</div>
+            <div className="ai-qc-modal-section-content ai-qc-modal-current">
+              {subtitle}
+            </div>
+          </div>
+          <div className="ai-qc-modal-section">
+            <div className="ai-qc-modal-section-label">AI 수정 제안</div>
+            <div className={`ai-qc-modal-section-content ai-qc-modal-suggested ai-qc-modal-suggested-${issue.kind}`}>
+              {suggestion.suggested}
+            </div>
+          </div>
+          <div className="ai-qc-modal-section">
+            <div className="ai-qc-modal-section-label">오류 판단 근거</div>
+            <div className="ai-qc-modal-section-content ai-qc-modal-reason">
+              {suggestion.reason}
+            </div>
+          </div>
+        </div>
+        <div className="ai-qc-modal-footer">
+          <button className="ai-qc-modal-btn ai-qc-modal-btn-keep" onClick={() => alert("현재 자막을 유지합니다.")}>
+            현재 자막 유지
+          </button>
+          <button className={`ai-qc-modal-btn ai-qc-modal-btn-apply ai-qc-modal-btn-apply-${issue.kind}`} onClick={() => alert("AI 제안이 적용되었습니다. (UI 프로토타입)")}>
+            AI 제안 적용
+          </button>
+          <button className="ai-qc-modal-btn ai-qc-modal-btn-manual" onClick={() => alert("직접 수정 모드입니다. 자막 카드를 클릭하여 편집하세요.")}>
+            직접 수정
+          </button>
+          <button className="ai-qc-modal-btn ai-qc-modal-btn-close" onClick={onClose}>
+            닫기
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -515,6 +581,7 @@ const SubtitleItem = memo(
     onContextMenu,
     isContextTarget = false,
     aiQcIssue,
+    onAiQcSuggest,
   }) {
     const subtitle = useSubtitleStore(
       (s) => getSubtitleById(s.subtitles, subtitleId),
@@ -1886,12 +1953,20 @@ const SubtitleItem = memo(
             </span>
           </div>
         </div>
-        {/* AI QC 오류 설명 배너 */}
+        {/* AI QC 오류 설명 배너 + 수정 제안 버튼 */}
         {aiQcIssue && (
           <div className={`ai-qc-desc-strip ai-qc-desc-${aiQcIssue.kind}`}>
-            <span className="ai-qc-desc-type">{aiQcIssue.type}</span>
-            <span className="ai-qc-desc-sep">·</span>
-            <span className="ai-qc-desc-text">{aiQcIssue.desc}</span>
+            <span className="ai-qc-desc-content">
+              <span className="ai-qc-desc-type">{aiQcIssue.type}</span>
+              <span className="ai-qc-desc-sep">·</span>
+              <span className="ai-qc-desc-text">{aiQcIssue.desc}</span>
+            </span>
+            <button
+              className={`ai-qc-suggest-btn ai-qc-suggest-btn-${aiQcIssue.kind}`}
+              onClick={(e) => { e.stopPropagation(); onAiQcSuggest?.({ issue: aiQcIssue, subtitleId }); }}
+            >
+              AI 수정 제안
+            </button>
           </div>
         )}
       </div>
@@ -1903,6 +1978,7 @@ const SubtitleItem = memo(
       prevProps.index === nextProps.index &&
       prevProps.validationResult === nextProps.validationResult &&
       prevProps.aiQcIssue === nextProps.aiQcIssue &&
+      prevProps.onAiQcSuggest === nextProps.onAiQcSuggest &&
       prevProps.speakers === nextProps.speakers &&
       prevProps.isTranslatorMode === nextProps.isTranslatorMode &&
       prevProps.showMiddleText === nextProps.showMiddleText &&
@@ -2217,6 +2293,11 @@ function SubtitleList({ mediaRef, workCategory = null }) {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showAiQcPanel, setShowAiQcPanel] = useState(false);
   const [aiQcFilter, setAiQcFilter] = useState("전체");
+  const [aiQcSuggestModal, setAiQcSuggestModal] = useState(null); // { issue, subtitleId }
+
+  const handleAiQcSuggest = useCallback(({ issue, subtitleId: sid }) => {
+    setAiQcSuggestModal({ issue, subtitleId: sid });
+  }, []);
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -6507,7 +6588,7 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                 className="virtual-subtitle-list"
                 rowComponent={VirtualRow}
                 rowCount={filteredSubtitleIds.length}
-                rowHeight={SUBTITLE_ROW_HEIGHT}
+                rowHeight={showAiQcPanel ? SUBTITLE_ROW_HEIGHT + 30 : SUBTITLE_ROW_HEIGHT}
                 overscanCount={6}
                 rowProps={{
                   subtitleIds: filteredSubtitleIds,
@@ -6541,6 +6622,7 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                   forceEditingId: inlineEditingId,
                   validationResults,
                   aiQcMap: showAiQcPanel ? AI_QC_INDEX_MAP : undefined,
+                  onAiQcSuggest: showAiQcPanel ? handleAiQcSuggest : undefined,
                   speakers,
                   isTranslatorMode: computedIsTranslatorMode,
                   showMiddleText: computedShowMiddleText,
@@ -6613,6 +6695,18 @@ function SubtitleList({ mediaRef, workCategory = null }) {
           </div>
         </>
       )}
+
+      {/* AI QC 수정 제안 모달 */}
+      {aiQcSuggestModal && (() => {
+        const sub = subtitles.find((s) => s.id === aiQcSuggestModal.subtitleId);
+        return (
+          <AiQcSuggestModal
+            issue={aiQcSuggestModal.issue}
+            subtitle={sub?.text ?? ""}
+            onClose={() => setAiQcSuggestModal(null)}
+          />
+        );
+      })()}
 
       {/* 포맷 선택 모달 */}
       <FormatModal
