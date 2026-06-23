@@ -8,6 +8,13 @@ import './UpdatesPage.css';
  */
 const UPDATES = [
   {
+    date: '2026-06-23',
+    author: '정기태',
+    title: 'VOD 프로젝트 관리 파일별 작업시작·검수시작 버튼 작업툴 팝업 연동',
+    description:
+      '프로젝트 현황 파일 테이블의 작업시작·검수시작 버튼 클릭 시 연수 서비스와 동일하게 작업툴이 팝업 창(1400×900)으로 열리도록 toAppUrl + window.open 연동을 추가했습니다.',
+  },
+  {
     date: '2026-06-22',
     author: '정기태',
     title: 'VOD 상세 용어집 관리 모달 UI를 프로토타입 테마에 맞게 정비',
