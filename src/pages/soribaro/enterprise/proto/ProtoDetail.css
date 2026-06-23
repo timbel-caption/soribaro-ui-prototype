@@ -3558,6 +3558,140 @@
   background: rgba(239, 68, 68, 0.25);
 }
 
+/* 개별 웍스파이 등록 버튼 */
+.pm-row-btn--wspy-single {
+  background: rgba(99, 179, 237, 0.1);
+  color: #63b3ed;
+  border-color: rgba(99, 179, 237, 0.35);
+}
+.pm-row-btn--wspy-single:hover {
+  background: rgba(99, 179, 237, 0.22);
+}
+.pm-row-btn--wspy-done {
+  background: rgba(74, 222, 128, 0.08);
+  color: rgba(74, 222, 128, 0.6);
+  border-color: rgba(74, 222, 128, 0.2);
+  cursor: default;
+  opacity: 0.75;
+}
+
+/* 차수 행 웍스파이 버튼 */
+.pm-btn--wspy {
+  background: rgba(99, 179, 237, 0.1);
+  color: #63b3ed;
+  border-color: rgba(99, 179, 237, 0.35);
+}
+.pm-btn--wspy:hover { background: rgba(99, 179, 237, 0.2); }
+
+/* 파일 테이블 헤더 버튼: 선택 파일 웍스파이 등록 */
+.vod-pm-sel-wspy-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid #63b3ed;
+  background: rgba(99, 179, 237, 0.12);
+  color: #63b3ed;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+.vod-pm-sel-wspy-btn:hover { background: rgba(99, 179, 237, 0.25); }
+.vod-pm-sel-wspy-btn--disabled {
+  border-color: var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* 파일 테이블 헤더 버튼: 전체 파일 웍스파이 등록 */
+.vod-pm-all-wspy-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--accent-color);
+  background: rgba(var(--accent-rgb, 99,179,237), 0.12);
+  color: var(--accent-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.vod-pm-all-wspy-btn:hover {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+/* 파일 체크박스 */
+.vod-pm-file-check {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* 선택된 파일 행 하이라이트 */
+.vod-pm-row-checked {
+  background: rgba(99, 179, 237, 0.05);
+}
+
+/* 웍스파이 상태 배지 */
+.vod-pm-wspy-status {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.vod-pm-wspy-status--done {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.vod-pm-wspy-status--wait {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.vod-pm-wspy-status--fail {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.vod-pm-wspy-status--none {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+/* 등록 방식 배지 */
+.vod-pm-reg-method {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.vod-pm-reg-method--all {
+  background: rgba(167, 139, 250, 0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+.vod-pm-reg-method--sel {
+  background: rgba(99, 179, 237, 0.12);
+  color: #63b3ed;
+  border: 1px solid rgba(99, 179, 237, 0.3);
+}
+.vod-pm-reg-method--single {
+  background: rgba(249, 115, 22, 0.12);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.vod-pm-reg-method--none {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
 
 /* ─── 파일관리 탭: VOD 업로드 대상 선택 바 ─── */
 .vod-upload-target-bar {
