@@ -647,11 +647,19 @@
 .subtitle-card.ai-qc-error {
   background: rgba(239, 68, 68, 0.14);
   border-left: 3px solid rgba(239, 68, 68, 0.8);
+  height: 154px;
+  min-height: 154px;
+  flex-wrap: wrap;
+  align-content: flex-start;
 }
 
 .subtitle-card.ai-qc-suspect {
   background: rgba(249, 115, 22, 0.12);
   border-left: 3px solid rgba(249, 115, 22, 0.7);
+  height: 154px;
+  min-height: 154px;
+  flex-wrap: wrap;
+  align-content: flex-start;
 }
 
 /* AI QC 인라인 필터 바 (툴바 바로 아래) */
@@ -730,19 +738,28 @@
 
 /* AI QC 자막 카드 하단 오류 설명 배너 */
 .ai-qc-desc-strip {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 22px;
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0 12px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px 0 12px;
+  height: 26px;
+  flex-shrink: 0;
   border-radius: 0 0 8px 8px;
   font-size: 11px;
   overflow: hidden;
   white-space: nowrap;
+  align-self: flex-end;
+  margin-top: auto;
+}
+
+.ai-qc-desc-content {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .ai-qc-desc-error {
@@ -770,6 +787,237 @@
 .ai-qc-desc-text {
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* AI QC 수정 제안 버튼 */
+.ai-qc-suggest-btn {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.ai-qc-suggest-btn-error {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: rgba(239, 68, 68, 1);
+}
+
+.ai-qc-suggest-btn-error:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.ai-qc-suggest-btn-suspect {
+  background: rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.45);
+  color: rgba(249, 115, 22, 1);
+}
+
+.ai-qc-suggest-btn-suspect:hover {
+  background: rgba(249, 115, 22, 0.28);
+}
+
+/* AI QC 수정 제안 모달 */
+.ai-qc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-qc-modal {
+  background: var(--surface-light, #1e1e2e);
+  border: 1px solid var(--border-color, #3a3a4a);
+  border-radius: 10px;
+  width: 480px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.ai-qc-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color, #3a3a4a);
+  flex-shrink: 0;
+}
+
+.ai-qc-modal-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ai-qc-modal-badge-error {
+  background: rgba(239, 68, 68, 0.2);
+  color: rgba(239, 68, 68, 0.95);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.ai-qc-modal-badge-suspect {
+  background: rgba(249, 115, 22, 0.15);
+  color: rgba(249, 115, 22, 0.95);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+}
+
+.ai-qc-modal-type {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #e0e0e0);
+  flex: 1;
+}
+
+.ai-qc-modal-x {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.ai-qc-modal-x:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.06));
+  color: var(--text-primary, #e0e0e0);
+}
+
+.ai-qc-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-qc-modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-qc-modal-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ai-qc-modal-section-content {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.ai-qc-modal-current {
+  background: var(--bg-primary, #16161e);
+  border: 1px solid var(--border-color, #3a3a4a);
+  color: var(--text-primary, #e0e0e0);
+}
+
+.ai-qc-modal-suggested-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: rgba(239, 68, 68, 0.95);
+}
+
+.ai-qc-modal-suggested-suspect {
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  color: rgba(249, 115, 22, 0.95);
+}
+
+.ai-qc-modal-reason {
+  background: var(--bg-primary, #16161e);
+  border: 1px solid var(--border-color, #3a3a4a);
+  color: var(--text-secondary, #aaa);
+  font-size: 12px;
+}
+
+.ai-qc-modal-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color, #3a3a4a);
+  flex-shrink: 0;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.ai-qc-modal-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-color, #3a3a4a);
+}
+
+.ai-qc-modal-btn-keep {
+  background: var(--bg-primary, #16161e);
+  color: var(--text-secondary, #aaa);
+}
+
+.ai-qc-modal-btn-keep:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.06));
+}
+
+.ai-qc-modal-btn-apply-error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: rgba(239, 68, 68, 0.95);
+}
+
+.ai-qc-modal-btn-apply-error:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.ai-qc-modal-btn-apply-suspect {
+  background: rgba(249, 115, 22, 0.12);
+  border-color: rgba(249, 115, 22, 0.45);
+  color: rgba(249, 115, 22, 0.95);
+}
+
+.ai-qc-modal-btn-apply-suspect:hover {
+  background: rgba(249, 115, 22, 0.22);
+}
+
+.ai-qc-modal-btn-manual {
+  background: rgba(var(--accent-rgb, 99, 102, 241), 0.1);
+  border-color: var(--accent-color, #6366f1);
+  color: var(--accent-color, #6366f1);
+}
+
+.ai-qc-modal-btn-manual:hover {
+  background: rgba(var(--accent-rgb, 99, 102, 241), 0.2);
+}
+
+.ai-qc-modal-btn-close {
+  background: var(--bg-primary, #16161e);
+  color: var(--text-muted, #888);
+}
+
+.ai-qc-modal-btn-close:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.06));
 }
 
 /* 카드 좌측: 번호, 화자, 검수 */
