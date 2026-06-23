@@ -3311,3 +3311,225 @@
 
 .vod-fdl-done    { background: rgba(74, 222, 128, 0.14); color: #4ade80; }
 .vod-fdl-pending { background: rgba(251, 191, 36, 0.12); color: #fbbf24; }
+
+/* ─── VOD 프로젝트 관리: 과목 → 주차/차수 계층 뷰 ─── */
+
+.vod-pm-subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vod-pm-subject-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-light);
+}
+
+.vod-pm-subject-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vod-pm-subject-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  padding: 0;
+}
+
+.vod-pm-subject-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vod-pm-subject-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.vod-pm-subj-batch-count {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.vod-pm-add-batch-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vod-pm-add-batch-btn:hover { opacity: 0.85; }
+
+/* 차수 목록 */
+.vod-pm-batch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.vod-pm-batch-empty {
+  padding: 16px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.vod-pm-batch-item {
+  border-top: 1px solid var(--border-color);
+}
+
+.vod-pm-batch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+
+.vod-pm-batch-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.vod-pm-batch-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.vod-pm-batch-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.vod-pm-batch-filecount {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+
+.vod-pm-wspy-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.vod-pm-wspy-chip--done {
+  background: rgba(74, 222, 128, 0.14);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.vod-pm-wspy-chip--none {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.vod-pm-batch-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* 파일 테이블 래퍼 */
+.vod-pm-file-table-wrap {
+  padding: 0 14px 14px;
+  border-top: 1px dashed var(--border-color);
+  background: var(--bg-primary);
+}
+
+/* ─── 파일관리 탭: VOD 업로드 대상 선택 바 ─── */
+.vod-upload-target-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.vod-upload-target-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vod-upload-target-option {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s;
+}
+
+.vod-upload-target-option:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.vod-upload-target-option.active {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.vod-upload-target-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}

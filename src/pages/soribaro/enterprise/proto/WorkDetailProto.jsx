@@ -309,6 +309,7 @@ function FileManageTab({ s }) {
   });
   const [dragOver, setDragOver] = useState(false);
   const [checked, setChecked] = useState(new Set());
+  const [vodUploadTarget, setVodUploadTarget] = useState('existing-batch'); // 'new-subject' | 'new-batch' | 'existing-batch'
   const fileInputRef = useRef();
 
   // 파일 한 개의 미디어 재생시간을 브라우저 API로 추출 ('HH:MM:SS')
@@ -406,6 +407,31 @@ function FileManageTab({ s }) {
           {isVod ? 'MP4, MOV, AVI, MKV 등' : 'WAV, MP3, M4A 등'}
         </span>
       </div>
+
+      {/* VOD 전용: 업로드 파일을 어떤 구조에 추가할지 선택 */}
+      {isVod && (
+        <div className="vod-upload-target-bar">
+          <span className="vod-upload-target-label">업로드 대상:</span>
+          {[
+            { value: 'existing-batch', label: '기존 과목 · 기존 주차에 추가' },
+            { value: 'new-batch',      label: '기존 과목 · 새 주차/차수 생성' },
+            { value: 'new-subject',    label: '새 과목 만들기' },
+          ].map((opt) => (
+            <label key={opt.value} className={`vod-upload-target-option${vodUploadTarget === opt.value ? ' active' : ''}`}>
+              <input
+                type="radio"
+                name="vodUploadTarget"
+                value={opt.value}
+                checked={vodUploadTarget === opt.value}
+                onChange={() => setVodUploadTarget(opt.value)}
+                style={{ display: 'none' }}
+              />
+              {opt.label}
+            </label>
+          ))}
+          <span className="vod-upload-target-hint">파일 추가 후 프로젝트 관리 탭에서 해당 차수에 배정하세요.</span>
+        </div>
+      )}
 
       <div className="proto-file-bulk-actions">
         <button
@@ -696,6 +722,399 @@ const SEED_PROJ_FILES = [
   { fileNo: 'seed-3', fileName: '20260512151913_2026-12 심의_심의장.wav',           split: '-',    range: '',                     workTime: '00:17:58', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00', worker: '헌정은(yataome81@naver.com)', reviewer: '' },
 ];
 
+// ─── VOD 전용: 과목 → 주차/차수 → 파일 계층 뷰 ───────────────────────────
+const VOD_SUBJECT_SEED = [
+  {
+    id: 'vsubj-001',
+    name: '지구과학개론',
+    expanded: true,
+    batches: [
+      {
+        id: 'vbatch-001-1',
+        label: '1주차 / 1차 입고',
+        workspyRegistered: true,
+        status: '작업중',
+        worker: '이민정',
+        reviewer: '정채원',
+        filesExpanded: false,
+        projFiles: [
+          { fileNo: 1, fileName: '1강_오리엔테이션.mp4',  duration: '00:52:30', status: '완료',  progress: 100 },
+          { fileNo: 2, fileName: '2강_기초개념.mp4',       duration: '00:48:20', status: '완료',  progress: 100 },
+          { fileNo: 3, fileName: '3강_핵심이론.mp4',       duration: '00:55:15', status: '작업중', progress: 68  },
+          { fileNo: 4, fileName: '4강_응용예제.mp4',       duration: '01:15:50', status: '대기',  progress: 0   },
+          { fileNo: 5, fileName: '5강_종합정리.mp4',       duration: '00:40:15', status: '대기',  progress: 0   },
+        ],
+      },
+      {
+        id: 'vbatch-001-2',
+        label: '2주차 / 2차 입고',
+        workspyRegistered: false,
+        status: '배정대기',
+        worker: '',
+        reviewer: '',
+        filesExpanded: false,
+        projFiles: [
+          { fileNo: 6, fileName: '6강_실습I.mp4',    duration: '00:50:00', status: '대기', progress: 0 },
+          { fileNo: 7, fileName: '7강_실습II.mp4',   duration: '00:47:30', status: '대기', progress: 0 },
+          { fileNo: 8, fileName: '8강_중간정리.mp4', duration: '00:53:10', status: '대기', progress: 0 },
+          { fileNo: 9, fileName: '9강_응용심화.mp4', duration: '01:02:00', status: '대기', progress: 0 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'vsubj-002',
+    name: '기초영어회화',
+    expanded: true,
+    batches: [
+      {
+        id: 'vbatch-002-1',
+        label: '1주차 / 1차 입고',
+        workspyRegistered: true,
+        status: '검수중',
+        worker: '박정호',
+        reviewer: '정채원',
+        filesExpanded: false,
+        projFiles: [
+          { fileNo: 1, fileName: 'Unit01_Greetings.mp4',     duration: '00:45:00', status: '검수중', progress: 85 },
+          { fileNo: 2, fileName: 'Unit02_Daily_Life.mp4',    duration: '00:42:30', status: '완료',   progress: 100 },
+          { fileNo: 3, fileName: 'Unit03_Shopping.mp4',      duration: '00:48:00', status: '대기',   progress: 0   },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'vsubj-003',
+    name: '컴퓨터활용',
+    expanded: false,
+    batches: [],
+  },
+];
+
+const BATCH_STATUS_META = {
+  '작업중':  { cls: 'proto-status-working',  label: '작업중'  },
+  '검수중':  { cls: 'proto-status-checking', label: '검수중'  },
+  '완료':    { cls: 'proto-status-done',     label: '완료'    },
+  '배정대기': { cls: 'proto-status-wait',    label: '배정대기' },
+};
+
+function batchStatusBadge(st) {
+  const m = BATCH_STATUS_META[st] ?? { cls: 'proto-status-wait', label: st };
+  return <span className={`proto-status-badge ${m.cls}`} style={{ fontSize: '11px' }}>{m.label}</span>;
+}
+
+function VodProjectManageView({ s }) {
+  const [subjects, setSubjects]         = useState(VOD_SUBJECT_SEED);
+  const [newSubjModal, setNewSubjModal] = useState(false);
+  const [newSubjName, setNewSubjName]   = useState('');
+  const [newBatchModal, setNewBatchModal] = useState(null); // subjId
+  const [newBatchLabel, setNewBatchLabel] = useState('');
+  const [assignModal, setAssignModal]   = useState(null);  // { subjId, batchId, type }
+  const [workspyModal, setWorkspyModal] = useState(null);  // { subjId, batchId }
+  const [fileViewModal, setFileViewModal] = useState(null); // { subjId, batchId }
+
+  const setSubj = (fn) => setSubjects((prev) => prev.map(fn));
+  const setBatch = (subjId, batchId, fn) =>
+    setSubj((subj) =>
+      subj.id !== subjId ? subj : { ...subj, batches: subj.batches.map((b) => b.id === batchId ? fn(b) : b) }
+    );
+
+  const toggleSubjExpand = (subjId) =>
+    setSubj((s2) => s2.id === subjId ? { ...s2, expanded: !s2.expanded } : s2);
+
+  const toggleFilesExpand = (subjId, batchId) =>
+    setBatch(subjId, batchId, (b) => ({ ...b, filesExpanded: !b.filesExpanded }));
+
+  const addSubject = () => {
+    if (!newSubjName.trim()) return;
+    setSubjects((prev) => [...prev, { id: `vsubj-${Date.now()}`, name: newSubjName.trim(), expanded: true, batches: [] }]);
+    setNewSubjName('');
+    setNewSubjModal(false);
+  };
+
+  const addBatch = () => {
+    if (!newBatchLabel.trim() || !newBatchModal) return;
+    const batch = {
+      id: `vbatch-${Date.now()}`,
+      label: newBatchLabel.trim(),
+      workspyRegistered: false,
+      status: '배정대기',
+      worker: '',
+      reviewer: '',
+      filesExpanded: false,
+      projFiles: [],
+    };
+    setSubj((s2) => s2.id === newBatchModal ? { ...s2, batches: [...s2.batches, batch] } : s2);
+    setNewBatchLabel('');
+    setNewBatchModal(null);
+  };
+
+  const setAssign = (subjId, batchId, type, name) => {
+    setBatch(subjId, batchId, (b) => ({ ...b, [type]: name }));
+    setAssignModal(null);
+  };
+
+  const registerWorkspy = (subjId, batchId, form) => {
+    setBatch(subjId, batchId, (b) => ({
+      ...b, workspyRegistered: true, workspyData: form,
+      status: b.status === '배정대기' ? '작업중' : b.status,
+    }));
+    setWorkspyModal(null);
+  };
+
+  const cancelWorkspy = (subjId, batchId) =>
+    setBatch(subjId, batchId, (b) => ({ ...b, workspyRegistered: false, workspyData: undefined }));
+
+  const fileViewBatch = fileViewModal
+    ? subjects.find((s2) => s2.id === fileViewModal.subjId)?.batches.find((b) => b.id === fileViewModal.batchId)
+    : null;
+  const workspyBatch = workspyModal
+    ? subjects.find((s2) => s2.id === workspyModal.subjId)?.batches.find((b) => b.id === workspyModal.batchId)
+    : null;
+  const assignBatchData = assignModal
+    ? subjects.find((s2) => s2.id === assignModal.subjId)?.batches.find((b) => b.id === assignModal.batchId)
+    : null;
+
+  return (
+    <div className="proto-tab-panel">
+      {/* 헤더 */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
+        <button className="proto-file-add-btn" onClick={() => setNewSubjModal(true)}>+ 새 과목</button>
+      </div>
+
+      {/* 새 과목 모달 */}
+      {newSubjModal && (
+        <div className="pm-overlay" onClick={() => { setNewSubjModal(false); setNewSubjName(''); }}>
+          <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">새 과목 등록</span>
+              <button className="preg-x-btn" onClick={() => { setNewSubjModal(false); setNewSubjName(''); }}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>과목명 *</label>
+              <input
+                className="preg-input"
+                value={newSubjName}
+                onChange={(e) => setNewSubjName(e.target.value)}
+                placeholder="예: 지구과학개론"
+                autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && addSubject()}
+              />
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => { setNewSubjModal(false); setNewSubjName(''); }}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={addSubject}>등록</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 새 주차/차수 모달 */}
+      {newBatchModal && (
+        <div className="pm-overlay" onClick={() => { setNewBatchModal(null); setNewBatchLabel(''); }}>
+          <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">주차 / 차수 추가</span>
+              <button className="preg-x-btn" onClick={() => { setNewBatchModal(null); setNewBatchLabel(''); }}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>주차/차수 명칭 *</label>
+              <input
+                className="preg-input"
+                value={newBatchLabel}
+                onChange={(e) => setNewBatchLabel(e.target.value)}
+                placeholder="예: 2주차 / 2차 입고"
+                autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && addBatch()}
+              />
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => { setNewBatchModal(null); setNewBatchLabel(''); }}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={addBatch}>추가</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 과목 목록 */}
+      {subjects.length === 0 && (
+        <div className="proto-empty-state">
+          <span style={{ fontSize: '30px' }}>📂</span>
+          <p style={{ margin: '6px 0 2px', fontWeight: 500 }}>과목을 등록하여 주세요.</p>
+        </div>
+      )}
+
+      <div className="vod-pm-subject-list">
+        {subjects.map((subj) => (
+          <div key={subj.id} className="vod-pm-subject-card">
+            {/* 과목 헤더 */}
+            <div className="vod-pm-subject-header">
+              <button className="vod-pm-subject-toggle" onClick={() => toggleSubjExpand(subj.id)}>
+                <span className="pm-expand-icon">{subj.expanded ? '▼' : '▶'}</span>
+                <span className="vod-pm-subject-name">{subj.name}</span>
+              </button>
+              <span className="vod-pm-subject-meta">
+                {subj.batches.length > 0 && (
+                  <span className="vod-pm-subj-batch-count">{subj.batches.length}차수</span>
+                )}
+              </span>
+              <button
+                className="vod-pm-add-batch-btn"
+                onClick={() => { setNewBatchModal(subj.id); setNewBatchLabel(''); }}
+              >
+                + 차수/주차 추가
+              </button>
+            </div>
+
+            {/* 차수 목록 */}
+            {subj.expanded && (
+              <div className="vod-pm-batch-list">
+                {subj.batches.length === 0 && (
+                  <div className="vod-pm-batch-empty">
+                    차수/주차가 없습니다. "+ 차수/주차 추가" 버튼으로 입고 묶음을 추가하세요.
+                  </div>
+                )}
+
+                {subj.batches.map((batch) => (
+                  <div key={batch.id} className="vod-pm-batch-item">
+                    {/* 차수 요약 행 */}
+                    <div className="vod-pm-batch-row">
+                      <button
+                        className="vod-pm-batch-toggle"
+                        onClick={() => toggleFilesExpand(subj.id, batch.id)}
+                        title="파일 목록 펼치기/접기"
+                      >
+                        {batch.filesExpanded ? '▼' : '▶'}
+                      </button>
+
+                      <div className="vod-pm-batch-info">
+                        <span className="vod-pm-batch-label">{batch.label}</span>
+                        <span className="vod-pm-batch-filecount">파일 {batch.projFiles.length}개</span>
+                        {batch.workspyRegistered
+                          ? <span className="vod-pm-wspy-chip vod-pm-wspy-chip--done">웍스파이 등록 완료</span>
+                          : <span className="vod-pm-wspy-chip vod-pm-wspy-chip--none">웍스파이 미등록</span>
+                        }
+                        {batchStatusBadge(batch.status)}
+                      </div>
+
+                      <div className="vod-pm-batch-actions">
+                        <button
+                          className={`pm-btn${batch.workspyRegistered ? ' pm-btn--active' : ''}`}
+                          onClick={() =>
+                            batch.workspyRegistered
+                              ? cancelWorkspy(subj.id, batch.id)
+                              : setWorkspyModal({ subjId: subj.id, batchId: batch.id })
+                          }
+                        >
+                          {batch.workspyRegistered ? '웍스파이 등록됨' : '웍스파이 등록'}
+                        </button>
+                        <button
+                          className="pm-btn"
+                          onClick={() => setAssignModal({ subjId: subj.id, batchId: batch.id, type: 'worker' })}
+                        >
+                          {batch.worker ? `작업자: ${batch.worker}` : '작업자 배정'}
+                        </button>
+                        <button
+                          className="pm-btn"
+                          onClick={() => setAssignModal({ subjId: subj.id, batchId: batch.id, type: 'reviewer' })}
+                        >
+                          {batch.reviewer ? `검수자: ${batch.reviewer}` : '검수자 배정'}
+                        </button>
+                        <button
+                          className="pm-btn"
+                          onClick={() => toggleFilesExpand(subj.id, batch.id)}
+                        >
+                          파일 보기
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 파일 테이블 (펼쳐졌을 때) */}
+                    {batch.filesExpanded && (
+                      <div className="vod-pm-file-table-wrap">
+                        <div className="proto-table-wrap proto-table-wrap--scroll">
+                          <table className="proto-table">
+                            <thead>
+                              <tr>
+                                <th>파일명</th>
+                                <th className="text-center">재생시간</th>
+                                <th className="text-center">상태</th>
+                                <th>진행 현황</th>
+                                <th className="text-center">관리</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {batch.projFiles.length === 0 ? (
+                                <tr>
+                                  <td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>
+                                    파일이 없습니다.
+                                  </td>
+                                </tr>
+                              ) : batch.projFiles.map((f) => (
+                                <tr key={f.fileNo}>
+                                  <td style={{ fontSize: '13px' }}>{f.fileName}</td>
+                                  <td className="text-center" style={{ fontSize: '12px' }}>{f.duration}</td>
+                                  <td className="text-center">
+                                    <span className={
+                                      f.status === '완료' || f.status === '검수완료' ? 'pm-status-done' :
+                                      f.status === '작업중' || f.status === '검수중'  ? 'pm-status-working' : 'pm-status-wait'
+                                    }>
+                                      {f.status}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div className="proto-progress-wrap">
+                                      <div className="proto-progress-bar">
+                                        <div className={`proto-progress-fill${f.progress === 100 ? ' complete' : ''}`} style={{ width: `${f.progress}%` }} />
+                                      </div>
+                                      <span className="proto-progress-text">{f.progress}%</span>
+                                    </div>
+                                  </td>
+                                  <td className="text-center">
+                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                      <button className="pm-row-btn pm-row-btn--work" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START&popup=true&fileNo=${f.fileNo}`), `worktool_work_${f.fileNo}`, 'popup,width=1400,height=900')}>작업시작</button>
+                                      <button className="pm-row-btn pm-row-btn--review" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START_REVIEW&popup=true&fileNo=${f.fileNo}`), `worktool_review_${f.fileNo}`, 'popup,width=1400,height=900')}>검수시작</button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 웍스파이 등록 모달 */}
+      {workspyModal && workspyBatch && (
+        <WorkspyRegisterModal
+          proj={{ name: workspyBatch.label }}
+          onConfirm={(form) => registerWorkspy(workspyModal.subjId, workspyModal.batchId, form)}
+          onClose={() => setWorkspyModal(null)}
+        />
+      )}
+
+      {/* 작업자/검수자 배정 모달 */}
+      {assignModal && assignBatchData && (
+        <AssignPickModal
+          title={assignModal.type === 'worker' ? '작업자 배정' : '검수자 배정'}
+          current={assignBatchData[assignModal.type] || ''}
+          onConfirm={(name) => setAssign(assignModal.subjId, assignModal.batchId, assignModal.type, name)}
+          onClose={() => setAssignModal(null)}
+        />
+      )}
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function ProjectManageTab({ s }) {
   const isVodProj = s.bssTypeName !== '회의록';
   const initProjects = () => {
@@ -806,6 +1225,9 @@ function ProjectManageTab({ s }) {
 
   const cancelAddForm = () => { setShowAddForm(false); setNewProjName(''); setNewProjForm({ workers: '1', unitPrice: '내부 기준 적용', recruitStart: '', recruitEnd: '', workStart: '', workEnd: '' }); };
   const setNpf = (k, v) => setNewProjForm(prev => ({ ...prev, [k]: v }));
+
+  // VOD는 과목 → 주차/차수 계층 뷰로 분기
+  if (isVodProj) return <VodProjectManageView s={s} />;
 
   return (
     <div className="proto-tab-panel">
