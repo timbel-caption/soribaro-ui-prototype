@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { getVodSamples, getMeetingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toAppUrl } from '../../../../utils/worktoolRoute';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -1013,8 +1014,8 @@ function ProjectManageTab({ s }) {
                           )}
                           <td className="text-center">
                             <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                              <button className="pm-row-btn pm-row-btn--work">작업시작</button>
-                              <button className="pm-row-btn pm-row-btn--review">검수시작</button>
+                              <button className="pm-row-btn pm-row-btn--work" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START&popup=true&fileNo=${f.fileNo}`), `worktool_work_${f.fileNo}`, 'popup,width=1400,height=900')}>작업시작</button>
+                              <button className="pm-row-btn pm-row-btn--review" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START_REVIEW&popup=true&fileNo=${f.fileNo}`), `worktool_review_${f.fileNo}`, 'popup,width=1400,height=900')}>검수시작</button>
                               <button className="pm-row-btn pm-row-btn--del">삭제</button>
                             </div>
                           </td>
