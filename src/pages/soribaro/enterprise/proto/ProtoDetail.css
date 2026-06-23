@@ -2774,3 +2774,540 @@
   border-color: rgba(239,68,68,0.25) !important;
 }
 .gls-reject-sel-btn:hover { background: rgba(239,68,68,0.20) !important; opacity: 1 !important; }
+
+/* ─── VOD 대시보드 개선 (프로젝트 관리 대시보드) ─── */
+
+.vod-dashboard {
+  gap: 18px;
+}
+
+/* 섹션 공통 라벨 */
+.vod-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── ① 전체 일정 타임라인 ─────────────────────────── */
+.vod-timeline-section {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vod-tl-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vod-tl-today-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: var(--accent-color);
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.vod-tl-track-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.vod-tl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vod-tl-proj-name {
+  width: 160px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vod-tl-bar-bg {
+  flex: 1;
+  height: 20px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  position: relative;
+  overflow: visible;
+}
+
+.vod-tl-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 4px;
+  opacity: 0.75;
+  transition: width 0.4s ease;
+}
+
+.vod-tl-today-line {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateX(-50%);
+  z-index: 2;
+  border-radius: 1px;
+}
+
+.vod-tl-due-dot {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+
+.vod-tl-due-date {
+  width: 80px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.vod-tl-range-labels {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 0 170px 0 0;
+  margin-top: 2px;
+}
+
+.vod-tl-range-today {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+}
+
+.vod-tl-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--border-color);
+}
+
+.vod-tl-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vod-tl-leg-line {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 1px;
+}
+
+.vod-tl-leg-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 50%;
+}
+
+.vod-tl-leg-bar {
+  display: inline-block;
+  width: 24px;
+  height: 8px;
+  border-radius: 2px;
+  opacity: 0.75;
+}
+
+/* ── D-Day 배지 ─────────────────────────────────────── */
+.vod-dd-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dd-normal  { background: rgba(99, 102, 241, 0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+.dd-caution { background: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.35); }
+.dd-danger  { background: rgba(239, 68, 68, 0.18);  color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+.dd-dday    { background: rgba(239, 68, 68, 0.28);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.55); font-weight: 800; }
+.dd-delayed { background: rgba(239, 68, 68, 0.22);  color: #ef4444; border: 1px solid rgba(239,68,68,0.5); }
+
+/* ── 상태 배지 ──────────────────────────────────────── */
+.vod-status-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.st-working  { background: rgba(248, 113, 113, 0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
+.st-caution  { background: rgba(251, 146, 60,  0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.35); }
+.st-delayed  { background: rgba(239, 68,  68,  0.2);  color: #ef4444; border: 1px solid rgba(239,68,68,0.4); }
+.st-checking { background: rgba(251, 191, 36,  0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
+.st-done     { background: rgba(74,  222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.35); }
+.st-settle   { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.35); }
+
+/* ── ③ 프로젝트 테이블 ──────────────────────────────── */
+.vod-proj-table-wrap {
+  overflow-x: auto;
+}
+
+.vod-row-delayed td { background: rgba(239, 68, 68, 0.05); }
+.vod-row-caution td { background: rgba(251, 146, 60, 0.04); }
+
+.vod-progress-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vod-progress-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.vod-progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.vod-progress-pct {
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 30px;
+  flex-shrink: 0;
+}
+
+/* ── ④ 상태별 현황 바 (6개) ─────────────────────────── */
+.vod-status-bars-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+@media (max-width: 1100px) {
+  .vod-status-bars-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 700px) {
+  .vod-status-bars-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── ⑤ 하단 보조 카드 행 ───────────────────────────── */
+.vod-helper-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.vod-helper-card--wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 1200px) {
+  .vod-helper-row { grid-template-columns: repeat(2, 1fr); }
+  .vod-helper-card--wide { grid-column: span 2; }
+}
+@media (max-width: 700px) {
+  .vod-helper-row { grid-template-columns: 1fr; }
+  .vod-helper-card--wide { grid-column: span 1; }
+}
+
+.vod-helper-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vod-helper-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0;
+}
+
+/* D-Day 안내 */
+.vod-dd-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vod-dd-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 상태 색상 안내 */
+.vod-status-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vod-status-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vod-status-guide-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 미니 캘린더 */
+.vod-mini-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vod-mini-cal-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.vod-mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.vod-mc-dow {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px 0;
+  font-weight: 600;
+}
+
+.vod-mc-cell {
+  font-size: 11px;
+  text-align: center;
+  padding: 3px 2px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.vod-mc-empty { opacity: 0; }
+
+.vod-mc-today {
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  font-weight: 800;
+  border-radius: 50%;
+}
+
+.vod-mc-due {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+.vod-mc-today.vod-mc-due {
+  background: #ef4444;
+  color: #fff;
+}
+
+.vod-mc-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.vod-mc-leg-today {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--accent-color);
+  border-radius: 50%;
+}
+
+.vod-mc-leg-due {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 50%;
+}
+
+/* 일정 편집 */
+.vod-sched-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vod-sched-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.vod-sched-edit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.vod-sched-edit-ent {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.vod-sched-edit-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vod-sched-edit-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.vod-sched-edit-date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.vod-sched-edit-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.vod-sched-edit-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* 파일별 세부 기한 */
+.vod-file-dl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.vod-file-dl-head {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 0.7fr 0.6fr;
+  gap: 8px;
+  padding: 4px 8px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
+}
+
+.vod-file-dl-row {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 0.7fr 0.6fr;
+  gap: 8px;
+  padding: 7px 8px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.vod-file-dl-row:last-child { border-bottom: none; }
+
+.vod-file-dl-proj {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.vod-file-dl-files { color: var(--text-muted); font-size: 11px; }
+
+.vod-file-dl-date { color: var(--text-secondary); font-size: 11px; }
+
+.vod-file-dl-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.vod-fdl-done    { background: rgba(74, 222, 128, 0.14); color: #4ade80; }
+.vod-fdl-pending { background: rgba(251, 191, 36, 0.12); color: #fbbf24; }
