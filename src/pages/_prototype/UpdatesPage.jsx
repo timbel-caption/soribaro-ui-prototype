@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-23',
     author: '정기태',
+    title: '작업툴 AI QC 결과 필터 인라인 전환 및 자막 카드 오류 설명 배너 추가',
+    description:
+      'AI QC 결과 필터를 우측 패널에서 툴바 바로 아래 인라인 필터 바로 변경했습니다. 확정 오류/의심 구간 카운트와 유형별 필터 칩이 툴바 하단에 표시되며, 각 자막 카드 하단에 오류 유형명과 설명이 색상 배너로 표시됩니다.',
+  },
+  {
+    date: '2026-06-23',
+    author: '정기태',
     title: '작업툴 AI QC 버튼 미표시 수정 (toolbarVisibility deep merge 누락)',
     description:
       'settingsStore의 persist merge 함수가 toolbarVisibility를 shallow merge하여 브라우저 localStorage에 저장된 이전 설정이 새 키(aiQc)를 덮어쓰던 문제를 수정했습니다. waveform·layoutByMode와 동일하게 toolbarVisibility도 deep merge하도록 변경했습니다.',
