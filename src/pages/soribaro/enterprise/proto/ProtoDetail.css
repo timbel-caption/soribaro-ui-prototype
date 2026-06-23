@@ -3483,6 +3483,81 @@
   background: var(--bg-primary);
 }
 
+.vod-pm-file-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 6px;
+}
+
+.vod-pm-file-table-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vod-pm-file-add-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--accent-color);
+  background: transparent;
+  color: var(--accent-color);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.vod-pm-file-add-btn:hover {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.vod-pm-assign-tag {
+  display: inline-block;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 500;
+  vertical-align: middle;
+}
+.vod-pm-assign-tag--worker {
+  background: rgba(99, 179, 237, 0.15);
+  color: #63b3ed;
+  border: 1px solid rgba(99, 179, 237, 0.35);
+}
+.vod-pm-assign-tag--reviewer {
+  background: rgba(154, 117, 242, 0.15);
+  color: #b794f4;
+  border: 1px solid rgba(154, 117, 242, 0.35);
+}
+
+.vod-pm-assign-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px dashed var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s;
+}
+.vod-pm-assign-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.pm-row-btn--del {
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(239, 68, 68);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.pm-row-btn--del:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
 /* ─── 파일관리 탭: VOD 업로드 대상 선택 바 ─── */
 .vod-upload-target-bar {
   display: flex;
