@@ -3621,6 +3621,78 @@
   color: #fff;
 }
 
+/* 선택 파일 일괄 배정 버튼 */
+.vod-pm-bulk-assign-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(154, 117, 242, 0.5);
+  background: rgba(154, 117, 242, 0.1);
+  color: #b794f4;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.vod-pm-bulk-assign-btn:hover { background: rgba(154, 117, 242, 0.22); }
+
+/* 웍스파이 등록 모달 - 파일 목록 */
+.vod-wspy-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+.vod-wspy-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+.vod-wspy-file-icon {
+  font-size: 9px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+.vod-wspy-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 일괄 배정 모달 - 담당자 선택 */
+.vod-bulk-assign-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.vod-bulk-assign-option {
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.vod-bulk-assign-option:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+.vod-bulk-assign-option--sel {
+  border-color: var(--accent-color);
+  background: rgba(99, 179, 237, 0.12);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
 /* 파일 체크박스 */
 .vod-pm-file-check {
   width: 14px;
