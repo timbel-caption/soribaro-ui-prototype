@@ -797,14 +797,183 @@ function batchStatusBadge(st) {
   return <span className={`proto-status-badge ${m.cls}`} style={{ fontSize: '11px' }}>{m.label}</span>;
 }
 
+const VOD_DUMMY_WORKERS   = ['이민정', '박정호', '현정은', '김지수', '오나연'];
+const VOD_DUMMY_REVIEWERS = ['정채원', '김검수', '최검수', '한지민'];
+
+function VodWorkspyModal({ batchLabel, files, onConfirm, onClose }) {
+  const now = new Date();
+  const fmtLocal = (d) => {
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
+  const [form, setForm] = useState({
+    name:        batchLabel,
+    desc:        batchLabel,
+    workers:     '1',
+    unitPrice:   '내부 기준 적용',
+    recruitStart: fmtLocal(new Date(now.getTime())),
+    recruitEnd:   fmtLocal(new Date(now.getTime() + 3600000)),
+    workStart:    fmtLocal(new Date(now.getTime() + 7200000)),
+    workEnd:      fmtLocal(new Date(now.getTime() + 10800000)),
+    isImportant: false,
+    openApply:   true,
+  });
+  const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--workspy" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">웍스파이 등록</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="pm-workspy-body">
+          {/* 등록 대상 파일 */}
+          <div className="pm-workspy-field">
+            <label className="preg-label">등록 대상 파일 ({files.length}개)</label>
+            <div className="vod-wspy-file-list">
+              {files.map((f) => (
+                <div key={f.fileNo} className="vod-wspy-file-item">
+                  <span className="vod-wspy-file-icon">▶</span>
+                  <span className="vod-wspy-file-name">{f.fileName}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pm-workspy-field">
+            <label className="preg-label">프로젝트명 *</label>
+            <input className="preg-input" value={form.name} onChange={(e) => set('name', e.target.value)} />
+          </div>
+
+          <div className="pm-workspy-field">
+            <label className="preg-label">프로젝트 설명 *</label>
+            <div className="pm-desc-editor">
+              <div className="pm-desc-toolbar">
+                {['B', '/', 'S', 'H2', 'H3', '• 목록', '1. 목록', '" 인용'].map((t) => (
+                  <button key={t} className="pm-desc-tool-btn" type="button">{t}</button>
+                ))}
+              </div>
+              <textarea className="pm-desc-textarea" value={form.desc} onChange={(e) => set('desc', e.target.value)} rows={3} />
+            </div>
+          </div>
+
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">작업자 수 *</label>
+              <input className="preg-input" type="number" min="1" value={form.workers} onChange={(e) => set('workers', e.target.value)} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">단가 *</label>
+              <input className="preg-input" value={form.unitPrice} onChange={(e) => set('unitPrice', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">모집 시작 *</label>
+              <input className="preg-input" type="datetime-local" value={form.recruitStart} onChange={(e) => set('recruitStart', e.target.value)} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">모집 종료 *</label>
+              <input className="preg-input" type="datetime-local" value={form.recruitEnd} onChange={(e) => set('recruitEnd', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">작업 시작 *</label>
+              <input className="preg-input" type="datetime-local" value={form.workStart} onChange={(e) => set('workStart', e.target.value)} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">작업 종료 *</label>
+              <input className="preg-input" type="datetime-local" value={form.workEnd} onChange={(e) => set('workEnd', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="pm-workspy-checks">
+            <label className="pm-workspy-check-label">
+              <input type="checkbox" checked={form.isImportant} onChange={(e) => set('isImportant', e.target.checked)} />
+              <span>중요 프로젝트</span>
+            </label>
+            <label className="pm-workspy-check-label">
+              <input type="checkbox" checked={form.openApply} onChange={(e) => set('openApply', e.target.checked)} />
+              <span>누구나 지원 가능</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form)}>등록</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VodBulkAssignModal({ files, type, onConfirm, onClose }) {
+  const [picked, setPicked] = useState('');
+  const options = type === 'worker' ? VOD_DUMMY_WORKERS : VOD_DUMMY_REVIEWERS;
+  const label = type === 'worker' ? '작업자' : '검수자';
+
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">{label} 일괄 배정</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+        <div style={{ padding: '16px 20px' }}>
+          <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>선택된 파일 ({files.length}개)</label>
+          <div className="vod-wspy-file-list" style={{ marginBottom: '16px' }}>
+            {files.map((f) => (
+              <div key={f.fileNo} className="vod-wspy-file-item">
+                <span className="vod-wspy-file-icon">▶</span>
+                <span className="vod-wspy-file-name">{f.fileName}</span>
+              </div>
+            ))}
+          </div>
+          <label className="preg-label" style={{ display: 'block', marginBottom: '8px' }}>배정할 {label} *</label>
+          <div className="vod-bulk-assign-options">
+            {options.map((name) => (
+              <button
+                key={name}
+                className={`vod-bulk-assign-option${picked === name ? ' vod-bulk-assign-option--sel' : ''}`}
+                onClick={() => setPicked(name)}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button
+            className="proto-log-btn proto-log-btn--save"
+            disabled={!picked}
+            style={{ opacity: picked ? 1 : 0.45 }}
+            onClick={() => picked && onConfirm(picked)}
+          >
+            배정
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function VodProjectManageView({ s }) {
   const [subjects, setSubjects]         = useState(VOD_SUBJECT_SEED);
   const [newSubjModal, setNewSubjModal] = useState(false);
   const [newSubjName, setNewSubjName]   = useState('');
   const [newBatchModal, setNewBatchModal] = useState(null); // subjId
   const [newBatchLabel, setNewBatchLabel] = useState('');
-  const [batchSelections, setBatchSelections] = useState({});   // { ['subjId:batchId']: fileNo[] }
-  const [fileAssignModal, setFileAssignModal] = useState(null); // { subjId, batchId, fileNo, type }
+  const [batchSelections, setBatchSelections] = useState({});      // { ['subjId:batchId']: fileNo[] }
+  const [fileAssignModal, setFileAssignModal] = useState(null);    // { subjId, batchId, fileNo, type }
+  const [workspyModal, setWorkspyModal]       = useState(null);    // { subjId, batchId, files: [{ fileNo, fileName }] }
+  const [bulkAssignModal, setBulkAssignModal] = useState(null);    // { subjId, batchId, files: [...], type }
 
   const setSubj = (fn) => setSubjects((prev) => prev.map(fn));
   const setBatch = (subjId, batchId, fn) =>
@@ -859,17 +1028,28 @@ function VodProjectManageView({ s }) {
     setBatchSelections((prev) => ({ ...prev, [k]: allChecked ? [] : [...fileNos] }));
   };
 
-  const registerWorkspyAll = (label) =>
-    alert(`"${label}" 전체 파일을 웍스파이에 등록합니다.`);
-
-  const registerWorkspySelected = (subjId, batchId, label) => {
-    const sel = getSelected(subjId, batchId);
-    if (sel.length === 0) return;
-    alert(`선택한 ${sel.length}개 파일을 웍스파이에 등록합니다.\n대상: ${label}`);
+  const openWorkspyAll = (subjId, batchId) => {
+    const batch = subjects.find((s2) => s2.id === subjId)?.batches.find((b) => b.id === batchId);
+    if (!batch) return;
+    setWorkspyModal({ subjId, batchId, files: batch.projFiles.map((f) => ({ fileNo: f.fileNo, fileName: f.fileName })) });
   };
 
-  const registerWorkspySingle = (fileName) =>
-    alert(`"${fileName}" 파일을 개별 웍스파이에 등록합니다.`);
+  const openWorkspySelected = (subjId, batchId) => {
+    const sel = getSelected(subjId, batchId);
+    if (sel.length === 0) return;
+    const batch = subjects.find((s2) => s2.id === subjId)?.batches.find((b) => b.id === batchId);
+    if (!batch) return;
+    const files = batch.projFiles.filter((f) => sel.includes(f.fileNo)).map((f) => ({ fileNo: f.fileNo, fileName: f.fileName }));
+    setWorkspyModal({ subjId, batchId, files });
+  };
+
+  const openWorkspySingle = (subjId, batchId, fileNo, fileName) =>
+    setWorkspyModal({ subjId, batchId, files: [{ fileNo, fileName }] });
+
+  const confirmWorkspy = (subjId, batchId) => {
+    setBatch(subjId, batchId, (b) => ({ ...b, workspyRegistered: true }));
+    setWorkspyModal(null);
+  };
 
   const setFileAssign = (subjId, batchId, fileNo, type, name) => {
     setBatch(subjId, batchId, (b) => ({
@@ -896,6 +1076,14 @@ function VodProjectManageView({ s }) {
   const deleteFileFromBatch = (subjId, batchId, fileNo) =>
     setBatch(subjId, batchId, (b) => ({ ...b, projFiles: b.projFiles.filter((f) => f.fileNo !== fileNo) }));
 
+  const confirmBulkAssign = (subjId, batchId, fileNos, type, name) => {
+    setBatch(subjId, batchId, (b) => ({
+      ...b,
+      projFiles: b.projFiles.map((f) => fileNos.includes(f.fileNo) ? { ...f, [type]: name } : f),
+    }));
+    setBulkAssignModal(null);
+  };
+
   const fileAssignBatch = fileAssignModal
     ? subjects.find((s2) => s2.id === fileAssignModal.subjId)?.batches.find((b) => b.id === fileAssignModal.batchId)
     : null;
@@ -905,7 +1093,7 @@ function VodProjectManageView({ s }) {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
-        <button className="proto-file-add-btn" onClick={() => setNewSubjModal(true)}>+ 새 과목</button>
+        <button className="proto-file-add-btn" onClick={() => setNewSubjModal(true)}>+ 새 프로젝트</button>
       </div>
 
       {/* 새 과목 모달 */}
@@ -913,16 +1101,16 @@ function VodProjectManageView({ s }) {
         <div className="pm-overlay" onClick={() => { setNewSubjModal(false); setNewSubjName(''); }}>
           <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">새 과목 등록</span>
+              <span className="pm-modal-title">새 프로젝트 등록</span>
               <button className="preg-x-btn" onClick={() => { setNewSubjModal(false); setNewSubjName(''); }}>✕</button>
             </div>
             <div style={{ padding: '16px 20px' }}>
-              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>과목명 *</label>
+              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>프로젝트명 *</label>
               <input
                 className="preg-input"
                 value={newSubjName}
                 onChange={(e) => setNewSubjName(e.target.value)}
-                placeholder="예: 지구과학개론"
+                placeholder="예: 지구과학개론 VOD"
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && addSubject()}
               />
@@ -1026,7 +1214,7 @@ function VodProjectManageView({ s }) {
                       <div className="vod-pm-batch-actions">
                         <button
                           className="pm-btn pm-btn--wspy"
-                          onClick={() => registerWorkspyAll(batch.label)}
+                          onClick={() => openWorkspyAll(subj.id, batch.id)}
                         >
                           전체 파일 웍스파이 등록
                         </button>
@@ -1053,12 +1241,26 @@ function VodProjectManageView({ s }) {
                               <button
                                 className={`vod-pm-sel-wspy-btn${selFiles.length > 0 ? '' : ' vod-pm-sel-wspy-btn--disabled'}`}
                                 disabled={selFiles.length === 0}
-                                onClick={() => registerWorkspySelected(subj.id, batch.id, batch.label)}
+                                onClick={() => openWorkspySelected(subj.id, batch.id)}
                               >
                                 선택 파일 웍스파이 등록{selFiles.length > 0 ? ` (${selFiles.length})` : ''}
                               </button>
-                              <button className="vod-pm-all-wspy-btn" onClick={() => registerWorkspyAll(batch.label)}>
+                              <button className="vod-pm-all-wspy-btn" onClick={() => openWorkspyAll(subj.id, batch.id)}>
                                 전체 파일 웍스파이 등록
+                              </button>
+                              <button
+                                className={`vod-pm-bulk-assign-btn${selFiles.length > 0 ? '' : ' vod-pm-sel-wspy-btn--disabled'}`}
+                                disabled={selFiles.length === 0}
+                                onClick={() => selFiles.length > 0 && setBulkAssignModal({ subjId: subj.id, batchId: batch.id, files: batch.projFiles.filter((f) => selFiles.includes(f.fileNo)), type: 'worker' })}
+                              >
+                                선택 파일 작업자 일괄 배정
+                              </button>
+                              <button
+                                className={`vod-pm-bulk-assign-btn${selFiles.length > 0 ? '' : ' vod-pm-sel-wspy-btn--disabled'}`}
+                                disabled={selFiles.length === 0}
+                                onClick={() => selFiles.length > 0 && setBulkAssignModal({ subjId: subj.id, batchId: batch.id, files: batch.projFiles.filter((f) => selFiles.includes(f.fileNo)), type: 'reviewer' })}
+                              >
+                                선택 파일 검수자 일괄 배정
                               </button>
                             </div>
                           </div>
@@ -1154,7 +1356,7 @@ function VodProjectManageView({ s }) {
                                           <button
                                             className={`pm-row-btn pm-row-btn--wspy-single${isDone ? ' pm-row-btn--wspy-done' : ''}`}
                                             disabled={isDone}
-                                            onClick={() => !isDone && registerWorkspySingle(f.fileName)}
+                                            onClick={() => !isDone && openWorkspySingle(subj.id, batch.id, f.fileNo, f.fileName)}
                                           >
                                             {isDone ? '등록완료' : '개별 웍스파이 등록'}
                                           </button>
@@ -1192,6 +1394,29 @@ function VodProjectManageView({ s }) {
           />
         );
       })()}
+
+      {/* 웍스파이 등록 모달 */}
+      {workspyModal && (() => {
+        const batch = subjects.find((s2) => s2.id === workspyModal.subjId)?.batches.find((b) => b.id === workspyModal.batchId);
+        return (
+          <VodWorkspyModal
+            batchLabel={batch?.label || ''}
+            files={workspyModal.files}
+            onConfirm={() => confirmWorkspy(workspyModal.subjId, workspyModal.batchId)}
+            onClose={() => setWorkspyModal(null)}
+          />
+        );
+      })()}
+
+      {/* 선택 파일 일괄 배정 모달 */}
+      {bulkAssignModal && (
+        <VodBulkAssignModal
+          files={bulkAssignModal.files}
+          type={bulkAssignModal.type}
+          onConfirm={(name) => confirmBulkAssign(bulkAssignModal.subjId, bulkAssignModal.batchId, bulkAssignModal.files.map((f) => f.fileNo), bulkAssignModal.type, name)}
+          onClose={() => setBulkAssignModal(null)}
+        />
+      )}
     </div>
   );
 }
