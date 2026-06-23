@@ -736,11 +736,11 @@ const VOD_SUBJECT_SEED = [
         status: '작업중',
         filesExpanded: false,
         projFiles: [
-          { fileNo: 1, fileName: '1강_오리엔테이션.mp4',  split: '-',    range: '',                      workTime: '00:52:30', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)',  reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 2, fileName: '2강_기초개념.mp4',       split: '-',    range: '',                      workTime: '00:48:20', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)',  reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 3, fileName: '3강_핵심이론.mp4',       split: '분할', range: '00:00:00 ~ 00:27:00',   workTime: '00:27:15', status: '작업중', progress: 68,  worker: '이민정(minjeong@edu.kr)',  reviewer: '' },
-          { fileNo: 4, fileName: '4강_응용예제.mp4',       split: '-',    range: '',                      workTime: '01:15:50', status: '대기',   progress: 0,   worker: '',                         reviewer: '' },
-          { fileNo: 5, fileName: '5강_종합정리.mp4',       split: '-',    range: '',                      workTime: '00:40:15', status: '대기',   progress: 0,   worker: '',                         reviewer: '' },
+          { fileNo: 1, fileName: '1강_오리엔테이션.mp4',  split: '-',    range: '',                    workTime: '00:52:30', workspyStatus: '등록완료', regMethod: '전체 묶음', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 2, fileName: '2강_기초개념.mp4',       split: '-',    range: '',                    workTime: '00:48:20', workspyStatus: '등록완료', regMethod: '전체 묶음', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 3, fileName: '3강_핵심이론.mp4',       split: '분할', range: '00:00:00 ~ 00:27:00', workTime: '00:27:15', workspyStatus: '등록완료', regMethod: '전체 묶음', status: '작업중', progress: 68,  worker: '이민정(minjeong@edu.kr)', reviewer: '' },
+          { fileNo: 4, fileName: '4강_응용예제.mp4',       split: '-',    range: '',                    workTime: '01:15:50', workspyStatus: '미등록',   regMethod: '미등록',   status: '대기',   progress: 0,   worker: '',                        reviewer: '' },
+          { fileNo: 5, fileName: '5강_종합정리.mp4',       split: '-',    range: '',                    workTime: '00:40:15', workspyStatus: '미등록',   regMethod: '미등록',   status: '대기',   progress: 0,   worker: '',                        reviewer: '' },
         ],
       },
       {
@@ -750,10 +750,10 @@ const VOD_SUBJECT_SEED = [
         status: '배정대기',
         filesExpanded: false,
         projFiles: [
-          { fileNo: 6, fileName: '6강_실습I.mp4',    split: '-', range: '', workTime: '00:50:00', status: '대기', progress: 0, worker: '', reviewer: '' },
-          { fileNo: 7, fileName: '7강_실습II.mp4',   split: '-', range: '', workTime: '00:47:30', status: '대기', progress: 0, worker: '', reviewer: '' },
-          { fileNo: 8, fileName: '8강_중간정리.mp4', split: '-', range: '', workTime: '00:53:10', status: '대기', progress: 0, worker: '', reviewer: '' },
-          { fileNo: 9, fileName: '9강_응용심화.mp4', split: '-', range: '', workTime: '01:02:00', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 6, fileName: '6강_실습I.mp4',    split: '-', range: '', workTime: '00:50:00', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 7, fileName: '7강_실습II.mp4',   split: '-', range: '', workTime: '00:47:30', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 8, fileName: '8강_중간정리.mp4', split: '-', range: '', workTime: '00:53:10', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 9, fileName: '9강_응용심화.mp4', split: '-', range: '', workTime: '01:02:00', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
         ],
       },
     ],
@@ -770,9 +770,9 @@ const VOD_SUBJECT_SEED = [
         status: '검수중',
         filesExpanded: false,
         projFiles: [
-          { fileNo: 1, fileName: 'Unit01_Greetings.mp4',  split: '-', range: '', workTime: '00:45:00', status: '검수중', progress: 85,  worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 2, fileName: 'Unit02_Daily_Life.mp4', split: '-', range: '', workTime: '00:42:30', status: '완료',   progress: 100, worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 3, fileName: 'Unit03_Shopping.mp4',   split: '-', range: '', workTime: '00:48:00', status: '대기',   progress: 0,   worker: '',                      reviewer: '' },
+          { fileNo: 1, fileName: 'Unit01_Greetings.mp4',  split: '-', range: '', workTime: '00:45:00', workspyStatus: '등록완료', regMethod: '선택 묶음', status: '검수중', progress: 85,  worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 2, fileName: 'Unit02_Daily_Life.mp4', split: '-', range: '', workTime: '00:42:30', workspyStatus: '등록완료', regMethod: '선택 묶음', status: '완료',   progress: 100, worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 3, fileName: 'Unit03_Shopping.mp4',   split: '-', range: '', workTime: '00:48:00', workspyStatus: '등록대기', regMethod: '선택 묶음', status: '대기',   progress: 0,   worker: '',                      reviewer: '' },
         ],
       },
     ],
@@ -803,8 +803,7 @@ function VodProjectManageView({ s }) {
   const [newSubjName, setNewSubjName]   = useState('');
   const [newBatchModal, setNewBatchModal] = useState(null); // subjId
   const [newBatchLabel, setNewBatchLabel] = useState('');
-  const [workspyModal, setWorkspyModal] = useState(null);       // { subjId, batchId }
-  const [fileViewModal, setFileViewModal] = useState(null);     // { subjId, batchId }
+  const [batchSelections, setBatchSelections] = useState({});   // { ['subjId:batchId']: fileNo[] }
   const [fileAssignModal, setFileAssignModal] = useState(null); // { subjId, batchId, fileNo, type }
 
   const setSubj = (fn) => setSubjects((prev) => prev.map(fn));
@@ -843,6 +842,35 @@ function VodProjectManageView({ s }) {
     setNewBatchModal(null);
   };
 
+  const bKey = (subjId, batchId) => `${subjId}:${batchId}`;
+  const getSelected = (subjId, batchId) => batchSelections[bKey(subjId, batchId)] || [];
+
+  const toggleFileCheck = (subjId, batchId, fileNo) => {
+    const k = bKey(subjId, batchId);
+    const cur = batchSelections[k] || [];
+    const next = cur.includes(fileNo) ? cur.filter((n) => n !== fileNo) : [...cur, fileNo];
+    setBatchSelections((prev) => ({ ...prev, [k]: next }));
+  };
+
+  const toggleAllCheck = (subjId, batchId, fileNos) => {
+    const k = bKey(subjId, batchId);
+    const cur = batchSelections[k] || [];
+    const allChecked = fileNos.length > 0 && fileNos.every((n) => cur.includes(n));
+    setBatchSelections((prev) => ({ ...prev, [k]: allChecked ? [] : [...fileNos] }));
+  };
+
+  const registerWorkspyAll = (label) =>
+    alert(`"${label}" 전체 파일을 웍스파이에 등록합니다.`);
+
+  const registerWorkspySelected = (subjId, batchId, label) => {
+    const sel = getSelected(subjId, batchId);
+    if (sel.length === 0) return;
+    alert(`선택한 ${sel.length}개 파일을 웍스파이에 등록합니다.\n대상: ${label}`);
+  };
+
+  const registerWorkspySingle = (fileName) =>
+    alert(`"${fileName}" 파일을 개별 웍스파이에 등록합니다.`);
+
   const setFileAssign = (subjId, batchId, fileNo, type, name) => {
     setBatch(subjId, batchId, (b) => ({
       ...b,
@@ -868,20 +896,6 @@ function VodProjectManageView({ s }) {
   const deleteFileFromBatch = (subjId, batchId, fileNo) =>
     setBatch(subjId, batchId, (b) => ({ ...b, projFiles: b.projFiles.filter((f) => f.fileNo !== fileNo) }));
 
-  const registerWorkspy = (subjId, batchId, form) => {
-    setBatch(subjId, batchId, (b) => ({
-      ...b, workspyRegistered: true, workspyData: form,
-      status: b.status === '배정대기' ? '작업중' : b.status,
-    }));
-    setWorkspyModal(null);
-  };
-
-  const cancelWorkspy = (subjId, batchId) =>
-    setBatch(subjId, batchId, (b) => ({ ...b, workspyRegistered: false, workspyData: undefined }));
-
-  const workspyBatch = workspyModal
-    ? subjects.find((s2) => s2.id === workspyModal.subjId)?.batches.find((b) => b.id === workspyModal.batchId)
-    : null;
   const fileAssignBatch = fileAssignModal
     ? subjects.find((s2) => s2.id === fileAssignModal.subjId)?.batches.find((b) => b.id === fileAssignModal.batchId)
     : null;
@@ -1011,14 +1025,10 @@ function VodProjectManageView({ s }) {
 
                       <div className="vod-pm-batch-actions">
                         <button
-                          className={`pm-btn${batch.workspyRegistered ? ' pm-btn--active' : ''}`}
-                          onClick={() =>
-                            batch.workspyRegistered
-                              ? cancelWorkspy(subj.id, batch.id)
-                              : setWorkspyModal({ subjId: subj.id, batchId: batch.id })
-                          }
+                          className="pm-btn pm-btn--wspy"
+                          onClick={() => registerWorkspyAll(batch.label)}
                         >
-                          {batch.workspyRegistered ? '웍스파이 등록됨' : '웍스파이 등록'}
+                          전체 파일 웍스파이 등록
                         </button>
                         <button
                           className="pm-btn"
@@ -1030,87 +1040,138 @@ function VodProjectManageView({ s }) {
                     </div>
 
                     {/* 파일 테이블 (펼쳐졌을 때) */}
-                    {batch.filesExpanded && (
-                      <div className="vod-pm-file-table-wrap">
-                        <div className="vod-pm-file-table-header">
-                          <span className="vod-pm-file-table-count">파일 {batch.projFiles.length}개</span>
-                          <button
-                            className="vod-pm-file-add-btn"
-                            onClick={() => addFileToBatch(subj.id, batch.id)}
-                          >
-                            + 파일 추가
-                          </button>
-                        </div>
-                        <div className="proto-table-wrap proto-table-wrap--scroll">
-                          <table className="proto-table">
-                            <thead>
-                              <tr>
-                                <th>파일명</th>
-                                <th className="text-center">분할</th>
-                                <th className="text-center">구간</th>
-                                <th className="text-center">작업시간</th>
-                                <th className="text-center">상태</th>
-                                <th>진행 현황</th>
-                                <th className="text-center">작업자</th>
-                                <th className="text-center">검수자</th>
-                                <th className="text-center">관리</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {batch.projFiles.length === 0 ? (
+                    {batch.filesExpanded && (() => {
+                      const selFiles = getSelected(subj.id, batch.id);
+                      const allFileNos = batch.projFiles.map((f) => f.fileNo);
+                      const allChecked = allFileNos.length > 0 && allFileNos.every((n) => selFiles.includes(n));
+                      return (
+                        <div className="vod-pm-file-table-wrap">
+                          <div className="vod-pm-file-table-header">
+                            <span className="vod-pm-file-table-count">파일 {batch.projFiles.length}개</span>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <button className="vod-pm-file-add-btn" onClick={() => addFileToBatch(subj.id, batch.id)}>+ 파일 추가</button>
+                              <button
+                                className={`vod-pm-sel-wspy-btn${selFiles.length > 0 ? '' : ' vod-pm-sel-wspy-btn--disabled'}`}
+                                disabled={selFiles.length === 0}
+                                onClick={() => registerWorkspySelected(subj.id, batch.id, batch.label)}
+                              >
+                                선택 파일 웍스파이 등록{selFiles.length > 0 ? ` (${selFiles.length})` : ''}
+                              </button>
+                              <button className="vod-pm-all-wspy-btn" onClick={() => registerWorkspyAll(batch.label)}>
+                                전체 파일 웍스파이 등록
+                              </button>
+                            </div>
+                          </div>
+                          <div className="proto-table-wrap proto-table-wrap--scroll">
+                            <table className="proto-table">
+                              <thead>
                                 <tr>
-                                  <td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>
-                                    파일이 없습니다.
-                                  </td>
+                                  <th style={{ width: '32px' }}>
+                                    <input
+                                      type="checkbox"
+                                      className="vod-pm-file-check"
+                                      checked={allChecked}
+                                      onChange={() => toggleAllCheck(subj.id, batch.id, allFileNos)}
+                                    />
+                                  </th>
+                                  <th>파일명</th>
+                                  <th className="text-center">분할</th>
+                                  <th className="text-center">구간</th>
+                                  <th className="text-center">작업시간</th>
+                                  <th className="text-center">웍스파이 상태</th>
+                                  <th className="text-center">등록 방식</th>
+                                  <th className="text-center">작업 상태</th>
+                                  <th>진행 현황</th>
+                                  <th className="text-center">작업자</th>
+                                  <th className="text-center">검수자</th>
+                                  <th className="text-center">관리</th>
                                 </tr>
-                              ) : batch.projFiles.map((f) => (
-                                <tr key={f.fileNo}>
-                                  <td style={{ fontSize: '13px' }}>{f.fileName}</td>
-                                  <td className="text-center" style={{ fontSize: '12px' }}>{f.split || '-'}</td>
-                                  <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{f.range || '-'}</td>
-                                  <td className="text-center" style={{ fontSize: '12px' }}>{f.workTime || '-'}</td>
-                                  <td className="text-center">
-                                    <span className={
-                                      f.status === '완료' || f.status === '검수완료' ? 'pm-status-done' :
-                                      f.status === '작업중' || f.status === '검수중'  ? 'pm-status-working' : 'pm-status-wait'
-                                    }>
-                                      {f.status}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <div className="proto-progress-wrap">
-                                      <div className="proto-progress-bar">
-                                        <div className={`proto-progress-fill${f.progress === 100 ? ' complete' : ''}`} style={{ width: `${f.progress}%` }} />
-                                      </div>
-                                      <span className="proto-progress-text">{f.progress}%</span>
-                                    </div>
-                                  </td>
-                                  <td className="text-center">
-                                    {f.worker
-                                      ? <span className="vod-pm-assign-tag vod-pm-assign-tag--worker">{f.worker}</span>
-                                      : <button className="vod-pm-assign-btn" onClick={() => setFileAssignModal({ subjId: subj.id, batchId: batch.id, fileNo: f.fileNo, type: 'worker' })}>작업자 배정</button>
-                                    }
-                                  </td>
-                                  <td className="text-center">
-                                    {f.reviewer
-                                      ? <span className="vod-pm-assign-tag vod-pm-assign-tag--reviewer">{f.reviewer}</span>
-                                      : <button className="vod-pm-assign-btn" onClick={() => setFileAssignModal({ subjId: subj.id, batchId: batch.id, fileNo: f.fileNo, type: 'reviewer' })}>검수자 배정</button>
-                                    }
-                                  </td>
-                                  <td className="text-center">
-                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                      <button className="pm-row-btn pm-row-btn--work" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START&popup=true&fileNo=${f.fileNo}`), `worktool_work_${f.fileNo}`, 'popup,width=1400,height=900')}>작업시작</button>
-                                      <button className="pm-row-btn pm-row-btn--review" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START_REVIEW&popup=true&fileNo=${f.fileNo}`), `worktool_review_${f.fileNo}`, 'popup,width=1400,height=900')}>검수시작</button>
-                                      <button className="pm-row-btn pm-row-btn--del" onClick={() => deleteFileFromBatch(subj.id, batch.id, f.fileNo)}>삭제</button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {batch.projFiles.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={12} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>
+                                      파일이 없습니다.
+                                    </td>
+                                  </tr>
+                                ) : batch.projFiles.map((f) => {
+                                  const wSt = f.workspyStatus || '미등록';
+                                  const isDone = wSt === '등록완료';
+                                  return (
+                                    <tr key={f.fileNo} className={selFiles.includes(f.fileNo) ? 'vod-pm-row-checked' : ''}>
+                                      <td style={{ textAlign: 'center' }}>
+                                        <input
+                                          type="checkbox"
+                                          className="vod-pm-file-check"
+                                          checked={selFiles.includes(f.fileNo)}
+                                          onChange={() => toggleFileCheck(subj.id, batch.id, f.fileNo)}
+                                        />
+                                      </td>
+                                      <td style={{ fontSize: '13px' }}>{f.fileName}</td>
+                                      <td className="text-center" style={{ fontSize: '12px' }}>{f.split || '-'}</td>
+                                      <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{f.range || '-'}</td>
+                                      <td className="text-center" style={{ fontSize: '12px' }}>{f.workTime || '-'}</td>
+                                      <td className="text-center">
+                                        <span className={`vod-pm-wspy-status vod-pm-wspy-status--${wSt === '등록완료' ? 'done' : wSt === '등록대기' ? 'wait' : wSt === '등록실패' ? 'fail' : 'none'}`}>
+                                          {wSt}
+                                        </span>
+                                      </td>
+                                      <td className="text-center">
+                                        <span className={`vod-pm-reg-method vod-pm-reg-method--${f.regMethod === '전체 묶음' ? 'all' : f.regMethod === '선택 묶음' ? 'sel' : f.regMethod === '개별 등록' ? 'single' : 'none'}`}>
+                                          {f.regMethod || '미등록'}
+                                        </span>
+                                      </td>
+                                      <td className="text-center">
+                                        <span className={
+                                          f.status === '완료' || f.status === '검수완료' ? 'pm-status-done' :
+                                          f.status === '작업중' || f.status === '검수중'  ? 'pm-status-working' : 'pm-status-wait'
+                                        }>
+                                          {f.status}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <div className="proto-progress-wrap">
+                                          <div className="proto-progress-bar">
+                                            <div className={`proto-progress-fill${f.progress === 100 ? ' complete' : ''}`} style={{ width: `${f.progress}%` }} />
+                                          </div>
+                                          <span className="proto-progress-text">{f.progress}%</span>
+                                        </div>
+                                      </td>
+                                      <td className="text-center">
+                                        {f.worker
+                                          ? <span className="vod-pm-assign-tag vod-pm-assign-tag--worker">{f.worker}</span>
+                                          : <button className="vod-pm-assign-btn" onClick={() => setFileAssignModal({ subjId: subj.id, batchId: batch.id, fileNo: f.fileNo, type: 'worker' })}>작업자 배정</button>
+                                        }
+                                      </td>
+                                      <td className="text-center">
+                                        {f.reviewer
+                                          ? <span className="vod-pm-assign-tag vod-pm-assign-tag--reviewer">{f.reviewer}</span>
+                                          : <button className="vod-pm-assign-btn" onClick={() => setFileAssignModal({ subjId: subj.id, batchId: batch.id, fileNo: f.fileNo, type: 'reviewer' })}>검수자 배정</button>
+                                        }
+                                      </td>
+                                      <td className="text-center">
+                                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                          <button
+                                            className={`pm-row-btn pm-row-btn--wspy-single${isDone ? ' pm-row-btn--wspy-done' : ''}`}
+                                            disabled={isDone}
+                                            onClick={() => !isDone && registerWorkspySingle(f.fileName)}
+                                          >
+                                            {isDone ? '등록완료' : '개별 웍스파이 등록'}
+                                          </button>
+                                          <button className="pm-row-btn pm-row-btn--work" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START&popup=true&fileNo=${f.fileNo}`), `worktool_work_${f.fileNo}`, 'popup,width=1400,height=900')}>작업시작</button>
+                                          <button className="pm-row-btn pm-row-btn--review" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START_REVIEW&popup=true&fileNo=${f.fileNo}`), `worktool_review_${f.fileNo}`, 'popup,width=1400,height=900')}>검수시작</button>
+                                          <button className="pm-row-btn pm-row-btn--del" onClick={() => deleteFileFromBatch(subj.id, batch.id, f.fileNo)}>삭제</button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
@@ -1118,15 +1179,6 @@ function VodProjectManageView({ s }) {
           </div>
         ))}
       </div>
-
-      {/* 웍스파이 등록 모달 */}
-      {workspyModal && workspyBatch && (
-        <WorkspyRegisterModal
-          proj={{ name: workspyBatch.label }}
-          onConfirm={(form) => registerWorkspy(workspyModal.subjId, workspyModal.batchId, form)}
-          onClose={() => setWorkspyModal(null)}
-        />
-      )}
 
       {/* 파일별 작업자/검수자 배정 모달 */}
       {fileAssignModal && fileAssignBatch && (() => {
