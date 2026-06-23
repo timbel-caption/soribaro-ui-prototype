@@ -297,6 +297,10 @@ export const useSettingsStore = create(
         worktoolUi: {
           ...current.worktoolUi,
           ...persisted?.worktoolUi,
+          toolbarVisibility: {
+            ...current.worktoolUi.toolbarVisibility,
+            ...persisted?.worktoolUi?.toolbarVisibility,
+          },
           waveform: {
             ...current.worktoolUi.waveform,
             ...persisted?.worktoolUi?.waveform,
