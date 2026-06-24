@@ -3815,3 +3815,179 @@
   color: var(--text-muted);
   margin-left: auto;
 }
+
+/* ─── 대시보드 전체 일정 요약 섹션 ─── */
+.vod-sched-summary-section {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.vod-sched-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.vod-sched-summary-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* 요약 칩 행 */
+.vod-sched-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.vod-sched-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  min-width: 80px;
+}
+
+.vod-sched-chip-count {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.vod-sched-chip-label {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 칩 색상 변형 */
+.vod-chip-thisweek {
+  background: rgba(99, 102, 241, 0.10);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: var(--accent-color);
+}
+
+.vod-chip-nextweek {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.vod-chip-working {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #22c55e;
+}
+
+.vod-chip-checking {
+  background: rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.25);
+  color: #eab308;
+}
+
+.vod-chip-adjust {
+  background: rgba(167, 139, 250, 0.10);
+  border-color: rgba(167, 139, 250, 0.25);
+  color: #a78bfa;
+}
+
+/* 다가오는 납품 일정 */
+.vod-upcoming-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 14px;
+}
+
+.vod-upcoming-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.vod-upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vod-upcoming-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.vod-upcoming-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+
+.vod-upcoming-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.vod-upcoming-due {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vod-upcoming-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.vod-upcoming-pb-bg {
+  width: 70px;
+  height: 5px;
+  background: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.vod-upcoming-pb-fill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.vod-upcoming-pct {
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* D-Day 배지: 일정 조율 (보라/뮤트 톤) */
+.vod-dd-badge.dd-adjust {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.30);
+}
