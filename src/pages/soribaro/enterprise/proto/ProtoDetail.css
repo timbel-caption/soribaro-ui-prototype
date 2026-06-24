@@ -3755,26 +3755,7 @@
   border-radius: 10px;
   white-space: nowrap;
 }
-.vod-pm-reg-method--all {
-  background: rgba(167, 139, 250, 0.12);
-  color: #a78bfa;
-  border: 1px solid rgba(167, 139, 250, 0.3);
-}
-.vod-pm-reg-method--sel {
-  background: rgba(99, 179, 237, 0.12);
-  color: #63b3ed;
-  border: 1px solid rgba(99, 179, 237, 0.3);
-}
-.vod-pm-reg-method--single {
-  background: rgba(249, 115, 22, 0.12);
-  color: #f97316;
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-.vod-pm-reg-method--none {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-}
+/* (old --all, --sel removed; --bundle/--single/--none defined below) */
 
 /* ─── 파일관리 탭: VOD 업로드 대상 선택 바 ─── */
 .vod-upload-target-bar {
@@ -4025,4 +4006,121 @@
   opacity: 0.35;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* ─── 웍스파이 등록 모달 (묶음/개별) ─── */
+.vod-reg-modal-meta {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.vod-reg-modal-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vod-reg-modal-meta-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.vod-reg-modal-meta-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vod-reg-modal-meta-val--bundle {
+  color: #6366f1;
+}
+
+.vod-reg-modal-meta-val--single {
+  color: #0ea5e9;
+}
+
+.vod-wspy-file-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.vod-reg-time-summary {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.vod-reg-min-input {
+  width: 60px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0 4px;
+}
+
+.vod-wspy-file-list--single .vod-wspy-file-item {
+  gap: 6px;
+}
+
+.vod-wspy-file-item--single {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vod-wspy-file-min-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* 등록 방식 컬럼 배지 */
+.vod-pm-reg-method--bundle {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.vod-pm-reg-method--single {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0ea5e9;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+.vod-pm-reg-method--none {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.vod-pm-bundle-group-label {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0px 5px;
+  background: rgba(99, 102, 241, 0.10);
+  color: #6366f1;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: middle;
 }

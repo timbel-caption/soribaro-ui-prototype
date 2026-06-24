@@ -710,11 +710,11 @@ const VOD_SUBJECT_SEED = [
         status: '작업중',
         filesExpanded: false,
         projFiles: [
-          { fileNo: 1, fileName: '1강_오리엔테이션.mp4',  split: '-',    range: '',                    workTime: '00:52:30', workspyStatus: '등록완료', regMethod: '전체 묶음', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 2, fileName: '2강_기초개념.mp4',       split: '-',    range: '',                    workTime: '00:48:20', workspyStatus: '등록완료', regMethod: '전체 묶음', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 3, fileName: '3강_핵심이론.mp4',       split: '분할', range: '00:00:00 ~ 00:27:00', workTime: '00:27:15', workspyStatus: '등록완료', regMethod: '전체 묶음', status: '작업중', progress: 68,  worker: '이민정(minjeong@edu.kr)', reviewer: '' },
-          { fileNo: 4, fileName: '4강_응용예제.mp4',       split: '-',    range: '',                    workTime: '01:15:50', workspyStatus: '미등록',   regMethod: '미등록',   status: '대기',   progress: 0,   worker: '',                        reviewer: '' },
-          { fileNo: 5, fileName: '5강_종합정리.mp4',       split: '-',    range: '',                    workTime: '00:40:15', workspyStatus: '미등록',   regMethod: '미등록',   status: '대기',   progress: 0,   worker: '',                        reviewer: '' },
+          { fileNo: 1, fileName: '1강_오리엔테이션.mp4',  split: '-',    range: '',                    workTime: '00:52:30', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 2, fileName: '2강_기초개념.mp4',       split: '-',    range: '',                    workTime: '00:48:20', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '완료',   progress: 100, worker: '이민정(minjeong@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 3, fileName: '3강_핵심이론.mp4',       split: '분할', range: '00:00:00 ~ 00:27:00', workTime: '00:27:15', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '작업중', progress: 68,  worker: '이민정(minjeong@edu.kr)', reviewer: '' },
+          { fileNo: 4, fileName: '4강_응용예제.mp4',       split: '-',    range: '',                    workTime: '01:15:50', workspyStatus: '미등록',   regMethod: '미등록',   bundleGroup: '',  status: '대기',   progress: 0,   worker: '',                        reviewer: '' },
+          { fileNo: 5, fileName: '5강_종합정리.mp4',       split: '-',    range: '',                    workTime: '00:40:15', workspyStatus: '미등록',   regMethod: '미등록',   bundleGroup: '',  status: '대기',   progress: 0,   worker: '',                        reviewer: '' },
         ],
       },
       {
@@ -724,10 +724,10 @@ const VOD_SUBJECT_SEED = [
         status: '배정대기',
         filesExpanded: false,
         projFiles: [
-          { fileNo: 6, fileName: '6강_실습I.mp4',    split: '-', range: '', workTime: '00:50:00', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
-          { fileNo: 7, fileName: '7강_실습II.mp4',   split: '-', range: '', workTime: '00:47:30', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
-          { fileNo: 8, fileName: '8강_중간정리.mp4', split: '-', range: '', workTime: '00:53:10', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
-          { fileNo: 9, fileName: '9강_응용심화.mp4', split: '-', range: '', workTime: '01:02:00', workspyStatus: '미등록', regMethod: '미등록', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 6, fileName: '6강_실습I.mp4',    split: '-', range: '', workTime: '00:50:00', workspyStatus: '미등록', regMethod: '미등록', bundleGroup: '', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 7, fileName: '7강_실습II.mp4',   split: '-', range: '', workTime: '00:47:30', workspyStatus: '등록완료', regMethod: '개별 등록', bundleGroup: '', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 8, fileName: '8강_중간정리.mp4', split: '-', range: '', workTime: '00:53:10', workspyStatus: '미등록', regMethod: '미등록', bundleGroup: '', status: '대기', progress: 0, worker: '', reviewer: '' },
+          { fileNo: 9, fileName: '9강_응용심화.mp4', split: '-', range: '', workTime: '01:02:00', workspyStatus: '미등록', regMethod: '미등록', bundleGroup: '', status: '대기', progress: 0, worker: '', reviewer: '' },
         ],
       },
     ],
@@ -744,9 +744,9 @@ const VOD_SUBJECT_SEED = [
         status: '검수중',
         filesExpanded: false,
         projFiles: [
-          { fileNo: 1, fileName: 'Unit01_Greetings.mp4',  split: '-', range: '', workTime: '00:45:00', workspyStatus: '등록완료', regMethod: '선택 묶음', status: '검수중', progress: 85,  worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 2, fileName: 'Unit02_Daily_Life.mp4', split: '-', range: '', workTime: '00:42:30', workspyStatus: '등록완료', regMethod: '선택 묶음', status: '완료',   progress: 100, worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 3, fileName: 'Unit03_Shopping.mp4',   split: '-', range: '', workTime: '00:48:00', workspyStatus: '등록대기', regMethod: '선택 묶음', status: '대기',   progress: 0,   worker: '',                      reviewer: '' },
+          { fileNo: 1, fileName: 'Unit01_Greetings.mp4',  split: '-', range: '', workTime: '00:45:00', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '검수중', progress: 85,  worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 2, fileName: 'Unit02_Daily_Life.mp4', split: '-', range: '', workTime: '00:42:30', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '완료',   progress: 100, worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
+          { fileNo: 3, fileName: 'Unit03_Shopping.mp4',   split: '-', range: '', workTime: '00:48:00', workspyStatus: '등록대기', regMethod: '미등록',   bundleGroup: '',  status: '대기',   progress: 0,   worker: '',                      reviewer: '' },
         ],
       },
     ],
@@ -774,25 +774,101 @@ function batchStatusBadge(st) {
 const VOD_DUMMY_WORKERS   = ['이민정', '박정호', '현정은', '김지수', '오나연'];
 const VOD_DUMMY_REVIEWERS = ['정채원', '김검수', '최검수', '한지민'];
 
-function VodWorkspyModal({ batchLabel, files, onConfirm, onClose }) {
+function VodRegModalForm({ form, set }) {
+  return (
+    <>
+      <div className="pm-workspy-field">
+        <label className="preg-label">프로젝트명 *</label>
+        <input className="preg-input" value={form.name} onChange={(e) => set('name', e.target.value)} />
+      </div>
+      <div className="pm-workspy-field">
+        <label className="preg-label">프로젝트 설명 *</label>
+        <div className="pm-desc-editor">
+          <div className="pm-desc-toolbar">
+            {['B', '/', 'S', 'H2', 'H3', '• 목록', '1. 목록', '" 인용'].map((t) => (
+              <button key={t} className="pm-desc-tool-btn" type="button">{t}</button>
+            ))}
+          </div>
+          <textarea className="pm-desc-textarea" value={form.desc} onChange={(e) => set('desc', e.target.value)} rows={3} />
+        </div>
+      </div>
+      <div className="pm-workspy-row">
+        <div className="pm-workspy-field">
+          <label className="preg-label">작업자 수 *</label>
+          <input className="preg-input" type="number" min="1" value={form.workers} onChange={(e) => set('workers', e.target.value)} />
+        </div>
+        <div className="pm-workspy-field">
+          <label className="preg-label">단가 *</label>
+          <input className="preg-input" value={form.unitPrice} onChange={(e) => set('unitPrice', e.target.value)} />
+        </div>
+      </div>
+      <div className="pm-workspy-row">
+        <div className="pm-workspy-field">
+          <label className="preg-label">모집 시작 *</label>
+          <input className="preg-input" type="datetime-local" value={form.recruitStart} onChange={(e) => set('recruitStart', e.target.value)} />
+        </div>
+        <div className="pm-workspy-field">
+          <label className="preg-label">모집 종료 *</label>
+          <input className="preg-input" type="datetime-local" value={form.recruitEnd} onChange={(e) => set('recruitEnd', e.target.value)} />
+        </div>
+      </div>
+      <div className="pm-workspy-row">
+        <div className="pm-workspy-field">
+          <label className="preg-label">작업 시작 *</label>
+          <input className="preg-input" type="datetime-local" value={form.workStart} onChange={(e) => set('workStart', e.target.value)} />
+        </div>
+        <div className="pm-workspy-field">
+          <label className="preg-label">작업 종료 *</label>
+          <input className="preg-input" type="datetime-local" value={form.workEnd} onChange={(e) => set('workEnd', e.target.value)} />
+        </div>
+      </div>
+      <div className="pm-workspy-checks">
+        <label className="pm-workspy-check-label">
+          <input type="checkbox" checked={form.isImportant} onChange={(e) => set('isImportant', e.target.checked)} />
+          <span>중요 프로젝트</span>
+        </label>
+        <label className="pm-workspy-check-label">
+          <input type="checkbox" checked={form.openApply} onChange={(e) => set('openApply', e.target.checked)} />
+          <span>누구나 지원 가능</span>
+        </label>
+      </div>
+      <div className="pm-workspy-field">
+        <label className="preg-label">메모</label>
+        <textarea className="pm-desc-textarea" value={form.note} onChange={(e) => set('note', e.target.value)} rows={2} placeholder="전달 사항을 입력하세요" />
+      </div>
+    </>
+  );
+}
+
+function initRegForm(batchLabel) {
   const now = new Date();
   const fmtLocal = (d) => {
     const p = (n) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
   };
-  const [form, setForm] = useState({
-    name:        batchLabel,
-    desc:        batchLabel,
-    workers:     '1',
-    unitPrice:   '내부 기준 적용',
+  return {
+    name:         batchLabel,
+    desc:         batchLabel,
+    workers:      '1',
+    unitPrice:    '내부 기준 적용',
     recruitStart: fmtLocal(new Date(now.getTime())),
     recruitEnd:   fmtLocal(new Date(now.getTime() + 3600000)),
     workStart:    fmtLocal(new Date(now.getTime() + 7200000)),
     workEnd:      fmtLocal(new Date(now.getTime() + 10800000)),
-    isImportant: false,
-    openApply:   true,
-  });
+    isImportant:  false,
+    openApply:    true,
+    note:         '',
+  };
+}
+
+function VodBundleRegModal({ batchLabel, files, bundleGroup, onConfirm, onClose }) {
+  const [form, setForm] = useState(() => initRegForm(batchLabel));
   const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  const totalSec = files.reduce((acc, f) => acc + durationToSec(f.workTime || '0:00:00'), 0);
+  const totalTime = secToDuration(totalSec);
+  const totalMin = Math.ceil(totalSec / 60);
+  const [displayMin, setDisplayMin] = useState(String(totalMin || ''));
 
   return (
     <div className="pm-overlay" onClick={onClose}>
@@ -801,86 +877,114 @@ function VodWorkspyModal({ batchLabel, files, onConfirm, onClose }) {
           <span className="pm-modal-title">웍스파이 등록</span>
           <button className="preg-x-btn" onClick={onClose}>✕</button>
         </div>
-
         <div className="pm-workspy-body">
-          {/* 등록 대상 파일 */}
+          {/* 등록 방식 메타 */}
+          <div className="vod-reg-modal-meta">
+            <span className="vod-reg-modal-meta-item">
+              <span className="vod-reg-modal-meta-label">등록 방식</span>
+              <span className="vod-reg-modal-meta-val vod-reg-modal-meta-val--bundle">묶음 등록 (묶음 {bundleGroup})</span>
+            </span>
+            <span className="vod-reg-modal-meta-item">
+              <span className="vod-reg-modal-meta-label">생성될 모집 건</span>
+              <span className="vod-reg-modal-meta-val">1건</span>
+            </span>
+          </div>
+
+          {/* 대상 파일 */}
           <div className="pm-workspy-field">
-            <label className="preg-label">등록 대상 파일 ({files.length}개)</label>
+            <label className="preg-label">포함 파일 ({files.length}개)</label>
             <div className="vod-wspy-file-list">
               {files.map((f) => (
                 <div key={f.fileNo} className="vod-wspy-file-item">
                   <span className="vod-wspy-file-icon">▶</span>
                   <span className="vod-wspy-file-name">{f.fileName}</span>
+                  <span className="vod-wspy-file-time">{f.workTime || '-'}</span>
+                </div>
+              ))}
+            </div>
+            <div className="vod-reg-time-summary">
+              <span>합산 작업시간: <strong>{totalTime}</strong></span>
+              <span style={{ marginLeft: '16px' }}>
+                웍스파이 표시 분량:
+                <input
+                  className="vod-reg-min-input"
+                  type="number"
+                  min="1"
+                  value={displayMin}
+                  onChange={(e) => setDisplayMin(e.target.value)}
+                />
+                분
+              </span>
+            </div>
+          </div>
+
+          <VodRegModalForm form={form} set={set} />
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form, displayMin)}>등록</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VodSingleRegModal({ batchLabel, files, onConfirm, onClose }) {
+  const [form, setForm] = useState(() => initRegForm(batchLabel));
+  const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+  const [fileMinutes, setFileMinutes] = useState(() =>
+    Object.fromEntries(files.map((f) => [f.fileNo, String(Math.ceil(durationToSec(f.workTime || '0:00:00') / 60) || '')]))
+  );
+
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--workspy" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">웍스파이 등록</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="pm-workspy-body">
+          {/* 등록 방식 메타 */}
+          <div className="vod-reg-modal-meta">
+            <span className="vod-reg-modal-meta-item">
+              <span className="vod-reg-modal-meta-label">등록 방식</span>
+              <span className="vod-reg-modal-meta-val vod-reg-modal-meta-val--single">개별 등록</span>
+            </span>
+            <span className="vod-reg-modal-meta-item">
+              <span className="vod-reg-modal-meta-label">생성될 모집 건</span>
+              <span className="vod-reg-modal-meta-val">{files.length}건</span>
+            </span>
+          </div>
+
+          {/* 파일 목록 (개별 분량 입력) */}
+          <div className="pm-workspy-field">
+            <label className="preg-label">등록 파일 ({files.length}개)</label>
+            <div className="vod-wspy-file-list vod-wspy-file-list--single">
+              {files.map((f) => (
+                <div key={f.fileNo} className="vod-wspy-file-item vod-wspy-file-item--single">
+                  <span className="vod-wspy-file-icon">▶</span>
+                  <span className="vod-wspy-file-name">{f.fileName}</span>
+                  <span className="vod-wspy-file-time">{f.workTime || '-'}</span>
+                  <span className="vod-wspy-file-min-wrap">
+                    <input
+                      className="vod-reg-min-input"
+                      type="number"
+                      min="1"
+                      value={fileMinutes[f.fileNo] || ''}
+                      onChange={(e) => setFileMinutes((prev) => ({ ...prev, [f.fileNo]: e.target.value }))}
+                    />
+                    <span>분</span>
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="pm-workspy-field">
-            <label className="preg-label">프로젝트명 *</label>
-            <input className="preg-input" value={form.name} onChange={(e) => set('name', e.target.value)} />
-          </div>
-
-          <div className="pm-workspy-field">
-            <label className="preg-label">프로젝트 설명 *</label>
-            <div className="pm-desc-editor">
-              <div className="pm-desc-toolbar">
-                {['B', '/', 'S', 'H2', 'H3', '• 목록', '1. 목록', '" 인용'].map((t) => (
-                  <button key={t} className="pm-desc-tool-btn" type="button">{t}</button>
-                ))}
-              </div>
-              <textarea className="pm-desc-textarea" value={form.desc} onChange={(e) => set('desc', e.target.value)} rows={3} />
-            </div>
-          </div>
-
-          <div className="pm-workspy-row">
-            <div className="pm-workspy-field">
-              <label className="preg-label">작업자 수 *</label>
-              <input className="preg-input" type="number" min="1" value={form.workers} onChange={(e) => set('workers', e.target.value)} />
-            </div>
-            <div className="pm-workspy-field">
-              <label className="preg-label">단가 *</label>
-              <input className="preg-input" value={form.unitPrice} onChange={(e) => set('unitPrice', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="pm-workspy-row">
-            <div className="pm-workspy-field">
-              <label className="preg-label">모집 시작 *</label>
-              <input className="preg-input" type="datetime-local" value={form.recruitStart} onChange={(e) => set('recruitStart', e.target.value)} />
-            </div>
-            <div className="pm-workspy-field">
-              <label className="preg-label">모집 종료 *</label>
-              <input className="preg-input" type="datetime-local" value={form.recruitEnd} onChange={(e) => set('recruitEnd', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="pm-workspy-row">
-            <div className="pm-workspy-field">
-              <label className="preg-label">작업 시작 *</label>
-              <input className="preg-input" type="datetime-local" value={form.workStart} onChange={(e) => set('workStart', e.target.value)} />
-            </div>
-            <div className="pm-workspy-field">
-              <label className="preg-label">작업 종료 *</label>
-              <input className="preg-input" type="datetime-local" value={form.workEnd} onChange={(e) => set('workEnd', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="pm-workspy-checks">
-            <label className="pm-workspy-check-label">
-              <input type="checkbox" checked={form.isImportant} onChange={(e) => set('isImportant', e.target.checked)} />
-              <span>중요 프로젝트</span>
-            </label>
-            <label className="pm-workspy-check-label">
-              <input type="checkbox" checked={form.openApply} onChange={(e) => set('openApply', e.target.checked)} />
-              <span>누구나 지원 가능</span>
-            </label>
-          </div>
+          <VodRegModalForm form={form} set={set} />
         </div>
-
         <div className="pm-modal-ft">
           <button className="proto-log-btn" onClick={onClose}>취소</button>
-          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form)}>등록</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form, fileMinutes)}>등록</button>
         </div>
       </div>
     </div>
@@ -946,7 +1050,8 @@ function VodProjectManageView({ s }) {
   const [newBatchLabel, setNewBatchLabel] = useState('');
   const [batchSelections, setBatchSelections] = useState({});      // { ['subjId:batchId']: fileNo[] }
   const [fileAssignModal, setFileAssignModal] = useState(null);    // { subjId, batchId, fileNo, type }
-  const [workspyModal, setWorkspyModal]       = useState(null);    // { subjId, batchId, files: [{ fileNo, fileName }] }
+  const [bundleModal, setBundleModal]         = useState(null);    // { subjId, batchId, files, bundleGroup }
+  const [singleRegModal, setSingleRegModal]   = useState(null);    // { subjId, batchId, files }
   const [bulkAssignModal, setBulkAssignModal] = useState(null);    // { subjId, batchId, files: [...], type }
 
   const setSubj = (fn) => setSubjects((prev) => prev.map(fn));
@@ -1002,27 +1107,59 @@ function VodProjectManageView({ s }) {
     setBatchSelections((prev) => ({ ...prev, [k]: allChecked ? [] : [...fileNos] }));
   };
 
-  const openWorkspyAll = (subjId, batchId) => {
-    const batch = subjects.find((s2) => s2.id === subjId)?.batches.find((b) => b.id === batchId);
-    if (!batch) return;
-    setWorkspyModal({ subjId, batchId, files: batch.projFiles.map((f) => ({ fileNo: f.fileNo, fileName: f.fileName })) });
+  const nextBundleLabel = (projFiles) => {
+    const letters = projFiles.map((f) => f.bundleGroup).filter((g) => g && /^[A-Z]$/.test(g));
+    if (letters.length === 0) return 'A';
+    const max = letters.reduce((a, b) => (a > b ? a : b));
+    return String.fromCharCode(max.charCodeAt(0) + 1);
   };
 
-  const openWorkspySelected = (subjId, batchId) => {
+  const getSelFiles = (subjId, batchId) => {
     const sel = getSelected(subjId, batchId);
-    if (sel.length === 0) return;
+    if (sel.length === 0) return null;
     const batch = subjects.find((s2) => s2.id === subjId)?.batches.find((b) => b.id === batchId);
-    if (!batch) return;
-    const files = batch.projFiles.filter((f) => sel.includes(f.fileNo)).map((f) => ({ fileNo: f.fileNo, fileName: f.fileName }));
-    setWorkspyModal({ subjId, batchId, files });
+    return batch ? batch.projFiles.filter((f) => sel.includes(f.fileNo)) : null;
   };
 
-  const openWorkspySingle = (subjId, batchId, fileNo, fileName) =>
-    setWorkspyModal({ subjId, batchId, files: [{ fileNo, fileName }] });
+  const openBundleReg = (subjId, batchId) => {
+    const files = getSelFiles(subjId, batchId);
+    if (!files) return;
+    const batch = subjects.find((s2) => s2.id === subjId)?.batches.find((b) => b.id === batchId);
+    setBundleModal({ subjId, batchId, files, bundleGroup: nextBundleLabel(batch?.projFiles || []) });
+  };
 
-  const confirmWorkspy = (subjId, batchId) => {
-    setBatch(subjId, batchId, (b) => ({ ...b, workspyRegistered: true }));
-    setWorkspyModal(null);
+  const openSingleReg = (subjId, batchId) => {
+    const files = getSelFiles(subjId, batchId);
+    if (!files) return;
+    setSingleRegModal({ subjId, batchId, files });
+  };
+
+  const confirmBundleReg = (subjId, batchId, files, bundleGroup) => {
+    const fileNos = files.map((f) => f.fileNo);
+    setBatch(subjId, batchId, (b) => ({
+      ...b,
+      workspyRegistered: true,
+      projFiles: b.projFiles.map((f) =>
+        fileNos.includes(f.fileNo)
+          ? { ...f, workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup }
+          : f
+      ),
+    }));
+    setBundleModal(null);
+  };
+
+  const confirmSingleReg = (subjId, batchId, files) => {
+    const fileNos = files.map((f) => f.fileNo);
+    setBatch(subjId, batchId, (b) => ({
+      ...b,
+      workspyRegistered: true,
+      projFiles: b.projFiles.map((f) =>
+        fileNos.includes(f.fileNo)
+          ? { ...f, workspyStatus: '등록완료', regMethod: '개별 등록', bundleGroup: '' }
+          : f
+      ),
+    }));
+    setSingleRegModal(null);
   };
 
   const setFileAssign = (subjId, batchId, fileNo, type, name) => {
@@ -1187,12 +1324,6 @@ function VodProjectManageView({ s }) {
 
                       <div className="vod-pm-batch-actions">
                         <button
-                          className="pm-btn pm-btn--wspy"
-                          onClick={() => openWorkspyAll(subj.id, batch.id)}
-                        >
-                          전체 파일 웍스파이 등록
-                        </button>
-                        <button
                           className="pm-btn"
                           onClick={() => toggleFilesExpand(subj.id, batch.id)}
                         >
@@ -1215,12 +1346,16 @@ function VodProjectManageView({ s }) {
                               <button
                                 className={`vod-pm-sel-wspy-btn${selFiles.length > 0 ? '' : ' vod-pm-sel-wspy-btn--disabled'}`}
                                 disabled={selFiles.length === 0}
-                                onClick={() => openWorkspySelected(subj.id, batch.id)}
+                                onClick={() => openBundleReg(subj.id, batch.id)}
                               >
-                                선택 파일 웍스파이 등록{selFiles.length > 0 ? ` (${selFiles.length})` : ''}
+                                선택 파일 묶음 등록{selFiles.length > 0 ? ` (${selFiles.length})` : ''}
                               </button>
-                              <button className="vod-pm-all-wspy-btn" onClick={() => openWorkspyAll(subj.id, batch.id)}>
-                                전체 파일 웍스파이 등록
+                              <button
+                                className={`vod-pm-sel-wspy-btn${selFiles.length > 0 ? '' : ' vod-pm-sel-wspy-btn--disabled'}`}
+                                disabled={selFiles.length === 0}
+                                onClick={() => openSingleReg(subj.id, batch.id)}
+                              >
+                                선택 파일 개별 등록{selFiles.length > 0 ? ` (${selFiles.length})` : ''}
                               </button>
                               <button
                                 className={`vod-pm-bulk-assign-btn${selFiles.length > 0 ? '' : ' vod-pm-sel-wspy-btn--disabled'}`}
@@ -1293,9 +1428,12 @@ function VodProjectManageView({ s }) {
                                         </span>
                                       </td>
                                       <td className="text-center">
-                                        <span className={`vod-pm-reg-method vod-pm-reg-method--${f.regMethod === '전체 묶음' ? 'all' : f.regMethod === '선택 묶음' ? 'sel' : f.regMethod === '개별 등록' ? 'single' : 'none'}`}>
+                                        <span className={`vod-pm-reg-method vod-pm-reg-method--${f.regMethod === '묶음 등록' ? 'bundle' : f.regMethod === '개별 등록' ? 'single' : 'none'}`}>
                                           {f.regMethod || '미등록'}
                                         </span>
+                                        {f.bundleGroup && (
+                                          <span className="vod-pm-bundle-group-label">묶음 {f.bundleGroup}</span>
+                                        )}
                                       </td>
                                       <td className="text-center">
                                         <span className={
@@ -1327,13 +1465,6 @@ function VodProjectManageView({ s }) {
                                       </td>
                                       <td className="text-center">
                                         <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                          <button
-                                            className={`pm-row-btn pm-row-btn--wspy-single${isDone ? ' pm-row-btn--wspy-done' : ''}`}
-                                            disabled={isDone}
-                                            onClick={() => !isDone && openWorkspySingle(subj.id, batch.id, f.fileNo, f.fileName)}
-                                          >
-                                            {isDone ? '등록완료' : '개별 웍스파이 등록'}
-                                          </button>
                                           <button
                                             className={`pm-row-btn pm-row-btn--work${!f.worker ? ' pm-row-btn--disabled' : ''}`}
                                             disabled={!f.worker}
@@ -1379,15 +1510,29 @@ function VodProjectManageView({ s }) {
         );
       })()}
 
-      {/* 웍스파이 등록 모달 */}
-      {workspyModal && (() => {
-        const batch = subjects.find((s2) => s2.id === workspyModal.subjId)?.batches.find((b) => b.id === workspyModal.batchId);
+      {/* 묶음 등록 모달 */}
+      {bundleModal && (() => {
+        const batch = subjects.find((s2) => s2.id === bundleModal.subjId)?.batches.find((b) => b.id === bundleModal.batchId);
         return (
-          <VodWorkspyModal
+          <VodBundleRegModal
             batchLabel={batch?.label || ''}
-            files={workspyModal.files}
-            onConfirm={() => confirmWorkspy(workspyModal.subjId, workspyModal.batchId)}
-            onClose={() => setWorkspyModal(null)}
+            files={bundleModal.files}
+            bundleGroup={bundleModal.bundleGroup}
+            onConfirm={(form, displayMin) => confirmBundleReg(bundleModal.subjId, bundleModal.batchId, bundleModal.files, bundleModal.bundleGroup)}
+            onClose={() => setBundleModal(null)}
+          />
+        );
+      })()}
+
+      {/* 개별 등록 모달 */}
+      {singleRegModal && (() => {
+        const batch = subjects.find((s2) => s2.id === singleRegModal.subjId)?.batches.find((b) => b.id === singleRegModal.batchId);
+        return (
+          <VodSingleRegModal
+            batchLabel={batch?.label || ''}
+            files={singleRegModal.files}
+            onConfirm={(form, fileMinutes) => confirmSingleReg(singleRegModal.subjId, singleRegModal.batchId, singleRegModal.files)}
+            onClose={() => setSingleRegModal(null)}
           />
         );
       })()}
