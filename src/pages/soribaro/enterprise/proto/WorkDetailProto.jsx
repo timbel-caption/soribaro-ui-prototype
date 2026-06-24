@@ -309,7 +309,6 @@ function FileManageTab({ s }) {
   });
   const [dragOver, setDragOver] = useState(false);
   const [checked, setChecked] = useState(new Set());
-  const [vodUploadTarget, setVodUploadTarget] = useState('existing-batch'); // 'new-subject' | 'new-batch' | 'existing-batch'
   const fileInputRef = useRef();
 
   // 파일 한 개의 미디어 재생시간을 브라우저 API로 추출 ('HH:MM:SS')
@@ -407,31 +406,6 @@ function FileManageTab({ s }) {
           {isVod ? 'MP4, MOV, AVI, MKV 등' : 'WAV, MP3, M4A 등'}
         </span>
       </div>
-
-      {/* VOD 전용: 업로드 파일을 어떤 구조에 추가할지 선택 */}
-      {isVod && (
-        <div className="vod-upload-target-bar">
-          <span className="vod-upload-target-label">업로드 대상:</span>
-          {[
-            { value: 'existing-batch', label: '기존 과목 · 기존 주차에 추가' },
-            { value: 'new-batch',      label: '기존 과목 · 새 주차/차수 생성' },
-            { value: 'new-subject',    label: '새 과목 만들기' },
-          ].map((opt) => (
-            <label key={opt.value} className={`vod-upload-target-option${vodUploadTarget === opt.value ? ' active' : ''}`}>
-              <input
-                type="radio"
-                name="vodUploadTarget"
-                value={opt.value}
-                checked={vodUploadTarget === opt.value}
-                onChange={() => setVodUploadTarget(opt.value)}
-                style={{ display: 'none' }}
-              />
-              {opt.label}
-            </label>
-          ))}
-          <span className="vod-upload-target-hint">파일 추가 후 프로젝트 관리 탭에서 해당 차수에 배정하세요.</span>
-        </div>
-      )}
 
       <div className="proto-file-bulk-actions">
         <button
@@ -1309,7 +1283,7 @@ function VodProjectManageView({ s }) {
                                           onChange={() => toggleFileCheck(subj.id, batch.id, f.fileNo)}
                                         />
                                       </td>
-                                      <td style={{ fontSize: '13px' }}>{f.fileName}</td>
+                                      <td className="vod-pm-file-name-cell" title={f.fileName}>{f.fileName}</td>
                                       <td className="text-center" style={{ fontSize: '12px' }}>{f.split || '-'}</td>
                                       <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{f.range || '-'}</td>
                                       <td className="text-center" style={{ fontSize: '12px' }}>{f.workTime || '-'}</td>
@@ -1360,8 +1334,18 @@ function VodProjectManageView({ s }) {
                                           >
                                             {isDone ? '등록완료' : '개별 웍스파이 등록'}
                                           </button>
-                                          <button className="pm-row-btn pm-row-btn--work" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START&popup=true&fileNo=${f.fileNo}`), `worktool_work_${f.fileNo}`, 'popup,width=1400,height=900')}>작업시작</button>
-                                          <button className="pm-row-btn pm-row-btn--review" onClick={() => window.open(toAppUrl(`/worktool?mode=vod&role=START_REVIEW&popup=true&fileNo=${f.fileNo}`), `worktool_review_${f.fileNo}`, 'popup,width=1400,height=900')}>검수시작</button>
+                                          <button
+                                            className={`pm-row-btn pm-row-btn--work${!f.worker ? ' pm-row-btn--disabled' : ''}`}
+                                            disabled={!f.worker}
+                                            title={!f.worker ? '작업자를 먼저 배정하세요' : '작업 시작'}
+                                            onClick={() => f.worker && window.open(toAppUrl(`/worktool?mode=vod&role=START&popup=true&fileNo=${f.fileNo}`), `worktool_work_${f.fileNo}`, 'popup,width=1400,height=900')}
+                                          >작업시작</button>
+                                          <button
+                                            className={`pm-row-btn pm-row-btn--review${!f.reviewer ? ' pm-row-btn--disabled' : ''}`}
+                                            disabled={!f.reviewer}
+                                            title={!f.reviewer ? '검수자를 먼저 배정하세요' : '검수 시작'}
+                                            onClick={() => f.reviewer && window.open(toAppUrl(`/worktool?mode=vod&role=START_REVIEW&popup=true&fileNo=${f.fileNo}`), `worktool_review_${f.fileNo}`, 'popup,width=1400,height=900')}
+                                          >검수시작</button>
                                           <button className="pm-row-btn pm-row-btn--del" onClick={() => deleteFileFromBatch(subj.id, batch.id, f.fileNo)}>삭제</button>
                                         </div>
                                       </td>
