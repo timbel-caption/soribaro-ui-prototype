@@ -2774,3 +2774,1220 @@
   border-color: rgba(239,68,68,0.25) !important;
 }
 .gls-reject-sel-btn:hover { background: rgba(239,68,68,0.20) !important; opacity: 1 !important; }
+
+/* ─── VOD 대시보드 개선 (프로젝트 관리 대시보드) ─── */
+
+.vod-dashboard {
+  gap: 18px;
+}
+
+/* 섹션 공통 라벨 */
+.vod-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── ① 전체 일정 타임라인 ─────────────────────────── */
+.vod-timeline-section {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vod-tl-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vod-tl-today-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: var(--accent-color);
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.vod-tl-track-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.vod-tl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vod-tl-proj-name {
+  width: 160px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vod-tl-bar-bg {
+  flex: 1;
+  height: 20px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  position: relative;
+  overflow: visible;
+}
+
+.vod-tl-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 4px;
+  opacity: 0.75;
+  transition: width 0.4s ease;
+}
+
+.vod-tl-today-line {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateX(-50%);
+  z-index: 2;
+  border-radius: 1px;
+}
+
+.vod-tl-due-dot {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+
+.vod-tl-due-date {
+  width: 80px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.vod-tl-range-labels {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 0 170px 0 0;
+  margin-top: 2px;
+}
+
+.vod-tl-range-today {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+}
+
+.vod-tl-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--border-color);
+}
+
+.vod-tl-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vod-tl-leg-line {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 1px;
+}
+
+.vod-tl-leg-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 50%;
+}
+
+.vod-tl-leg-bar {
+  display: inline-block;
+  width: 24px;
+  height: 8px;
+  border-radius: 2px;
+  opacity: 0.75;
+}
+
+/* ── D-Day 배지 ─────────────────────────────────────── */
+.vod-dd-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dd-normal  { background: rgba(99, 102, 241, 0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+.dd-caution { background: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.35); }
+.dd-danger  { background: rgba(239, 68, 68, 0.18);  color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+.dd-dday    { background: rgba(239, 68, 68, 0.28);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.55); font-weight: 800; }
+.dd-delayed { background: rgba(239, 68, 68, 0.22);  color: #ef4444; border: 1px solid rgba(239,68,68,0.5); }
+
+/* ── 상태 배지 ──────────────────────────────────────── */
+.vod-status-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.st-working  { background: rgba(248, 113, 113, 0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
+.st-caution  { background: rgba(251, 146, 60,  0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.35); }
+.st-delayed  { background: rgba(239, 68,  68,  0.2);  color: #ef4444; border: 1px solid rgba(239,68,68,0.4); }
+.st-checking { background: rgba(251, 191, 36,  0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
+.st-done     { background: rgba(74,  222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.35); }
+.st-settle   { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.35); }
+
+/* ── ③ 프로젝트 테이블 ──────────────────────────────── */
+.vod-proj-table-wrap {
+  overflow-x: auto;
+}
+
+.vod-row-delayed td { background: rgba(239, 68, 68, 0.05); }
+.vod-row-caution td { background: rgba(251, 146, 60, 0.04); }
+
+.vod-progress-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vod-progress-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.vod-progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.vod-progress-pct {
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 30px;
+  flex-shrink: 0;
+}
+
+/* ── ④ 상태별 현황 바 (6개) ─────────────────────────── */
+.vod-status-bars-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+@media (max-width: 1100px) {
+  .vod-status-bars-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 700px) {
+  .vod-status-bars-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── ⑤ 하단 보조 카드 행 ───────────────────────────── */
+.vod-helper-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.vod-helper-card--wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 1200px) {
+  .vod-helper-row { grid-template-columns: repeat(2, 1fr); }
+  .vod-helper-card--wide { grid-column: span 2; }
+}
+@media (max-width: 700px) {
+  .vod-helper-row { grid-template-columns: 1fr; }
+  .vod-helper-card--wide { grid-column: span 1; }
+}
+
+.vod-helper-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vod-helper-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0;
+}
+
+/* D-Day 안내 */
+.vod-dd-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vod-dd-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 상태 색상 안내 */
+.vod-status-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vod-status-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vod-status-guide-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 미니 캘린더 */
+.vod-mini-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vod-mini-cal-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.vod-mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.vod-mc-dow {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px 0;
+  font-weight: 600;
+}
+
+.vod-mc-cell {
+  font-size: 11px;
+  text-align: center;
+  padding: 3px 2px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.vod-mc-empty { opacity: 0; }
+
+.vod-mc-today {
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  font-weight: 800;
+  border-radius: 50%;
+}
+
+.vod-mc-due {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+.vod-mc-today.vod-mc-due {
+  background: #ef4444;
+  color: #fff;
+}
+
+.vod-mc-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.vod-mc-leg-today {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--accent-color);
+  border-radius: 50%;
+}
+
+.vod-mc-leg-due {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 50%;
+}
+
+/* 일정 편집 */
+.vod-sched-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vod-sched-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.vod-sched-edit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.vod-sched-edit-ent {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.vod-sched-edit-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vod-sched-edit-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.vod-sched-edit-date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.vod-sched-edit-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.vod-sched-edit-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* 파일별 세부 기한 */
+.vod-file-dl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.vod-file-dl-head {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 0.7fr 0.6fr;
+  gap: 8px;
+  padding: 4px 8px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
+}
+
+.vod-file-dl-row {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 0.7fr 0.6fr;
+  gap: 8px;
+  padding: 7px 8px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.vod-file-dl-row:last-child { border-bottom: none; }
+
+.vod-file-dl-proj {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.vod-file-dl-files { color: var(--text-muted); font-size: 11px; }
+
+.vod-file-dl-date { color: var(--text-secondary); font-size: 11px; }
+
+.vod-file-dl-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.vod-fdl-done    { background: rgba(74, 222, 128, 0.14); color: #4ade80; }
+.vod-fdl-pending { background: rgba(251, 191, 36, 0.12); color: #fbbf24; }
+
+/* ─── VOD 프로젝트 관리: 과목 → 주차/차수 계층 뷰 ─── */
+
+.vod-pm-subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vod-pm-subject-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-light);
+}
+
+.vod-pm-subject-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vod-pm-subject-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  padding: 0;
+}
+
+.vod-pm-subject-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vod-pm-subject-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.vod-pm-subj-batch-count {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.vod-pm-add-batch-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vod-pm-add-batch-btn:hover { opacity: 0.85; }
+
+/* 차수 목록 */
+.vod-pm-batch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.vod-pm-batch-empty {
+  padding: 16px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.vod-pm-batch-item {
+  border-top: 1px solid var(--border-color);
+}
+
+.vod-pm-batch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+
+.vod-pm-batch-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.vod-pm-batch-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.vod-pm-batch-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.vod-pm-batch-filecount {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+
+.vod-pm-wspy-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.vod-pm-wspy-chip--done {
+  background: rgba(74, 222, 128, 0.14);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.vod-pm-wspy-chip--none {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.vod-pm-batch-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* 파일 테이블 래퍼 */
+.vod-pm-file-table-wrap {
+  padding: 0 14px 14px;
+  border-top: 1px dashed var(--border-color);
+  background: var(--bg-primary);
+}
+
+.vod-pm-file-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 6px;
+}
+
+.vod-pm-file-table-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vod-pm-file-add-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--accent-color);
+  background: transparent;
+  color: var(--accent-color);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.vod-pm-file-add-btn:hover {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.vod-pm-assign-tag {
+  display: inline-block;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 500;
+  vertical-align: middle;
+}
+.vod-pm-assign-tag--worker {
+  background: rgba(99, 179, 237, 0.15);
+  color: #63b3ed;
+  border: 1px solid rgba(99, 179, 237, 0.35);
+}
+.vod-pm-assign-tag--reviewer {
+  background: rgba(154, 117, 242, 0.15);
+  color: #b794f4;
+  border: 1px solid rgba(154, 117, 242, 0.35);
+}
+
+.vod-pm-assign-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px dashed var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s;
+}
+.vod-pm-assign-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.pm-row-btn--del {
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(239, 68, 68);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.pm-row-btn--del:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* 개별 웍스파이 등록 버튼 */
+.pm-row-btn--wspy-single {
+  background: rgba(99, 179, 237, 0.1);
+  color: #63b3ed;
+  border-color: rgba(99, 179, 237, 0.35);
+}
+.pm-row-btn--wspy-single:hover {
+  background: rgba(99, 179, 237, 0.22);
+}
+.pm-row-btn--wspy-done {
+  background: rgba(74, 222, 128, 0.08);
+  color: rgba(74, 222, 128, 0.6);
+  border-color: rgba(74, 222, 128, 0.2);
+  cursor: default;
+  opacity: 0.75;
+}
+
+/* 차수 행 웍스파이 버튼 */
+.pm-btn--wspy {
+  background: rgba(99, 179, 237, 0.1);
+  color: #63b3ed;
+  border-color: rgba(99, 179, 237, 0.35);
+}
+.pm-btn--wspy:hover { background: rgba(99, 179, 237, 0.2); }
+
+/* 파일 테이블 헤더 버튼: 선택 파일 웍스파이 등록 */
+.vod-pm-sel-wspy-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid #63b3ed;
+  background: rgba(99, 179, 237, 0.12);
+  color: #63b3ed;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+.vod-pm-sel-wspy-btn:hover { background: rgba(99, 179, 237, 0.25); }
+.vod-pm-sel-wspy-btn--disabled {
+  border-color: var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* 파일 테이블 헤더 버튼: 전체 파일 웍스파이 등록 */
+.vod-pm-all-wspy-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--accent-color);
+  background: rgba(var(--accent-rgb, 99,179,237), 0.12);
+  color: var(--accent-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.vod-pm-all-wspy-btn:hover {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+/* 선택 파일 일괄 배정 버튼 */
+.vod-pm-bulk-assign-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(154, 117, 242, 0.5);
+  background: rgba(154, 117, 242, 0.1);
+  color: #b794f4;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.vod-pm-bulk-assign-btn:hover { background: rgba(154, 117, 242, 0.22); }
+
+/* 웍스파이 등록 모달 - 파일 목록 */
+.vod-wspy-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+.vod-wspy-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+.vod-wspy-file-icon {
+  font-size: 9px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+.vod-wspy-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 일괄 배정 모달 - 담당자 선택 */
+.vod-bulk-assign-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.vod-bulk-assign-option {
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.vod-bulk-assign-option:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+.vod-bulk-assign-option--sel {
+  border-color: var(--accent-color);
+  background: rgba(99, 179, 237, 0.12);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* 파일 체크박스 */
+.vod-pm-file-check {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* 선택된 파일 행 하이라이트 */
+.vod-pm-row-checked {
+  background: rgba(99, 179, 237, 0.05);
+}
+
+/* 웍스파이 상태 배지 */
+.vod-pm-wspy-status {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.vod-pm-wspy-status--done {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.vod-pm-wspy-status--wait {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.vod-pm-wspy-status--fail {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.vod-pm-wspy-status--none {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+/* 등록 방식 배지 */
+.vod-pm-reg-method {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.vod-pm-reg-method--all {
+  background: rgba(167, 139, 250, 0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+.vod-pm-reg-method--sel {
+  background: rgba(99, 179, 237, 0.12);
+  color: #63b3ed;
+  border: 1px solid rgba(99, 179, 237, 0.3);
+}
+.vod-pm-reg-method--single {
+  background: rgba(249, 115, 22, 0.12);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.vod-pm-reg-method--none {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+/* ─── 파일관리 탭: VOD 업로드 대상 선택 바 ─── */
+.vod-upload-target-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.vod-upload-target-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vod-upload-target-option {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s;
+}
+
+.vod-upload-target-option:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.vod-upload-target-option.active {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.vod-upload-target-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ─── 대시보드 전체 일정 요약 섹션 ─── */
+.vod-sched-summary-section {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.vod-sched-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.vod-sched-summary-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* 요약 칩 행 */
+.vod-sched-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.vod-sched-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  min-width: 80px;
+}
+
+.vod-sched-chip-count {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.vod-sched-chip-label {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 칩 색상 변형 */
+.vod-chip-thisweek {
+  background: rgba(99, 102, 241, 0.10);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: var(--accent-color);
+}
+
+.vod-chip-nextweek {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.vod-chip-working {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #22c55e;
+}
+
+.vod-chip-checking {
+  background: rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.25);
+  color: #eab308;
+}
+
+.vod-chip-adjust {
+  background: rgba(167, 139, 250, 0.10);
+  border-color: rgba(167, 139, 250, 0.25);
+  color: #a78bfa;
+}
+
+/* 다가오는 납품 일정 */
+.vod-upcoming-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 14px;
+}
+
+.vod-upcoming-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.vod-upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vod-upcoming-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.vod-upcoming-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+
+.vod-upcoming-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.vod-upcoming-due {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vod-upcoming-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.vod-upcoming-pb-bg {
+  width: 70px;
+  height: 5px;
+  background: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.vod-upcoming-pb-fill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.vod-upcoming-pct {
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* D-Day 배지: 일정 조율 (보라/뮤트 톤) */
+.vod-dd-badge.dd-adjust {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.30);
+}
