@@ -4124,3 +4124,259 @@
   font-weight: 600;
   vertical-align: middle;
 }
+
+/* ═══════════════════════════════════════════════
+   납품관리 탭 (DeliveryTab)
+   ═══════════════════════════════════════════════ */
+
+/* ── 상단 요약 카드 ── */
+.vod-dlv-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.vod-dlv-summary-card {
+  flex: 1 1 120px;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 12px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-light);
+}
+
+.vod-dlv-summary-count {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.vod-dlv-summary-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.vod-dlv-summary-card--review-done .vod-dlv-summary-count  { color: #22c55e; }
+.vod-dlv-summary-card--delivered   .vod-dlv-summary-count  { color: #6366f1; }
+.vod-dlv-summary-card--revision    .vod-dlv-summary-count  { color: #f59e0b; }
+.vod-dlv-summary-card--unavailable .vod-dlv-summary-count  { color: var(--text-muted); }
+
+/* ── 테이블 섹션 헤더 ── */
+.vod-dlv-table-section {
+  margin-bottom: 24px;
+}
+
+.vod-dlv-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 헤더 액션 버튼 */
+.vod-dlv-action-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid #6366f1;
+  background: rgba(99, 102, 241, 0.10);
+  color: #6366f1;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vod-dlv-action-btn:hover {
+  background: rgba(99, 102, 241, 0.20);
+}
+
+.vod-dlv-action-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 테이블 최소 폭 */
+.vod-dlv-table {
+  min-width: 1400px;
+}
+
+/* 포커스 행 (이력 필터 기준) */
+.vod-dlv-row-focused {
+  background: rgba(99, 102, 241, 0.06) !important;
+  outline: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+/* ── 진행 상태 배지 ── */
+.vod-dlv-prog-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vod-dlv-prog--assign-wait  { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+.vod-dlv-prog--assigned     { background: rgba(99,179,237,0.12);  color: #63b3ed; border: 1px solid rgba(99,179,237,0.3);  }
+.vod-dlv-prog--working      { background: rgba(251,191,36,0.12);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.3);  }
+.vod-dlv-prog--work-done    { background: rgba(52,211,153,0.12);  color: #34d399; border: 1px solid rgba(52,211,153,0.3);  }
+.vod-dlv-prog--reviewing    { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+.vod-dlv-prog--review-done  { background: rgba(34,197,94,0.12);   color: #22c55e; border: 1px solid rgba(34,197,94,0.3);   }
+.vod-dlv-prog--delivered    { background: rgba(99,102,241,0.12);  color: #6366f1; border: 1px solid rgba(99,102,241,0.3);  }
+.vod-dlv-prog--revision     { background: rgba(245,158,11,0.12);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);  }
+
+/* ── 납품 가능 여부 배지 ── */
+.vod-dlv-avail {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vod-dlv-avail--ok       { background: rgba(34,197,94,0.12);   color: #22c55e; border: 1px solid rgba(34,197,94,0.3);   }
+.vod-dlv-avail--done     { background: rgba(99,102,241,0.12);  color: #6366f1; border: 1px solid rgba(99,102,241,0.3);  }
+.vod-dlv-avail--revision { background: rgba(245,158,11,0.12);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);  }
+.vod-dlv-avail--no       { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+
+/* ── 날짜 수정 ── */
+.vod-dlv-date-input {
+  width: 110px;
+  padding: 3px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.vod-dlv-date-edit-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 3px;
+  border-radius: 3px;
+}
+
+.vod-dlv-date-edit-btn:hover { color: var(--accent-color); }
+
+.vod-dlv-date-save-btn {
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid #22c55e;
+  background: rgba(34,197,94,0.12);
+  color: #22c55e;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.vod-dlv-date-cancel-btn {
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ── 행 관리 버튼 ── */
+.vod-dlv-row-btn {
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.vod-dlv-row-btn--deliver  { background: rgba(34,197,94,0.12);  color: #22c55e; border-color: rgba(34,197,94,0.3);  }
+.vod-dlv-row-btn--revision { background: rgba(245,158,11,0.12); color: #f59e0b; border-color: rgba(245,158,11,0.3); }
+.vod-dlv-row-btn--redeliver{ background: rgba(99,102,241,0.12); color: #6366f1; border-color: rgba(99,102,241,0.3); }
+
+.vod-dlv-row-btn--deliver:hover   { background: rgba(34,197,94,0.22);  }
+.vod-dlv-row-btn--revision:hover  { background: rgba(245,158,11,0.22); }
+.vod-dlv-row-btn--redeliver:hover { background: rgba(99,102,241,0.22); }
+
+.vod-dlv-row-unavailable {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── 납품 이력 섹션 ── */
+.vod-dlv-history-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.vod-dlv-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vod-dlv-history-filter-label {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(99,102,241,0.10);
+  color: #6366f1;
+  border: 1px solid rgba(99,102,241,0.25);
+  font-weight: 600;
+}
+
+.vod-dlv-history-clear-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.vod-dlv-history-clear-btn:hover { color: var(--text-primary); }
+
+/* ── 이력 유형 배지 ── */
+.vod-dlv-hist-type {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vod-dlv-hist-type--first     { background: rgba(34,197,94,0.12);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3);  }
+.vod-dlv-hist-type--revision  { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+.vod-dlv-hist-type--redeliver { background: rgba(99,102,241,0.12); color: #6366f1; border: 1px solid rgba(99,102,241,0.3); }
+
+/* ── 이력 납품 상태 배지 ── */
+.vod-dlv-hist-status {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vod-dlv-hist-status--done     { background: rgba(99,102,241,0.12);  color: #6366f1; }
+.vod-dlv-hist-status--revision { background: rgba(245,158,11,0.12);  color: #f59e0b; }
+.vod-dlv-hist-status--default  { background: var(--surface-light);   color: var(--text-secondary); }

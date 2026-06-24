@@ -2383,35 +2383,601 @@ function AiQcTab({ s }) {
 }
 
 // ─── 탭 7: 납품관리 ───
+const DELIVERY_TODAY = '2026-06-24';
+
+const DELIVERY_ITEMS_SEED = [
+  { id: 'di-001', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', fileName: '1강_오리엔테이션.mp4', worker: '이민정', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-09', dueDate: '2026-06-25', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-002', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', fileName: '2강_기초개념.mp4', worker: '박정호', reviewer: '정채원', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-08', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-12', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-003', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', fileName: '3강_핵심이론.mp4', worker: '최수영', reviewer: '정채원', progressStatus: '수정 요청', reviewCompletedDate: '2026-06-07', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-10', deliveryFormat: 'SRT', revisionNote: '자막 싱크 오류 수정 요청' },
+  { id: 'di-004', receivedDate: '2026-05-23', projectName: '지구과학개론', batchLabel: '1주차', fileName: '4강_응용예제.mp4', worker: '김동훈', reviewer: '', progressStatus: '작업 중', reviewCompletedDate: '', dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  { id: 'di-005', receivedDate: '2026-05-24', projectName: '지구과학개론', batchLabel: '1주차', fileName: '5강_종합정리.mp4', worker: '이수연', reviewer: '한지민', progressStatus: '검수 중', reviewCompletedDate: '', dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  { id: 'di-006', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차', fileName: '6강_발전응용.mp4', worker: '이민정', reviewer: '', progressStatus: '배정 완료', reviewCompletedDate: '', dueDate: '2026-07-06', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  { id: 'di-007', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차', fileName: '7강_심화학습.mp4', worker: '박정호', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-20', dueDate: '2026-06-30', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-008', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차', fileName: '8강_종합평가.mp4', worker: '', reviewer: '', progressStatus: '배정 중', reviewCompletedDate: '', dueDate: '', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  { id: 'di-009', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', fileName: '1강_발음기초.mp4', worker: '현정은', reviewer: '김검수', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-04', dueDate: '2026-06-10', actualDeliveryDate: '2026-06-09', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-010', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', fileName: '2강_회화패턴.mp4', worker: '현정은', reviewer: '김검수', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-05', dueDate: '2026-06-10', actualDeliveryDate: '2026-06-09', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-011', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', fileName: '3강_실전연습.mp4', worker: '오나연', reviewer: '최검수', progressStatus: '검수 중', reviewCompletedDate: '', dueDate: '2026-07-05', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+];
+
+const DELIVERY_HISTORY_SEED = [
+  { id: 'dh-001', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', historyType: '최초 납품',  processedDate: '2026-06-12', files: '2강_기초개념.mp4',      format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '1주차 2강 납품' },
+  { id: 'dh-002', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', historyType: '최초 납품',  processedDate: '2026-06-10', files: '3강_핵심이론.mp4',      format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '' },
+  { id: 'dh-003', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', historyType: '수정 요청',  processedDate: '2026-06-14', files: '3강_핵심이론.mp4',      format: '-',   manager: '관리자', status: '수정 요청',  memo: '자막 싱크 오류 수정 요청' },
+  { id: 'dh-004', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', historyType: '최초 납품',  processedDate: '2026-06-09', files: '1강_발음기초.mp4\n2강_회화패턴.mp4', format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '' },
+];
+
+function dlvProgressBadge(st) {
+  const MAP = {
+    '배정 중':   'vod-dlv-prog--assign-wait',
+    '배정 완료': 'vod-dlv-prog--assigned',
+    '작업 중':   'vod-dlv-prog--working',
+    '작업 완료': 'vod-dlv-prog--work-done',
+    '검수 중':   'vod-dlv-prog--reviewing',
+    '검수 완료': 'vod-dlv-prog--review-done',
+    '납품 완료': 'vod-dlv-prog--delivered',
+    '수정 요청': 'vod-dlv-prog--revision',
+  };
+  return <span className={`vod-dlv-prog-badge ${MAP[st] || 'vod-dlv-prog--assign-wait'}`}>{st}</span>;
+}
+
+function dlvAvailBadge(st) {
+  if (st === '검수 완료') return <span className="vod-dlv-avail vod-dlv-avail--ok">납품 가능</span>;
+  if (st === '납품 완료') return <span className="vod-dlv-avail vod-dlv-avail--done">납품 완료</span>;
+  if (st === '수정 요청') return <span className="vod-dlv-avail vod-dlv-avail--revision">수정 요청</span>;
+  return <span className="vod-dlv-avail vod-dlv-avail--no">납품 불가</span>;
+}
+
+function dlvHistoryTypeBadge(t) {
+  if (t === '최초 납품') return <span className="vod-dlv-hist-type vod-dlv-hist-type--first">{t}</span>;
+  if (t === '수정 요청') return <span className="vod-dlv-hist-type vod-dlv-hist-type--revision">{t}</span>;
+  if (t === '재납품')    return <span className="vod-dlv-hist-type vod-dlv-hist-type--redeliver">{t}</span>;
+  return <span className="vod-dlv-hist-type">{t}</span>;
+}
+
 function DeliveryTab({ s }) {
+  const [items, setItems]           = useState(DELIVERY_ITEMS_SEED);
+  const [history, setHistory]       = useState(DELIVERY_HISTORY_SEED);
+  const [selected, setSelected]     = useState([]);       // selected item ids
+  const [focusedItem, setFocusedItem] = useState(null);   // id — drives history filter
+  const [deliveryModal, setDeliveryModal]     = useState(null); // { targets: item[] }
+  const [revisionModal, setRevisionModal]     = useState(null); // { item }
+  const [redeliveryModal, setRedeliveryModal] = useState(null); // { item }
+  const [editingDueDate, setEditingDueDate]   = useState(null); // id
+  const [dueDateDraft, setDueDateDraft]       = useState('');
+
+  const toggleSelect = (id) =>
+    setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  const toggleAll = () => {
+    if (selected.length === items.length) setSelected([]);
+    else setSelected(items.map((it) => it.id));
+  };
+
+  const canDeliver  = (it) => it.progressStatus === '검수 완료';
+  const canRevision = (it) => it.progressStatus === '납품 완료';
+  const canRedeliver= (it) => it.progressStatus === '수정 요청';
+
+  const selectedItems = items.filter((it) => selected.includes(it.id));
+  const deliverableSelected = selectedItems.filter(canDeliver);
+  const hasDeliverable = deliverableSelected.length > 0;
+
+  // summary counts
+  const cntReviewDone = items.filter((it) => it.progressStatus === '검수 완료').length;
+  const cntDelivered  = items.filter((it) => it.progressStatus === '납품 완료').length;
+  const cntRevision   = items.filter((it) => it.progressStatus === '수정 요청').length;
+  const cntUnavailable= items.filter((it) => !['검수 완료','납품 완료','수정 요청'].includes(it.progressStatus)).length;
+
+  const confirmDelivery = (targets, form) => {
+    const ids = targets.map((t) => t.id);
+    const newItems = items.map((it) =>
+      ids.includes(it.id)
+        ? { ...it, progressStatus: '납품 완료', actualDeliveryDate: DELIVERY_TODAY, deliveryFormat: form.format || it.deliveryFormat }
+        : it
+    );
+    setItems(newItems);
+    const newHist = targets.map((t) => ({
+      id: `dh-${Date.now()}-${t.id}`,
+      receivedDate: t.receivedDate,
+      projectName: t.projectName,
+      batchLabel: t.batchLabel,
+      historyType: '최초 납품',
+      processedDate: DELIVERY_TODAY,
+      files: t.fileName,
+      format: form.format || '-',
+      manager: '관리자',
+      status: '납품 완료',
+      memo: form.memo || '',
+    }));
+    setHistory((prev) => [...prev, ...newHist]);
+    setSelected([]);
+    setDeliveryModal(null);
+  };
+
+  const confirmRevision = (item, form) => {
+    setItems((prev) => prev.map((it) =>
+      it.id === item.id ? { ...it, progressStatus: '수정 요청', revisionNote: form.content } : it
+    ));
+    setHistory((prev) => [...prev, {
+      id: `dh-rev-${Date.now()}`,
+      receivedDate: item.receivedDate,
+      projectName: item.projectName,
+      batchLabel: item.batchLabel,
+      historyType: '수정 요청',
+      processedDate: DELIVERY_TODAY,
+      files: item.fileName,
+      format: '-',
+      manager: '관리자',
+      status: '수정 요청',
+      memo: form.content || '',
+    }]);
+    setRevisionModal(null);
+  };
+
+  const confirmRedelivery = (item, form) => {
+    setItems((prev) => prev.map((it) =>
+      it.id === item.id
+        ? { ...it, progressStatus: '납품 완료', actualDeliveryDate: DELIVERY_TODAY, deliveryFormat: form.format || it.deliveryFormat }
+        : it
+    ));
+    setHistory((prev) => [...prev, {
+      id: `dh-redlv-${Date.now()}`,
+      receivedDate: item.receivedDate,
+      projectName: item.projectName,
+      batchLabel: item.batchLabel,
+      historyType: '재납품',
+      processedDate: DELIVERY_TODAY,
+      files: item.fileName,
+      format: form.format || '-',
+      manager: '관리자',
+      status: '납품 완료',
+      memo: form.memo || '',
+    }]);
+    setRedeliveryModal(null);
+  };
+
+  const saveDueDate = (id) => {
+    setItems((prev) => prev.map((it) => it.id === id ? { ...it, dueDate: dueDateDraft } : it));
+    setEditingDueDate(null);
+    setDueDateDraft('');
+  };
+
+  // history filtered by focused item (or all if none)
+  const focusedItemData = items.find((it) => it.id === focusedItem);
+  const filteredHistory = focusedItemData
+    ? history.filter((h) => h.projectName === focusedItemData.projectName && h.batchLabel === focusedItemData.batchLabel)
+    : history;
+
   return (
     <div className="proto-tab-panel">
-      <p className="proto-section-title">납품 현황</p>
-      <div className="proto-table-wrap proto-table-wrap--scroll">
-        <table className="proto-table">
-          <thead>
-            <tr>
-              <th className="text-center">순번</th>
-              <th className="text-center">납품예정일</th>
-              <th className="text-center">실제 납품일</th>
-              <th className="text-center">납품 형식</th>
-              <th>납품 파일/범위</th>
-              <th className="text-center">납품 상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {s.deliveries.map((d) => (
-              <tr key={d.no}>
-                <td className="text-center">{d.no}차</td>
-                <td className="text-center">{d.dueDate}</td>
-                <td className="text-center">{d.deliveredDate}</td>
-                <td className="text-center">{d.format}</td>
-                <td>{d.files}</td>
-                <td className="text-center">{deliveryBadge(d.status)}</td>
+
+      {/* ── 1. 상단 요약 ── */}
+      <div className="vod-dlv-summary">
+        <div className="vod-dlv-summary-card vod-dlv-summary-card--review-done">
+          <span className="vod-dlv-summary-count">{cntReviewDone}</span>
+          <span className="vod-dlv-summary-label">검수 완료</span>
+        </div>
+        <div className="vod-dlv-summary-card vod-dlv-summary-card--delivered">
+          <span className="vod-dlv-summary-count">{cntDelivered}</span>
+          <span className="vod-dlv-summary-label">납품 완료</span>
+        </div>
+        <div className="vod-dlv-summary-card vod-dlv-summary-card--revision">
+          <span className="vod-dlv-summary-count">{cntRevision}</span>
+          <span className="vod-dlv-summary-label">수정 요청</span>
+        </div>
+        <div className="vod-dlv-summary-card vod-dlv-summary-card--unavailable">
+          <span className="vod-dlv-summary-count">{cntUnavailable}</span>
+          <span className="vod-dlv-summary-label">납품 불가</span>
+        </div>
+      </div>
+
+      {/* ── 2. 납품 대상 및 상태 목록 ── */}
+      <div className="vod-dlv-table-section">
+        <div className="vod-dlv-table-header">
+          <p className="proto-section-title" style={{ margin: 0 }}>납품 대상 및 상태 목록</p>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <button
+              className={`vod-dlv-action-btn${hasDeliverable ? '' : ' vod-dlv-action-btn--disabled'}`}
+              disabled={!hasDeliverable}
+              onClick={() => hasDeliverable && setDeliveryModal({ targets: deliverableSelected })}
+            >
+              선택 파일 납품 완료 처리{deliverableSelected.length > 0 ? ` (${deliverableSelected.length})` : ''}
+            </button>
+          </div>
+        </div>
+
+        <div className="proto-table-wrap proto-table-wrap--scroll">
+          <table className="proto-table vod-dlv-table">
+            <thead>
+              <tr>
+                <th style={{ width: '32px' }}>
+                  <input type="checkbox" className="vod-pm-file-check"
+                    checked={selected.length === items.length && items.length > 0}
+                    onChange={toggleAll}
+                  />
+                </th>
+                <th className="text-center">의뢰/입고일</th>
+                <th>프로젝트명</th>
+                <th className="text-center">차수/주차</th>
+                <th>파일명</th>
+                <th className="text-center">작업자</th>
+                <th className="text-center">검수자</th>
+                <th className="text-center">현재 진행 상태</th>
+                <th className="text-center">납품 가능 여부</th>
+                <th className="text-center">검수완료일</th>
+                <th className="text-center">납품예정일</th>
+                <th className="text-center">실제 납품일</th>
+                <th className="text-center">납품 형식</th>
+                <th className="text-center">관리</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map((it) => (
+                <tr
+                  key={it.id}
+                  className={`${selected.includes(it.id) ? 'vod-pm-row-checked' : ''}${focusedItem === it.id ? ' vod-dlv-row-focused' : ''}`}
+                  onClick={() => setFocusedItem((prev) => prev === it.id ? null : it.id)}
+                >
+                  <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                    <input type="checkbox" className="vod-pm-file-check"
+                      checked={selected.includes(it.id)}
+                      onChange={() => toggleSelect(it.id)}
+                    />
+                  </td>
+                  <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{it.receivedDate}</td>
+                  <td style={{ fontSize: '13px', fontWeight: 500 }}>{it.projectName}</td>
+                  <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{it.batchLabel}</td>
+                  <td className="vod-pm-file-name-cell" title={it.fileName}>{it.fileName}</td>
+                  <td className="text-center" style={{ fontSize: '12px' }}>
+                    {it.worker ? <span className="vod-pm-assign-tag vod-pm-assign-tag--worker">{it.worker}</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                  </td>
+                  <td className="text-center" style={{ fontSize: '12px' }}>
+                    {it.reviewer ? <span className="vod-pm-assign-tag vod-pm-assign-tag--reviewer">{it.reviewer}</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                  </td>
+                  <td className="text-center">{dlvProgressBadge(it.progressStatus)}</td>
+                  <td className="text-center">{dlvAvailBadge(it.progressStatus)}</td>
+                  <td className="text-center" style={{ fontSize: '12px' }}>{it.reviewCompletedDate || '-'}</td>
+                  <td className="text-center" style={{ fontSize: '12px' }} onClick={(e) => e.stopPropagation()}>
+                    {editingDueDate === it.id ? (
+                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
+                        <input
+                          type="date"
+                          className="vod-dlv-date-input"
+                          value={dueDateDraft}
+                          onChange={(e) => setDueDateDraft(e.target.value)}
+                          autoFocus
+                        />
+                        <button className="vod-dlv-date-save-btn" onClick={() => saveDueDate(it.id)}>저장</button>
+                        <button className="vod-dlv-date-cancel-btn" onClick={() => setEditingDueDate(null)}>✕</button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
+                        <span>{it.dueDate || '-'}</span>
+                        <button
+                          className="vod-dlv-date-edit-btn"
+                          title="납품예정일 수정"
+                          onClick={() => { setEditingDueDate(it.id); setDueDateDraft(it.dueDate || ''); }}
+                        >✎</button>
+                      </div>
+                    )}
+                  </td>
+                  <td className="text-center" style={{ fontSize: '12px' }}>{it.actualDeliveryDate || '-'}</td>
+                  <td className="text-center" style={{ fontSize: '12px' }}>{it.deliveryFormat || '-'}</td>
+                  <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      {canDeliver(it) && (
+                        <button className="vod-dlv-row-btn vod-dlv-row-btn--deliver"
+                          onClick={() => setDeliveryModal({ targets: [it] })}>
+                          납품 완료 처리
+                        </button>
+                      )}
+                      {canRevision(it) && (
+                        <button className="vod-dlv-row-btn vod-dlv-row-btn--revision"
+                          onClick={() => setRevisionModal({ item: it })}>
+                          수정 요청 등록
+                        </button>
+                      )}
+                      {canRedeliver(it) && (
+                        <button className="vod-dlv-row-btn vod-dlv-row-btn--redeliver"
+                          onClick={() => setRedeliveryModal({ item: it })}>
+                          재납품 완료 처리
+                        </button>
+                      )}
+                      {!canDeliver(it) && !canRevision(it) && !canRedeliver(it) && (
+                        <span className="vod-dlv-row-unavailable">납품 불가</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── 3. 납품 이력 ── */}
+      <div className="vod-dlv-history-section">
+        <div className="vod-dlv-history-header">
+          <p className="proto-section-title" style={{ margin: 0 }}>납품 이력</p>
+          {focusedItemData && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="vod-dlv-history-filter-label">
+                {focusedItemData.projectName} / {focusedItemData.batchLabel}
+              </span>
+              <button className="vod-dlv-history-clear-btn" onClick={() => setFocusedItem(null)}>전체 보기</button>
+            </div>
+          )}
+        </div>
+        {filteredHistory.length === 0 ? (
+          <div className="proto-empty-state" style={{ padding: '20px' }}>
+            <span style={{ fontSize: '24px' }}>📋</span>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+              {focusedItemData ? '해당 파일의 납품 이력이 없습니다.' : '납품 이력이 없습니다.'}
+            </p>
+          </div>
+        ) : (
+          <div className="proto-table-wrap proto-table-wrap--scroll">
+            <table className="proto-table">
+              <thead>
+                <tr>
+                  <th className="text-center">의뢰/입고일</th>
+                  <th>프로젝트명</th>
+                  <th className="text-center">차수/주차</th>
+                  <th className="text-center">이력 유형</th>
+                  <th className="text-center">처리일</th>
+                  <th>납품 파일</th>
+                  <th className="text-center">납품 형식</th>
+                  <th className="text-center">납품 담당자</th>
+                  <th className="text-center">납품 상태</th>
+                  <th>납품 메모</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredHistory.map((h) => (
+                  <tr key={h.id}>
+                    <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{h.receivedDate}</td>
+                    <td style={{ fontSize: '13px' }}>{h.projectName}</td>
+                    <td className="text-center" style={{ fontSize: '12px' }}>{h.batchLabel}</td>
+                    <td className="text-center">{dlvHistoryTypeBadge(h.historyType)}</td>
+                    <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{h.processedDate}</td>
+                    <td style={{ fontSize: '12px' }}>{h.files}</td>
+                    <td className="text-center" style={{ fontSize: '12px' }}>{h.format}</td>
+                    <td className="text-center" style={{ fontSize: '12px' }}>{h.manager}</td>
+                    <td className="text-center">
+                      <span className={`vod-dlv-hist-status vod-dlv-hist-status--${h.status === '납품 완료' ? 'done' : h.status === '수정 요청' ? 'revision' : 'default'}`}>
+                        {h.status}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.memo || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ── 납품 완료 처리 모달 ── */}
+      {deliveryModal && (() => {
+        const targets = deliveryModal.targets;
+        const first = targets[0];
+        return (
+          <DeliveryConfirmModal
+            targets={targets}
+            first={first}
+            onConfirm={(form) => confirmDelivery(targets, form)}
+            onClose={() => setDeliveryModal(null)}
+          />
+        );
+      })()}
+
+      {/* ── 수정 요청 등록 모달 ── */}
+      {revisionModal && (
+        <RevisionModal
+          item={revisionModal.item}
+          onConfirm={(form) => confirmRevision(revisionModal.item, form)}
+          onClose={() => setRevisionModal(null)}
+        />
+      )}
+
+      {/* ── 재납품 완료 처리 모달 ── */}
+      {redeliveryModal && (
+        <RedeliveryModal
+          item={redeliveryModal.item}
+          onConfirm={(form) => confirmRedelivery(redeliveryModal.item, form)}
+          onClose={() => setRedeliveryModal(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function DeliveryConfirmModal({ targets, first, onConfirm, onClose }) {
+  const [form, setForm] = useState({ format: first?.deliveryFormat || 'SRT', path: '', memo: '' });
+  const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--workspy" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">납품 완료 처리</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="pm-workspy-body">
+          <div className="pm-workspy-field">
+            <label className="preg-label">납품 파일 ({targets.length}개)</label>
+            <div className="vod-wspy-file-list">
+              {targets.map((t) => (
+                <div key={t.id} className="vod-wspy-file-item">
+                  <span className="vod-wspy-file-icon">▶</span>
+                  <span className="vod-wspy-file-name">{t.fileName}</span>
+                  <span className="vod-wspy-file-time">{t.projectName} / {t.batchLabel}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">프로젝트명</label>
+              <input className="preg-input" readOnly value={first?.projectName || ''} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">차수/주차</label>
+              <input className="preg-input" readOnly value={targets.length === 1 ? (first?.batchLabel || '') : '복수 차수'} />
+            </div>
+          </div>
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">의뢰/입고일</label>
+              <input className="preg-input" readOnly value={first?.receivedDate || ''} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">납품예정일</label>
+              <input className="preg-input" readOnly value={targets.length === 1 ? (first?.dueDate || '-') : '-'} />
+            </div>
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">실제 납품일</label>
+            <input className="preg-input" readOnly value={DELIVERY_TODAY} style={{ color: 'var(--accent-color)', fontWeight: 600 }} />
+          </div>
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">납품 형식 *</label>
+              <input className="preg-input" value={form.format} onChange={(e) => set('format', e.target.value)} placeholder="예: SRT, SMI" />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">납품 경로</label>
+              <input className="preg-input" value={form.path} onChange={(e) => set('path', e.target.value)} placeholder="예: FTP / 이메일 / 클라우드" />
+            </div>
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">납품 메모</label>
+            <textarea className="pm-desc-textarea" rows={2} value={form.memo} onChange={(e) => set('memo', e.target.value)} placeholder="전달 사항을 입력하세요" />
+          </div>
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form)}>납품 완료 처리</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RevisionModal({ item, onConfirm, onClose }) {
+  const [form, setForm] = useState({ content: '', memo: '' });
+  const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--workspy" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">수정 요청 등록</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="pm-workspy-body">
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">파일명</label>
+              <input className="preg-input" readOnly value={item.fileName} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">프로젝트명</label>
+              <input className="preg-input" readOnly value={item.projectName} />
+            </div>
+          </div>
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">차수/주차</label>
+              <input className="preg-input" readOnly value={item.batchLabel} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">기존 납품일</label>
+              <input className="preg-input" readOnly value={item.actualDeliveryDate || '-'} />
+            </div>
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">수정 요청일</label>
+            <input className="preg-input" readOnly value={DELIVERY_TODAY} style={{ color: 'var(--accent-color)', fontWeight: 600 }} />
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">수정 요청 내용 *</label>
+            <textarea className="pm-desc-textarea" rows={3} value={form.content} onChange={(e) => set('content', e.target.value)} placeholder="수정 요청 내용을 입력하세요" />
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">수정 요청 메모</label>
+            <textarea className="pm-desc-textarea" rows={2} value={form.memo} onChange={(e) => set('memo', e.target.value)} placeholder="전달 사항을 입력하세요" />
+          </div>
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form)}>수정 요청 등록</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RedeliveryModal({ item, onConfirm, onClose }) {
+  const [form, setForm] = useState({ format: item.deliveryFormat || 'SRT', path: '', memo: '' });
+  const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal pm-modal--workspy" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">재납품 완료 처리</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="pm-workspy-body">
+          <div className="pm-workspy-field">
+            <label className="preg-label">재납품 파일</label>
+            <div className="vod-wspy-file-list">
+              <div className="vod-wspy-file-item">
+                <span className="vod-wspy-file-icon">▶</span>
+                <span className="vod-wspy-file-name">{item.fileName}</span>
+                <span className="vod-wspy-file-time">{item.projectName} / {item.batchLabel}</span>
+              </div>
+            </div>
+          </div>
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">프로젝트명</label>
+              <input className="preg-input" readOnly value={item.projectName} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">차수/주차</label>
+              <input className="preg-input" readOnly value={item.batchLabel} />
+            </div>
+          </div>
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">의뢰/입고일</label>
+              <input className="preg-input" readOnly value={item.receivedDate} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">기존 납품일</label>
+              <input className="preg-input" readOnly value={item.actualDeliveryDate || '-'} />
+            </div>
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">재납품일</label>
+            <input className="preg-input" readOnly value={DELIVERY_TODAY} style={{ color: 'var(--accent-color)', fontWeight: 600 }} />
+          </div>
+          <div className="pm-workspy-row">
+            <div className="pm-workspy-field">
+              <label className="preg-label">납품 형식 *</label>
+              <input className="preg-input" value={form.format} onChange={(e) => set('format', e.target.value)} />
+            </div>
+            <div className="pm-workspy-field">
+              <label className="preg-label">납품 경로</label>
+              <input className="preg-input" value={form.path} onChange={(e) => set('path', e.target.value)} placeholder="예: FTP / 이메일 / 클라우드" />
+            </div>
+          </div>
+          <div className="pm-workspy-field">
+            <label className="preg-label">재납품 메모</label>
+            <textarea className="pm-desc-textarea" rows={2} value={form.memo} onChange={(e) => set('memo', e.target.value)} placeholder="전달 사항을 입력하세요" />
+          </div>
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form)}>재납품 완료 처리</button>
+        </div>
       </div>
     </div>
   );
