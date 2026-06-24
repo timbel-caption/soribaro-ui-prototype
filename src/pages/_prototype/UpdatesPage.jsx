@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-24',
     author: '정기태',
+    title: 'VOD 프로젝트 관리 탭 와이드 레이아웃 적용으로 파일 테이블 가시성 개선',
+    description:
+      '프로젝트 관리 탭 선택 시 상세 페이지의 max-width 제한을 해제해 오른쪽 빈 공간까지 콘텐츠가 자연스럽게 확장되도록 했습니다. 파일명·작업자·검수자·관리 버튼이 가로 스크롤 없이 한 화면에 표시됩니다.',
+  },
+  {
+    date: '2026-06-24',
+    author: '정기태',
     title: 'VOD 파일관리 탭 단순화 및 프로젝트 관리 탭 파일 테이블 UX 개선',
     description:
       '파일관리 탭에서 업로드 대상 선택 버튼(기존 과목/새 주차/새 과목)과 안내 문구를 제거해 원본 파일 업로드·목록 확인에만 집중하도록 단순화했습니다. 프로젝트 관리 탭에서 파일명을 한 줄 말줄임표로 표시하고 테이블 최소 폭을 확대했으며, 작업자·검수자 미배정 파일의 작업시작·검수시작 버튼을 비활성화했습니다.',
@@ -76,6 +83,13 @@ const UPDATES = [
     title: '작업툴 AI QC 버튼 미표시 수정 (toolbarVisibility deep merge 누락)',
     description:
       'settingsStore의 persist merge 함수가 toolbarVisibility를 shallow merge하여 브라우저 localStorage에 저장된 이전 설정이 새 키(aiQc)를 덮어쓰던 문제를 수정했습니다. waveform·layoutByMode와 동일하게 toolbarVisibility도 deep merge하도록 변경했습니다.',
+  },
+  {
+    date: '2026-06-23',
+    author: '정기태',
+    title: '작업툴 AI QC 기능 추가',
+    description:
+      '툴바에 AI QC 버튼을 추가했습니다. 클릭 시 우측에 AI QC 결과 패널이 열리며, 확정 오류(싱크 오류·글자 수 오류·CPS 오류·용어집 불일치 등)는 빨간 배경, 의심 구간(문맥 어색·발화 불명확·발화 누락 가능)은 주황 배경으로 자막 카드가 하이라이트됩니다. 패널에는 오류 유형별 필터 칩, 이슈 목록, 핵심 기능 요약 카드가 포함됩니다.',
   },
   {
     date: '2026-06-23',

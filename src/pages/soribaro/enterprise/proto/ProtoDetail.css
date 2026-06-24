@@ -88,6 +88,17 @@
   overflow-y: auto;
 }
 
+/* 프로젝트 관리 탭: 파일 테이블이 넓게 보이도록 max-width 완화 */
+.proto-detail-page--wide {
+  max-width: none;
+}
+
+/* wide 모드에서 파일 테이블 min-width 해제 (자연스럽게 넓어짐) */
+.proto-detail-page--wide .vod-pm-file-table-wrap .proto-table {
+  min-width: unset;
+  width: 100%;
+}
+
 .proto-page-header {
   display: flex;
   align-items: flex-start;

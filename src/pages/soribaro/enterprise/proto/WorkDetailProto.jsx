@@ -2397,7 +2397,7 @@ export default function WorkDetailProto({ samples, backPath }) {
   ];
 
   return (
-    <div className="notion-page proto-detail-page">
+    <div className={`notion-page proto-detail-page${tab === 2 ? ' proto-detail-page--wide' : ''}`}>
       {/* 헤더 */}
       <div className="proto-page-header">
         <button className="proto-back-btn" onClick={() => navigate(backPath)}>
