@@ -17,6 +17,9 @@ const TAB_LABELS_MTG = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
   'AI QC 결과 요약', '정산확인', '이력/메모',
 ];
+const TAB_LABELS_STG = [
+  '기본정보', '매뉴얼·용어집 세팅', 'AI QC 결과 요약', '정산확인', '이력/메모',
+];
 
 const STATUS_MAP = {
   WORKING:  { label: '작업중',  cls: 'proto-status-working' },
@@ -3890,13 +3893,22 @@ export default function WorkDetailProto({ samples, backPath }) {
     );
   }
 
-  const isMtg = s.bssTypeName === '회의록' || s.bssTypeName === '현장속기';
-  const TAB_LABELS = isMtg ? TAB_LABELS_MTG : TAB_LABELS_VOD;
+  const isMtg = s.bssTypeName === '회의록';
+  const isStenography = s.bssTypeName === '현장속기';
+  const TAB_LABELS = isMtg ? TAB_LABELS_MTG : isStenography ? TAB_LABELS_STG : TAB_LABELS_VOD;
   const tabContent = isMtg
     ? [
         <BasicInfoTab s={s} />,
         <FileManageTab s={s} />,
         <ProjectManageTab s={s} />,
+        <ManualGlossaryTab s={s} />,
+        <AiQcTab s={s} />,
+        <MtgSettlementTab s={s} />,
+        <HistoryMemoTab s={s} />,
+      ]
+    : isStenography
+    ? [
+        <BasicInfoTab s={s} />,
         <ManualGlossaryTab s={s} />,
         <AiQcTab s={s} />,
         <MtgSettlementTab s={s} />,
@@ -3914,7 +3926,7 @@ export default function WorkDetailProto({ samples, backPath }) {
       ];
 
   return (
-    <div className={`notion-page proto-detail-page${tab === 2 ? ' proto-detail-page--wide' : ''}`}>
+    <div className={`notion-page proto-detail-page${!isStenography && tab === 2 ? ' proto-detail-page--wide' : ''}`}>
       {/* 헤더 */}
       <div className="proto-page-header">
         <button className="proto-back-btn" onClick={() => navigate(backPath)}>
