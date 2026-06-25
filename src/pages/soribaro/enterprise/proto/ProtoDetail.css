@@ -2242,6 +2242,35 @@
   font-family: inherit;
 }
 
+.pm-accuracy-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(45,212,191,0.12);
+  color: #2dd4bf;
+  border: 1px solid rgba(45,212,191,0.35);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pm-merge-qc-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  background: rgba(45,212,191,0.12);
+  color: #2dd4bf;
+  border: 1px solid rgba(45,212,191,0.4);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.pm-merge-qc-btn:hover { background: rgba(45,212,191,0.22); }
+
 .pm-wspy-chip {
   display: inline-flex;
   align-items: center;

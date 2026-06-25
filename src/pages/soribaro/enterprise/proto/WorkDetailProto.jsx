@@ -1583,6 +1583,8 @@ function ProjectManageTab({ s }) {
           name: '회의록 전사 프로젝트',
           status: '작업중',
           workTime: '1:00',
+          accuracy: '99.61%',
+          errors: 1,
           worker: '홍길동',
           reviewer: '',
           workspyRegistered: false,
@@ -1595,6 +1597,8 @@ function ProjectManageTab({ s }) {
           name: '회의록 전사 프로젝트',
           status: '작업중',
           workTime: '0:58',
+          accuracy: '98.27%',
+          errors: 5,
           worker: '김나리',
           reviewer: '',
           workspyRegistered: false,
@@ -1767,6 +1771,7 @@ function ProjectManageTab({ s }) {
         {projects.map(proj => (
           <div key={proj.id} className="pm-project-card">
             <div className="pm-project-header" onClick={() => toggleExpand(proj.id)}>
+              {/* 왼쪽: 이름 · 상태 · 작업시간 · 정확도 */}
               <span className="pm-expand-icon">{proj.expanded ? '▼' : '▶'}</span>
               <span className="pm-project-name">{proj.name}</span>
               <span className={`proto-status-badge ${proj.status === '작업완료' ? 'proto-status-done' : 'proto-status-working'}`}>
@@ -1799,6 +1804,11 @@ function ProjectManageTab({ s }) {
                   총 {proj.workTime || calcProjWorkTime(proj.projFiles)}
                 </span>
               )}
+              {(proj.accuracy || proj.errors != null) && (
+                <span className="pm-accuracy-chip">
+                  정확도 {proj.accuracy || '-'} / 회의록 오류 {proj.errors ?? '-'}
+                </span>
+              )}
               {proj.workspyRegistered && proj.workspyData && (() => {
                 const d = proj.workspyData;
                 const fmtD = (iso) => iso ? iso.split('T')[0].replace(/-/g, '.') : '-';
@@ -1811,8 +1821,19 @@ function ProjectManageTab({ s }) {
                   </>
                 );
               })()}
+
+              {/* 스페이서 — 우측 그룹을 끝으로 밀기 */}
+              <span style={{ flex: 1 }} />
+
+              {/* 오른쪽: 병합검수 + 배정 버튼 */}
+              <button
+                className="pm-merge-qc-btn"
+                onClick={e => { e.stopPropagation(); window.alert('[프로토타입] 병합검수 기능은 정식 서비스 단계에서 구현 예정입니다.'); }}
+              >
+                병합검수
+              </button>
               {!proj.workspyRegistered && (
-                <span className="pm-assign-area">
+                <span className="pm-assign-area" style={{ marginLeft: 0 }}>
                   <span className="pm-assign-label">작업자</span>
                   <button className="pm-chip pm-chip--worker" onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'worker' }); }}>
                     {proj.worker || '작업자 배정'}
