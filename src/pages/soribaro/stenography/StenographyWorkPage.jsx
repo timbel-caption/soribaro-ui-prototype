@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getMeetingSamples, appendMeetingSample } from '../enterprise/proto/protoStore';
+import { getStenographySamples, appendStenographySample } from '../enterprise/proto/protoStore';
 import MeetingListDashboard from '../meeting/MeetingListDashboard';
 import MeetingRegisterModal from '../meeting/MeetingRegisterModal';
 import '../../../styles/notion-list.css';
@@ -7,16 +7,16 @@ import '../enterprise/EnterpriseWorkList.css';
 import '../enterprise/proto/ProtoDetail.css';
 
 export default function StenographyWorkPage() {
-  const [samples, setSamples] = useState(() => getMeetingSamples());
+  const [samples, setSamples] = useState(() => getStenographySamples());
   const [showRegister, setShowRegister] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  const refreshSamples = () => setSamples([...getMeetingSamples()]);
+  const refreshSamples = () => setSamples([...getStenographySamples()]);
 
   const handleRegister = (form, files) => {
     const today = new Date().toISOString().split('T')[0];
     const newId = `PROTO-STG-${String(samples.length + 1).padStart(3, '0')}`;
-    appendMeetingSample({
+    appendStenographySample({
       id: newId,
       servCd: newId,
       entNm: form.entNm,
@@ -41,7 +41,7 @@ export default function StenographyWorkPage() {
       specialNote: form.specialNote || '',
       internalMemo: '',
       statusHistory: [{ date: form.regDate || today, label: '접수' }],
-      protoPath: `/soribaro/meeting/detail/${newId}`,
+      protoPath: `/soribaro/stenography/detail/${newId}`,
       files: files.map((f, i) => ({ fileNo: i + 1, fileName: f.name, duration: '-', size: f.size, uploadDttm: today })),
       assignments: [],
       manuals: [],
@@ -55,7 +55,7 @@ export default function StenographyWorkPage() {
       history: [{ dttm: (form.regDate || today) + ' 09:00', actor: '관리자', event: '프로젝트 등록', detail: form.entNm }],
       memos: [],
     });
-    setSamples([...getMeetingSamples()]);
+    setSamples([...getStenographySamples()]);
   };
 
   return (

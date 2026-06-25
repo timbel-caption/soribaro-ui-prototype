@@ -171,8 +171,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const cancelPlayTime = () => setEditingPlayTimeId(null);
 
-  const toDetailPath = (protoPath) =>
-    protoPath.replace('/soribaro/enterprise/meeting-proto/', '/soribaro/meeting/detail/');
+  const toDetailPath = (protoPath) => {
+    if (protoPath.startsWith('/soribaro/enterprise/meeting-proto/'))
+      return protoPath.replace('/soribaro/enterprise/meeting-proto/', '/soribaro/meeting/detail/');
+    return protoPath;
+  };
 
   const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
 
