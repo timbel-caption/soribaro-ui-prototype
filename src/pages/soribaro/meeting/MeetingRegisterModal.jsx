@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { COMPANY_DATA } from '../enterprise/proto/enterpriseProtoData';
+import { COMPANY_DATA, getCompanyStaff } from '../enterprise/proto/enterpriseProtoData';
 import { getRequestTypes } from '../manage/manageProtoStore';
 
 function addBusinessDays(dateStr, days) {
@@ -36,6 +36,8 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
   });
   const [companySearch, setCompanySearch] = useState('');
   const [showCompanyDrop, setShowCompanyDrop] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [showStaffModal, setShowStaffModal] = useState(false);
   const [files, setFiles] = useState([]);
   const [dragOver, setDragOver] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -63,6 +65,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
     setForm((f) => ({ ...f, entNm, managerNm: '', contractType: '' }));
     setCompanySearch(entNm);
     setShowCompanyDrop(false);
+    setSelectedStaff(null);
   };
 
   const handleManagerChange = (managerNm) => {
@@ -195,6 +198,26 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
               </div>
             </div>
 
+            {/* 실무자 관리 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="proto-log-btn proto-log-btn--save"
+                style={{ fontSize: '12px', padding: '5px 14px', opacity: form.entNm ? 1 : 0.5 }}
+                disabled={!form.entNm}
+                onClick={() => form.entNm && setShowStaffModal(true)}
+              >실무자 관리</button>
+              {selectedStaff ? (
+                <>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{selectedStaff.name}</span>
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{selectedStaff.email}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{selectedStaff.tel}</span>
+                </>
+              ) : (
+                form.entNm && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>실무자를 선택하세요</span>
+              )}
+            </div>
+
             {/* 회차 / 의뢰일 / 납품예정일 */}
             <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', marginBottom: '14px' }}>
               <div className="preg-field">
@@ -292,6 +315,61 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
             )}
           </div>
         </div>
+
+        {/* 실무자 선택 팝업 */}
+        {showStaffModal && (() => {
+          const staff = getCompanyStaff(form.entNm);
+          return (
+            <div className="pm-overlay" onClick={() => setShowStaffModal(false)}>
+              <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '560px', width: '90%' }} onClick={e => e.stopPropagation()}>
+                <div className="pm-modal-hd">
+                  <span className="pm-modal-title">실무자 선택</span>
+                  <button className="preg-x-btn" onClick={() => setShowStaffModal(false)}>✕</button>
+                </div>
+                <div style={{ padding: '16px 20px' }}>
+                  {staff.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                      등록된 실무자가 없습니다.<br />
+                      <span style={{ fontSize: '12px' }}>서비스 관리 &gt; 엔터프라이즈 관리 &gt; 업체 상세에서 등록할 수 있습니다.</span>
+                    </p>
+                  ) : (
+                    <div className="proto-table-wrap">
+                      <table className="proto-table">
+                        <thead>
+                          <tr>
+                            <th>실무자</th>
+                            <th>이메일</th>
+                            <th>전화번호(직통)</th>
+                            <th style={{ width: '56px' }}></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {staff.map(m => (
+                            <tr key={m.id} style={{ cursor: 'pointer' }} onClick={() => { setSelectedStaff(m); setShowStaffModal(false); }}>
+                              <td style={{ fontWeight: 600 }}>{m.name}</td>
+                              <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{m.email}</td>
+                              <td style={{ fontWeight: 600, fontSize: '13px' }}>{m.tel}</td>
+                              <td className="text-center">
+                                <button
+                                  className="proto-log-btn proto-log-btn--save"
+                                  style={{ fontSize: '11px', padding: '3px 10px' }}
+                                  onClick={e => { e.stopPropagation(); setSelectedStaff(m); setShowStaffModal(false); }}
+                                >선택</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                <div className="pm-modal-ft">
+                  <button className="proto-log-btn" onClick={() => setShowStaffModal(false)}>닫기</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* 푸터 */}
         <div className="preg-footer">

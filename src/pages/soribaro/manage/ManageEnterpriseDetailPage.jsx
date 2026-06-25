@@ -6,6 +6,7 @@ import {
   updateEnterprise,
   deleteEnterprise,
 } from '../../../api/v9/enterprise';
+import { getCompanyStaff, addCompanyStaff, removeCompanyStaff } from '../enterprise/proto/enterpriseProtoData';
 import { useTranslation } from 'react-i18next';
 import { toast } from '../../../stores/toastStore';
 import { useCommonCodeStore } from '../../../stores/commonCodeStore';
@@ -151,22 +152,31 @@ export default function ManageEnterpriseDetailPage() {
 
   const handleBack = () => navigate(-1);
 
-  // 담당자 관리 팝업
+  // 실무자 관리 팝업 — 스토어와 동기화
   const [managerModal, setManagerModal] = useState(false);
-  const [managers, setManagers] = useState([
-    { id: 1, name: '김유빈', email: 'hong@go.kr', tel: '070-1234-5678' },
-    { id: 2, name: '김유리', email: 'kim@go.kr',  tel: '070-6788-4728' },
-  ]);
+  const [managers, setManagers] = useState([]);
   const [managerForm, setManagerForm] = useState({ name: '', email: '', tel: '' });
-  const managerNextId = useRef(3);
+
+  // originalData가 로드되면 스토어에서 실무자 목록을 동기화
+  useEffect(() => {
+    if (originalData?.entNm) {
+      setManagers(getCompanyStaff(originalData.entNm));
+    }
+  }, [originalData?.entNm]);
 
   const handleAddManager = () => {
     if (!managerForm.name.trim()) return;
-    setManagers(prev => [...prev, { id: managerNextId.current++, ...managerForm }]);
+    const entNm = originalData?.entNm || '';
+    addCompanyStaff(entNm, managerForm);
+    setManagers(getCompanyStaff(entNm));
     setManagerForm({ name: '', email: '', tel: '' });
   };
 
-  const handleDeleteManager = (id) => setManagers(prev => prev.filter(m => m.id !== id));
+  const handleDeleteManager = (id) => {
+    const entNm = originalData?.entNm || '';
+    removeCompanyStaff(entNm, id);
+    setManagers(getCompanyStaff(entNm));
+  };
 
   if (loading) {
     return (
