@@ -33,16 +33,25 @@ export const MEETING_SAMPLES = [
     ],
     protoPath: '/soribaro/enterprise/meeting-proto/PROTO-MTG-001',
     files: [
-      { fileNo: 1, fileName: '학폭위_34회_전체.wav', duration: '1:58', size: '880 MB', uploadDttm: '2026-06-16' },
+      { fileNo: 1, fileName: '학폭위 34회 (1).wav', duration: '0:28', size: '210 MB', uploadDttm: '2026-06-16' },
+      { fileNo: 2, fileName: '학폭위 34회 (2).wav', duration: '0:32', size: '241 MB', uploadDttm: '2026-06-16' },
+      { fileNo: 3, fileName: '학폭위 34회 (3).wav', duration: '0:31', size: '230 MB', uploadDttm: '2026-06-16' },
+      { fileNo: 4, fileName: '학폭위 34회 (4).wav', duration: '0:27', size: '199 MB', uploadDttm: '2026-06-16' },
     ],
     assignments: [
-      { fileNo: 1, fileName: '학폭위_34회_전체.wav', worker: '홍길동', role: '전사', assignDttm: '2026-06-16', status: '작업중' },
+      { fileNo: 1, fileName: '학폭위 34회 (1).wav', worker: '홍길동', role: '전사', assignDttm: '2026-06-16', status: '작업중' },
+      { fileNo: 2, fileName: '학폭위 34회 (2).wav', worker: '홍길동', role: '전사', assignDttm: '2026-06-16', status: '작업중' },
+      { fileNo: 3, fileName: '학폭위 34회 (3).wav', worker: '이수진', role: '전사', assignDttm: '2026-06-16', status: '작업중' },
+      { fileNo: 4, fileName: '학폭위 34회 (4).wav', worker: '이수진', role: '전사', assignDttm: '2026-06-16', status: '미배정' },
     ],
     manuals: [
       { name: '서울중부교육지원청 회의록 작성 지침', type: '매뉴얼', appliedDate: '2026-06-16' },
     ],
     workProgress: [
-      { fileNo: 1, fileName: '학폭위_34회_전체.wav', worker: '홍길동', progress: 45, lastWork: '2026-06-17 14:00' },
+      { fileNo: 1, fileName: '학폭위 34회 (1).wav', worker: '홍길동', progress: 72, lastWork: '2026-06-17 14:00' },
+      { fileNo: 2, fileName: '학폭위 34회 (2).wav', worker: '홍길동', progress: 45, lastWork: '2026-06-17 13:30' },
+      { fileNo: 3, fileName: '학폭위 34회 (3).wav', worker: '이수진', progress: 20, lastWork: '2026-06-17 12:00' },
+      { fileNo: 4, fileName: '학폭위 34회 (4).wav', worker: '-', progress: 0, lastWork: '-' },
     ],
     qcScore: null,
     qcResults: [],
