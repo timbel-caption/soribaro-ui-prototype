@@ -280,6 +280,25 @@ function BasicInfoTab({ s }) {
 
   return (
     <div className="proto-tab-panel">
+      {/* 견적서/최종산출물/알림발송 (현장속기 전용 — 회의록은 프로젝트 관리 탭으로 이동) */}
+      {s.bssTypeName === '현장속기' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+          <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
+          <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
+          <button
+            className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
+            onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
+          >견적서 다운로드</button>
+          <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
+          <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
+          <button
+            className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
+            onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
+          >최종산출물 다운로드</button>
+          <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
+        </div>
+      )}
+
       <div className="proto-basic-card">
         <div className="proto-basic-card-header">
           <span>📋</span>
@@ -415,25 +434,6 @@ function BasicInfoTab({ s }) {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {/* 견적서/최종산출물/알림발송 (현장속기 전용 — 회의록은 프로젝트 관리 탭으로 이동) */}
-      {s.bssTypeName === '현장속기' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
-          <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
-          <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
-          <button
-            className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
-            onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
-          >견적서 다운로드</button>
-          <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
-          <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
-          <button
-            className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
-            onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
-          >최종산출물 다운로드</button>
-          <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
         </div>
       )}
 
