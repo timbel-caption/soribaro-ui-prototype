@@ -249,6 +249,68 @@ function AiQcSuggestModal({ issue, subtitle, onClose }) {
   );
 }
 // ─────────────────────────────────────────────────────────────────────────────
+// ─── 맞춤법 검사 더미 데이터 ────────────────────────────────────────────────────
+const SPELL_CHECK_ISSUES_SEED = [
+  { id: "sc-1", type: "띄어쓰기", original: "한번",         suggestion: "한 번",           startTime: "00:00:10.377", endTime: "00:00:15.782", content: "이 내용을 한번 확인해 보겠습니다." },
+  { id: "sc-2", type: "띄어쓰기", original: "검토 하겠습니다", suggestion: "검토하겠습니다", startTime: "00:00:15.782", endTime: "00:00:22.155", content: "계약서를 검토 하겠습니다." },
+  { id: "sc-3", type: "맞춤법",   original: "않돼요",         suggestion: "안 돼요",         startTime: "00:00:22.155", endTime: "00:00:26.792", content: "그렇게 하면 않돼요." },
+  { id: "sc-4", type: "문장부호", original: "살펴볼까요",    suggestion: "살펴볼까요?",     startTime: "00:00:26.792", endTime: "00:00:31.004", content: "이 부분을 함께 살펴볼까요" },
+  { id: "sc-5", type: "띄어쓰기", original: "빠른시일",      suggestion: "빠른 시일",       startTime: "00:00:31.004", endTime: "00:00:36.480", content: "빠른시일 안에 처리하겠습니다." },
+  { id: "sc-6", type: "맞춤법",   original: "왠지",          suggestion: "웬지",            startTime: "00:00:42.000", endTime: "00:00:46.330", content: "왠지 모르게 신뢰가 가는 분입니다." },
+  { id: "sc-7", type: "오탈자",   original: "발표됬습니다",  suggestion: "발표됐습니다",    startTime: "00:00:50.110", endTime: "00:00:54.900", content: "결과가 발표됬습니다." },
+];
+
+function SpellCheckPanel({ issues, onIssueUpdate, onClose, onJumpTo }) {
+  const total    = issues.length;
+  const done     = issues.filter((i) => i.status !== "미확인").length;
+  const pending  = issues.filter((i) => i.status === "미확인").length;
+
+  return (
+    <div className="sc-panel">
+      <div className="sc-panel-header">
+        <span className="sc-panel-title">맞춤법 검사 결과</span>
+        <button className="sc-panel-close" onClick={onClose}>×</button>
+      </div>
+      <div className="sc-panel-summary">
+        <span className="sc-summary-total">전체 {total}건</span>
+        <span className="sc-summary-done">처리 완료 {done}건</span>
+        <span className={`sc-summary-pending${pending > 0 ? " has-pending" : ""}`}>미확인 {pending}건</span>
+      </div>
+      <div className="sc-panel-list">
+        {issues.map((issue) => (
+          <div key={issue.id} className={`sc-issue-item sc-issue-${issue.status === "미확인" ? "pending" : issue.status === "적용" ? "applied" : "ignored"}`}>
+            <div className="sc-issue-top">
+              <span className={`sc-issue-status sc-status-${issue.status === "미확인" ? "pending" : issue.status === "적용" ? "applied" : "ignored"}`}>
+                {issue.status}
+              </span>
+              <span className="sc-issue-type">{issue.type}</span>
+              <span className="sc-issue-time">{issue.startTime} ~ {issue.endTime}</span>
+            </div>
+            <div className="sc-issue-diff">
+              <span className="sc-diff-original">{issue.original}</span>
+              <span className="sc-diff-arrow">→</span>
+              <span className="sc-diff-suggestion">{issue.suggestion}</span>
+            </div>
+            <div className="sc-issue-content">{issue.content}</div>
+            {issue.status === "미확인" && (
+              <div className="sc-issue-actions">
+                <button className="sc-btn sc-btn-jump" onClick={() => onJumpTo(issue)}>이동</button>
+                <button className="sc-btn sc-btn-apply" onClick={() => onIssueUpdate(issue.id, "적용")}>적용</button>
+                <button className="sc-btn sc-btn-ignore" onClick={() => onIssueUpdate(issue.id, "무시")}>무시</button>
+              </div>
+            )}
+            {issue.status !== "미확인" && (
+              <div className="sc-issue-actions">
+                <button className="sc-btn sc-btn-undo" onClick={() => onIssueUpdate(issue.id, "미확인")}>되돌리기</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 const BLOCKED_EDIT_SHORTCUT_IDS = new Set([
   "outSync",
@@ -2316,10 +2378,27 @@ function SubtitleList({ mediaRef, workCategory = null }) {
   const [showAiQcPanel, setShowAiQcPanel] = useState(false);
   const [aiQcFilter, setAiQcFilter] = useState("전체");
   const [aiQcSuggestModal, setAiQcSuggestModal] = useState(null); // { issue, subtitleId }
+  const [showSpellCheckPanel, setShowSpellCheckPanel] = useState(false);
+  const [spellCheckIssues, setSpellCheckIssues] = useState(() =>
+    SPELL_CHECK_ISSUES_SEED.map((i) => ({ ...i, status: "미확인" }))
+  );
+  const [spellCheckHighlightId, setSpellCheckHighlightId] = useState(null); // 이동 시 약하게 강조할 issue id
 
   const handleAiQcSuggest = useCallback(({ issue, subtitleId: sid }) => {
     setAiQcSuggestModal({ issue, subtitleId: sid });
   }, []);
+
+  const handleSpellIssueUpdate = useCallback((id, status) => {
+    setSpellCheckIssues((prev) => prev.map((i) => i.id === id ? { ...i, status } : i));
+  }, []);
+
+  const handleSpellJumpTo = useCallback((issue) => {
+    setSpellCheckHighlightId(issue.id);
+    setTimeout(() => setSpellCheckHighlightId(null), 2000);
+  }, []);
+
+  const spellCheckPendingCount = spellCheckIssues.filter((i) => i.status === "미확인").length;
+
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -5862,7 +5941,12 @@ function SubtitleList({ mediaRef, workCategory = null }) {
         )}
         {isServerMode && !isCheckedReadOnly && !isMergeMode && !isReviewer(role) && (
           <button
-            onClick={handleWorkerSubmitClick}
+            onClick={() => {
+              if (spellCheckPendingCount > 0) {
+                toast.warn(`맞춤법 검사 미확인 항목이 ${spellCheckPendingCount}건 있습니다.`);
+              }
+              handleWorkerSubmitClick();
+            }}
             className="subtitle-btn submit"
             disabled={isSaving || !fileId}
           >
@@ -5871,7 +5955,14 @@ function SubtitleList({ mediaRef, workCategory = null }) {
         )}
         {isServerMode && !isCheckedReadOnly && !isMergeMode && isReviewer(role) && (
           <button
-            onClick={handleSubmitClick}
+            onClick={() => {
+              if (spellCheckPendingCount > 0) {
+                toast.error(`맞춤법 검사 미확인 항목이 ${spellCheckPendingCount}건 남아 있습니다.\n모든 항목을 적용 또는 무시 처리한 뒤 검수 완료할 수 있습니다.`);
+                setShowSpellCheckPanel(true);
+                return;
+              }
+              handleSubmitClick();
+            }}
             className="subtitle-btn submit"
             disabled={isSaving || !fileId}
           >
@@ -5929,6 +6020,12 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                 AI QC
               </button>
             )}
+            <button
+              onClick={() => setShowSpellCheckPanel((v) => !v)}
+              className={`subtitle-btn spell-check${showSpellCheckPanel ? " active" : ""}${spellCheckPendingCount > 0 ? " has-pending" : ""}`}
+            >
+              맞춤법 검사{spellCheckPendingCount > 0 ? ` (${spellCheckPendingCount})` : ""}
+            </button>
             {toolbarVisibility.netflixQc && (
               <button onClick={openNetflixQC} className="subtitle-btn netflix-qc">
                 Netflix QC
@@ -6948,6 +7045,15 @@ function SubtitleList({ mediaRef, workCategory = null }) {
           />
         );
       })()}
+
+      {showSpellCheckPanel && (
+        <SpellCheckPanel
+          issues={spellCheckIssues}
+          onIssueUpdate={handleSpellIssueUpdate}
+          onClose={() => setShowSpellCheckPanel(false)}
+          onJumpTo={handleSpellJumpTo}
+        />
+      )}
 
       {/* 분할파일 병합검수 — 분할 경계 자막 겹침 해결 (STT 모달 UI 재사용) */}
       {mergeConflict && (
