@@ -765,9 +765,9 @@ const VOD_SUBJECT_SEED = [
         status: '검수중',
         filesExpanded: false,
         projFiles: [
-          { fileNo: 1, fileName: 'Unit01_Greetings.mp4',  split: '-', range: '', workTime: '00:45:00', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '검수중', progress: 85,  worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 2, fileName: 'Unit02_Daily_Life.mp4', split: '-', range: '', workTime: '00:42:30', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '완료',   progress: 100, worker: '박정호(jhpark@edu.kr)', reviewer: '정채원(jcw@edu.kr)' },
-          { fileNo: 3, fileName: 'Unit03_Shopping.mp4',   split: '-', range: '', workTime: '00:48:00', workspyStatus: '등록대기', regMethod: '미등록',   bundleGroup: '',  status: '대기',   progress: 0,   worker: '',                      reviewer: '' },
+          { fileNo: 1, fileName: '1강_발음기초.mp4',  split: '-', range: '', workTime: '00:45:00', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '검수중', progress: 85,  worker: '현정은(jhe@edu.kr)',  reviewer: '김검수(ks@edu.kr)' },
+          { fileNo: 2, fileName: '2강_회화패턴.mp4',  split: '-', range: '', workTime: '00:42:30', workspyStatus: '등록완료', regMethod: '묶음 등록', bundleGroup: 'A', status: '완료',   progress: 100, worker: '현정은(jhe@edu.kr)',  reviewer: '김검수(ks@edu.kr)' },
+          { fileNo: 3, fileName: '3강_실전연습.mp4',  split: '-', range: '', workTime: '00:48:00', workspyStatus: '등록대기', regMethod: '미등록',   bundleGroup: '',  status: '대기',   progress: 0,   worker: '오나연(on@edu.kr)',   reviewer: '' },
         ],
       },
     ],
@@ -2522,28 +2522,32 @@ function AiQcTab({ s }) {
 const DELIVERY_TODAY = '2026-06-24';
 
 const DELIVERY_ITEMS_SEED = [
-  { id: 'di-001', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', fileName: '1강_오리엔테이션.mp4', worker: '이민정', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-09', dueDate: '2026-06-25', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
-  { id: 'di-002', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', fileName: '2강_기초개념.mp4', worker: '박정호', reviewer: '정채원', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-08', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-12', deliveryFormat: 'SRT', revisionNote: '' },
-  { id: 'di-003', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', fileName: '3강_핵심이론.mp4', worker: '최수영', reviewer: '정채원', progressStatus: '수정 요청', reviewCompletedDate: '2026-06-07', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-10', deliveryFormat: 'SRT', revisionNote: '자막 싱크 오류 수정 요청' },
-  { id: 'di-004', receivedDate: '2026-05-23', projectName: '지구과학개론', batchLabel: '1주차', fileName: '4강_응용예제.mp4', worker: '김동훈', reviewer: '', progressStatus: '작업 중', reviewCompletedDate: '', dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
-  { id: 'di-005', receivedDate: '2026-05-24', projectName: '지구과학개론', batchLabel: '1주차', fileName: '5강_종합정리.mp4', worker: '이수연', reviewer: '한지민', progressStatus: '검수 중', reviewCompletedDate: '', dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
-  { id: 'di-006', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차', fileName: '6강_발전응용.mp4', worker: '이민정', reviewer: '', progressStatus: '배정 완료', reviewCompletedDate: '', dueDate: '2026-07-06', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
-  { id: 'di-007', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차', fileName: '7강_심화학습.mp4', worker: '박정호', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-20', dueDate: '2026-06-30', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
-  { id: 'di-008', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차', fileName: '8강_종합평가.mp4', worker: '', reviewer: '', progressStatus: '배정 중', reviewCompletedDate: '', dueDate: '', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
-  { id: 'di-009', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', fileName: '1강_발음기초.mp4', worker: '현정은', reviewer: '김검수', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-04', dueDate: '2026-06-10', actualDeliveryDate: '2026-06-09', deliveryFormat: 'SRT', revisionNote: '' },
-  { id: 'di-010', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', fileName: '2강_회화패턴.mp4', worker: '현정은', reviewer: '김검수', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-05', dueDate: '2026-06-10', actualDeliveryDate: '2026-06-09', deliveryFormat: 'SRT', revisionNote: '' },
-  { id: 'di-011', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', fileName: '3강_실전연습.mp4', worker: '오나연', reviewer: '최검수', progressStatus: '검수 중', reviewCompletedDate: '', dueDate: '2026-07-05', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  // 지구과학개론 / 1주차 / 1차 입고
+  { id: 'di-001', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '1강_오리엔테이션.mp4', worker: '이민정', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-09', dueDate: '2026-06-25', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-002', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '2강_기초개념.mp4',      worker: '박정호', reviewer: '정채원', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-08', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-12', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-003', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '3강_핵심이론.mp4',       worker: '최수영', reviewer: '정채원', progressStatus: '수정 요청', reviewCompletedDate: '2026-06-07', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-10', deliveryFormat: 'SRT', revisionNote: '자막 싱크 오류 수정 요청' },
+  { id: 'di-004', receivedDate: '2026-05-23', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '4강_응용예제.mp4',       worker: '김동훈', reviewer: '',      progressStatus: '작업 중',   reviewCompletedDate: '',           dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  { id: 'di-005', receivedDate: '2026-05-24', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '5강_종합정리.mp4',       worker: '이수연', reviewer: '한지민', progressStatus: '검수 중',   reviewCompletedDate: '',           dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  // 지구과학개론 / 2주차 / 2차 입고
+  { id: 'di-006', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '6강_실습I.mp4',          worker: '이민정', reviewer: '',      progressStatus: '배정 완료', reviewCompletedDate: '',           dueDate: '2026-07-06', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  { id: 'di-007', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '7강_실습II.mp4',         worker: '박정호', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-20', dueDate: '2026-06-30', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-008', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '8강_중간정리.mp4',       worker: '',       reviewer: '',      progressStatus: '배정 중',   reviewCompletedDate: '',           dueDate: '',           actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  { id: 'di-012', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '9강_응용심화.mp4',       worker: '',       reviewer: '',      progressStatus: '배정 중',   reviewCompletedDate: '',           dueDate: '',           actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
+  // 기초영어회화 / 1주차 / 1차 입고
+  { id: 'di-009', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', fileName: '1강_발음기초.mp4',       worker: '현정은', reviewer: '김검수', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-04', dueDate: '2026-06-10', actualDeliveryDate: '2026-06-09', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-010', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', fileName: '2강_회화패턴.mp4',       worker: '현정은', reviewer: '김검수', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-05', dueDate: '2026-06-10', actualDeliveryDate: '2026-06-09', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-011', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', fileName: '3강_실전연습.mp4',       worker: '오나연', reviewer: '최검수', progressStatus: '검수 중',   reviewCompletedDate: '',           dueDate: '2026-07-05', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
 ];
 
 const DELIVERY_HISTORY_SEED = [
-  // 지구과학개론 / 1주차
-  { id: 'dh-001', projectName: '지구과학개론', batchLabel: '1주차', historyType: '납품 완료',   processedDate: '2026-06-10', files: '3강_핵심이론.mp4',                    format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '' },
-  { id: 'dh-002', projectName: '지구과학개론', batchLabel: '1주차', historyType: '납품 완료',   processedDate: '2026-06-12', files: '2강_기초개념.mp4',                    format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '1주차 2강 납품' },
-  { id: 'dh-003', projectName: '지구과학개론', batchLabel: '1주차', historyType: '수정 요청',   processedDate: '2026-06-14', files: '3강_핵심이론.mp4',                    format: '-',   manager: '관리자', status: '수정 요청',  memo: '자막 싱크 오류 수정 요청' },
-  // 지구과학개론 / 2주차
-  { id: 'dh-005', projectName: '지구과학개론', batchLabel: '2주차', historyType: '납품 완료',   processedDate: '2026-06-20', files: '7강_심화학습.mp4',                    format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '2주차 7강 납품' },
-  // 기초영어회화 / 1주차
-  { id: 'dh-004', projectName: '기초영어회화', batchLabel: '1주차', historyType: '납품 완료',   processedDate: '2026-06-09', files: '1강_발음기초.mp4, 2강_회화패턴.mp4', format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '1주차 납품' },
+  // 지구과학개론 / 1주차 / 1차 입고
+  { id: 'dh-001', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', historyType: '납품 완료',   processedDate: '2026-06-10', files: '1강_오리엔테이션.mp4, 2강_기초개념.mp4', format: 'SRT', manager: '관리자', status: '납품 완료', memo: '1주차 1차 납품' },
+  { id: 'dh-002', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', historyType: '수정 요청',   processedDate: '2026-06-14', files: '3강_핵심이론.mp4',                         format: '-',   manager: '관리자', status: '수정 요청', memo: '자막 싱크 오류 수정 요청' },
+  { id: 'dh-003', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', historyType: '재납품 완료', processedDate: '2026-06-15', files: '3강_핵심이론.mp4',                         format: 'SRT', manager: '관리자', status: '납품 완료', memo: '수정 반영 후 재납품' },
+  // 지구과학개론 / 2주차 / 2차 입고
+  { id: 'dh-004', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', historyType: '납품 완료',   processedDate: '2026-06-30', files: '7강_실습II.mp4',                            format: 'SRT', manager: '관리자', status: '납품 완료', memo: '2주차 7강 납품' },
+  // 기초영어회화 / 1주차 / 1차 입고
+  { id: 'dh-005', projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', historyType: '납품 완료',   processedDate: '2026-06-10', files: '1강_발음기초.mp4, 2강_회화패턴.mp4',     format: 'SRT', manager: '관리자', status: '납품 완료', memo: '1주차 납품' },
 ];
 
 function dlvProgressBadge(st) {
