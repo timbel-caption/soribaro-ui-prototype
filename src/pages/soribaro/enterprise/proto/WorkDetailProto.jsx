@@ -3528,8 +3528,9 @@ function StenographyAssignTab({ s }) {
           <div key={i} className="settle-history-item">
             <span className="settle-history-dttm">{h.dttm}</span>
             <span className="settle-history-actor">{h.actor}</span>
-            <span className="settle-history-event">{h.event}</span>
-            {h.reason && <span className="settle-history-reason">{h.reason}</span>}
+            <span className="settle-history-event">
+              {h.event}{h.reason && <span className="settle-history-reason"> ({h.reason})</span>}
+            </span>
           </div>
         ))}
       </div>
