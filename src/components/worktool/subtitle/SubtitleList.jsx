@@ -121,29 +121,35 @@ const AI_QC_ISSUES = [
   { id: 9, kind: "suspect", type: "문맥 어색", text: "00:15:03,200 → 00:15:06,400\n앞 자막과 이어지는 맥락이 자연스럽지 않습니다.", time: "00:15:03" },
 ];
 
-const AI_QC_FILTERS = ["전체", "확정 오류", "의심 구간"];
+const AI_QC_FILTERS = ["전체", "확정 오류", "의심 구간", "마스킹 검토"];
 
-// 자막 index → { kind, type, desc } 더미 매핑 (0~4: 확정 오류, 5~8: 의심 구간)
+// 자막 index → { kind, type, desc } 더미 매핑
+// kind: "error"(확정 오류) · "suspect"(의심 구간) · "masking"(마스킹 검토)
 const AI_QC_INDEX_MAP = {
-  0: { kind: "error",   type: "CPS 오류",       desc: "자막이 CPS 기준(17)을 초과합니다." },
-  1: { kind: "error",   type: "글자 수 오류",   desc: "한 줄 최대 글자 수(16자)를 초과합니다." },
-  2: { kind: "error",   type: "싱크 오류",       desc: "시작 시간이 종료 시간보다 늦습니다." },
-  3: { kind: "error",   type: "용어집 불일치",   desc: "'캐릭터' → 용어집 기준 '캐릭터(character)'" },
-  4: { kind: "error",   type: "줄 수 오류",      desc: "줄 수가 최대(2줄)를 초과합니다." },
-  5: { kind: "suspect", type: "문맥 어색",       desc: "발화 맥락과 어울리지 않을 가능성이 있습니다." },
-  6: { kind: "suspect", type: "발화 불명확",     desc: "노이즈·웅얼거림으로 발화 내용이 불명확합니다." },
-  7: { kind: "suspect", type: "발화 누락 가능", desc: "자막 없이 발화가 감지된 구간입니다." },
-  8: { kind: "suspect", type: "문맥 어색",       desc: "앞 자막과 이어지는 맥락이 자연스럽지 않습니다." },
+  0:  { kind: "error",   type: "CPS 오류",       desc: "자막이 CPS 기준(17)을 초과합니다." },
+  1:  { kind: "error",   type: "글자 수 오류",   desc: "한 줄 최대 글자 수(16자)를 초과합니다." },
+  2:  { kind: "error",   type: "싱크 오류",       desc: "시작 시간이 종료 시간보다 늦습니다." },
+  3:  { kind: "error",   type: "용어집 불일치",   desc: "'캐릭터' → 용어집 기준 '캐릭터(character)'" },
+  4:  { kind: "error",   type: "줄 수 오류",      desc: "줄 수가 최대(2줄)를 초과합니다." },
+  5:  { kind: "suspect", type: "문맥 어색",       desc: "발화 맥락과 어울리지 않을 가능성이 있습니다." },
+  6:  { kind: "suspect", type: "발화 불명확",     desc: "노이즈·웅얼거림으로 발화 내용이 불명확합니다." },
+  7:  { kind: "suspect", type: "발화 누락 가능",  desc: "자막 없이 발화가 감지된 구간입니다." },
+  8:  { kind: "suspect", type: "문맥 어색",       desc: "앞 자막과 이어지는 맥락이 자연스럽지 않습니다." },
+  9:  { kind: "masking", type: "인명 의심",       desc: "개인정보로 의심되는 표현이 포함되어 있습니다." },
+  10: { kind: "masking", type: "기관명 의심",     desc: "개인정보로 의심되는 표현이 포함되어 있습니다." },
+  11: { kind: "masking", type: "지역명 의심",     desc: "개인정보로 의심되는 표현이 포함되어 있습니다." },
 };
 
 function AiQcInlineFilter({ filter, onFilterChange, onClose }) {
-  const errorCount = AI_QC_ISSUES.filter((i) => i.kind === "error").length;
-  const suspectCount = AI_QC_ISSUES.filter((i) => i.kind === "suspect").length;
+  const errorCount   = Object.values(AI_QC_INDEX_MAP).filter((i) => i.kind === "error").length;
+  const suspectCount = Object.values(AI_QC_INDEX_MAP).filter((i) => i.kind === "suspect").length;
+  const maskingCount = Object.values(AI_QC_INDEX_MAP).filter((i) => i.kind === "masking").length;
   return (
     <div className="ai-qc-inline-filter">
       <div className="ai-qc-inline-counts">
         <span className="ai-qc-count-error">확정 오류 {errorCount}건</span>
         <span className="ai-qc-count-suspect">의심 구간 {suspectCount}건</span>
+        <span className="ai-qc-count-masking">마스킹 검토 {maskingCount}건</span>
       </div>
       <div className="ai-qc-inline-chips">
         {AI_QC_FILTERS.map((f) => (
@@ -170,12 +176,24 @@ const AI_QC_SUGGESTIONS = {
   "문맥 어색":      { suggested: "발화 맥락을 확인하여\n자연스러운 표현으로 수정하세요.", reason: "발화 맥락과 어울리지 않을 가능성이 있습니다. 전후 자막 흐름을 확인해 주세요." },
   "발화 불명확":    { suggested: "[불명확]", reason: "노이즈·웅얼거림으로 발화 내용이 불명확합니다. 원본 음성을 다시 확인해 주세요." },
   "발화 누락 가능": { suggested: "(무음 처리 또는 직접 입력)", reason: "자막 없이 발화가 감지된 구간입니다. 해당 구간 오디오를 확인해 주세요." },
+  // 마스킹 검토 제안 (더미 예시)
+  "인명 의심":   { suggested: "김○○ 의원은 서울 ○○구 주민들과\n간담회를 진행했습니다.", reason: "인명으로 추정되는 표현이 포함되어 있어 마스킹 검토가 필요합니다. 최종 판단은 검수자가 직접 확인해 주세요." },
+  "기관명 의심": { suggested: "○○○ 연구원 연구팀은 발표에서\n이번 결과를 공식 확인했습니다.", reason: "기관명으로 추정되는 표현이 포함되어 있어 마스킹 검토가 필요합니다. 최종 판단은 검수자가 직접 확인해 주세요." },
+  "지역명 의심": { suggested: "○○ 지역 주민 대표단이 참석하여\n의견을 전달했습니다.", reason: "지역명으로 추정되는 표현이 포함되어 있어 마스킹 검토가 필요합니다. 최종 판단은 검수자가 직접 확인해 주세요." },
 };
 
+// kind → 배지 레이블
+function kindLabel(kind) {
+  if (kind === "error")   return "확정 오류";
+  if (kind === "masking") return "마스킹 검토";
+  return "의심 구간";
+}
+
 function AiQcSuggestModal({ issue, subtitle, onClose }) {
-  if (!issue || !subtitle === undefined) return null;
+  if (!issue || subtitle === undefined) return null;
+  const isMasking = issue.kind === "masking";
   const suggestion = AI_QC_SUGGESTIONS[issue.type] || {
-    suggested: "(AI 제안 없음)",
+    suggested: isMasking ? "(AI 마스킹 제안 없음)" : "(AI 제안 없음)",
     reason: issue.desc,
   };
   return (
@@ -183,7 +201,7 @@ function AiQcSuggestModal({ issue, subtitle, onClose }) {
       <div className="ai-qc-modal" onClick={(e) => e.stopPropagation()}>
         <div className="ai-qc-modal-header">
           <span className={`ai-qc-modal-badge ai-qc-modal-badge-${issue.kind}`}>
-            {issue.kind === "error" ? "확정 오류" : "의심 구간"}
+            {kindLabel(issue.kind)}
           </span>
           <span className="ai-qc-modal-type">{issue.type}</span>
           <button className="ai-qc-modal-x" onClick={onClose}>×</button>
@@ -196,13 +214,17 @@ function AiQcSuggestModal({ issue, subtitle, onClose }) {
             </div>
           </div>
           <div className="ai-qc-modal-section">
-            <div className="ai-qc-modal-section-label">AI 수정 제안</div>
+            <div className="ai-qc-modal-section-label">
+              {isMasking ? "AI 마스킹 제안" : "AI 수정 제안"}
+            </div>
             <div className={`ai-qc-modal-section-content ai-qc-modal-suggested ai-qc-modal-suggested-${issue.kind}`}>
               {suggestion.suggested}
             </div>
           </div>
           <div className="ai-qc-modal-section">
-            <div className="ai-qc-modal-section-label">오류 판단 근거</div>
+            <div className="ai-qc-modal-section-label">
+              {isMasking ? "검토 사유" : "오류 판단 근거"}
+            </div>
             <div className="ai-qc-modal-section-content ai-qc-modal-reason">
               {suggestion.reason}
             </div>
@@ -213,7 +235,7 @@ function AiQcSuggestModal({ issue, subtitle, onClose }) {
             현재 자막 유지
           </button>
           <button className={`ai-qc-modal-btn ai-qc-modal-btn-apply ai-qc-modal-btn-apply-${issue.kind}`} onClick={() => alert("AI 제안이 적용되었습니다. (UI 프로토타입)")}>
-            AI 제안 적용
+            {isMasking ? "AI 제안 적용" : "AI 제안 적용"}
           </button>
           <button className="ai-qc-modal-btn ai-qc-modal-btn-manual" onClick={() => alert("직접 수정 모드입니다. 자막 카드를 클릭하여 편집하세요.")}>
             직접 수정
@@ -1965,7 +1987,7 @@ const SubtitleItem = memo(
               className={`ai-qc-suggest-btn ai-qc-suggest-btn-${aiQcIssue.kind}`}
               onClick={(e) => { e.stopPropagation(); onAiQcSuggest?.({ issue: aiQcIssue, subtitleId }); }}
             >
-              AI 수정 제안
+              {aiQcIssue.kind === "masking" ? "AI 마스킹 제안" : "AI 수정 제안"}
             </button>
           </div>
         )}
@@ -5899,7 +5921,7 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                 {t("subtitle.accuracy")}
               </button>
             )}
-            {toolbarVisibility.aiQc && (
+            {toolbarVisibility.aiQc && isReviewer(role) && (
               <button
                 onClick={() => setShowAiQcPanel((v) => !v)}
                 className={`subtitle-btn ai-qc${showAiQcPanel ? " active" : ""}`}

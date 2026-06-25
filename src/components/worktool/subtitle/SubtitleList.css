@@ -654,8 +654,17 @@
 }
 
 .subtitle-card.ai-qc-suspect {
-  background: rgba(249, 115, 22, 0.12);
-  border-left: 3px solid rgba(249, 115, 22, 0.7);
+  background: rgba(234, 179, 8, 0.10);
+  border-left: 3px solid rgba(234, 179, 8, 0.75);
+  height: 154px;
+  min-height: 154px;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+.subtitle-card.ai-qc-masking {
+  background: rgba(20, 184, 166, 0.10);
+  border-left: 3px solid rgba(20, 184, 166, 0.7);
   height: 154px;
   min-height: 154px;
   flex-wrap: wrap;
@@ -687,7 +696,12 @@
 }
 
 .ai-qc-count-suspect {
-  color: rgba(249, 115, 22, 0.9);
+  color: rgba(234, 179, 8, 0.95);
+  font-weight: 600;
+}
+
+.ai-qc-count-masking {
+  color: rgba(20, 184, 166, 0.95);
   font-weight: 600;
 }
 
@@ -769,9 +783,15 @@
 }
 
 .ai-qc-desc-suspect {
-  background: rgba(249, 115, 22, 0.18);
-  color: rgba(249, 115, 22, 0.95);
-  border-top: 1px solid rgba(249, 115, 22, 0.22);
+  background: rgba(234, 179, 8, 0.15);
+  color: rgba(234, 179, 8, 0.95);
+  border-top: 1px solid rgba(234, 179, 8, 0.22);
+}
+
+.ai-qc-desc-masking {
+  background: rgba(20, 184, 166, 0.13);
+  color: rgba(20, 184, 166, 0.95);
+  border-top: 1px solid rgba(20, 184, 166, 0.22);
 }
 
 .ai-qc-desc-type {
@@ -813,13 +833,23 @@
 }
 
 .ai-qc-suggest-btn-suspect {
-  background: rgba(249, 115, 22, 0.15);
-  border-color: rgba(249, 115, 22, 0.45);
-  color: rgba(249, 115, 22, 1);
+  background: rgba(234, 179, 8, 0.13);
+  border-color: rgba(234, 179, 8, 0.45);
+  color: rgba(234, 179, 8, 1);
 }
 
 .ai-qc-suggest-btn-suspect:hover {
-  background: rgba(249, 115, 22, 0.28);
+  background: rgba(234, 179, 8, 0.25);
+}
+
+.ai-qc-suggest-btn-masking {
+  background: rgba(20, 184, 166, 0.13);
+  border-color: rgba(20, 184, 166, 0.45);
+  color: rgba(20, 184, 166, 1);
+}
+
+.ai-qc-suggest-btn-masking:hover {
+  background: rgba(20, 184, 166, 0.25);
 }
 
 /* AI QC 수정 제안 모달 */
@@ -869,9 +899,15 @@
 }
 
 .ai-qc-modal-badge-suspect {
-  background: rgba(249, 115, 22, 0.15);
-  color: rgba(249, 115, 22, 0.95);
-  border: 1px solid rgba(249, 115, 22, 0.35);
+  background: rgba(234, 179, 8, 0.13);
+  color: rgba(234, 179, 8, 0.95);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+}
+
+.ai-qc-modal-badge-masking {
+  background: rgba(20, 184, 166, 0.13);
+  color: rgba(20, 184, 166, 0.95);
+  border: 1px solid rgba(20, 184, 166, 0.35);
 }
 
 .ai-qc-modal-type {
@@ -941,9 +977,15 @@
 }
 
 .ai-qc-modal-suggested-suspect {
-  background: rgba(249, 115, 22, 0.08);
-  border: 1px solid rgba(249, 115, 22, 0.28);
-  color: rgba(249, 115, 22, 0.95);
+  background: rgba(234, 179, 8, 0.07);
+  border: 1px solid rgba(234, 179, 8, 0.28);
+  color: rgba(234, 179, 8, 0.95);
+}
+
+.ai-qc-modal-suggested-masking {
+  background: rgba(20, 184, 166, 0.07);
+  border: 1px solid rgba(20, 184, 166, 0.28);
+  color: rgba(20, 184, 166, 0.95);
 }
 
 .ai-qc-modal-reason {
@@ -992,13 +1034,23 @@
 }
 
 .ai-qc-modal-btn-apply-suspect {
-  background: rgba(249, 115, 22, 0.12);
-  border-color: rgba(249, 115, 22, 0.45);
-  color: rgba(249, 115, 22, 0.95);
+  background: rgba(234, 179, 8, 0.10);
+  border-color: rgba(234, 179, 8, 0.45);
+  color: rgba(234, 179, 8, 0.95);
 }
 
 .ai-qc-modal-btn-apply-suspect:hover {
-  background: rgba(249, 115, 22, 0.22);
+  background: rgba(234, 179, 8, 0.20);
+}
+
+.ai-qc-modal-btn-apply-masking {
+  background: rgba(20, 184, 166, 0.10);
+  border-color: rgba(20, 184, 166, 0.45);
+  color: rgba(20, 184, 166, 0.95);
+}
+
+.ai-qc-modal-btn-apply-masking:hover {
+  background: rgba(20, 184, 166, 0.20);
 }
 
 .ai-qc-modal-btn-manual {
