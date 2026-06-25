@@ -42,8 +42,9 @@ function contractBadge(type) {
 }
 
 const SUBFILE_CYCLE = ['미요청', '요청', '수령'];
-const SUBFILE_ICON = { '미요청': '○', '요청': '✓', '수령': '◉' };
-const SUBFILE_CLS  = { '미요청': 'mtg-subfile-none', '요청': 'mtg-subfile-req', '수령': 'mtg-subfile-recv' };
+const SUBFILE_ICON  = { '미요청': '□', '요청': '✓', '수령': '○' };
+const SUBFILE_TEXT  = { '미요청': '',   '요청': '요청', '수령': '확인' };
+const SUBFILE_CLS   = { '미요청': 'mtg-subfile-none', '요청': 'mtg-subfile-req', '수령': 'mtg-subfile-recv' };
 
 const CONTRACT_TYPE_OPTIONS = ['학폭위', '교권위', '성고충위', '징계위', '특운위', '시청', '의회', '일반회의'];
 
@@ -173,18 +174,17 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
               <td style={{ fontWeight: 600 }}>{s.entNm}</td>
               <td className="text-center">{contractBadge(s.contractType)}</td>
-              <td className="text-center">{s.round != null ? `제${s.round}차` : '-'}</td>
+              <td className="text-center">{s.round || '-'}</td>
               <td className="text-center">{s.totalPlayTm || '-'}</td>
               <td className="text-center">{s.dueDate}</td>
               <td className="text-center" onClick={(e) => e.stopPropagation()}>
-                <span
-                  className={`mtg-subfile-icon ${SUBFILE_CLS[subStatus]}`}
+                <button
+                  className={`mtg-subfile-btn ${SUBFILE_CLS[subStatus]}`}
                   onClick={() => cycleSubfile(s)}
                   title={`현재: ${subStatus} (클릭하여 변경)`}
-                  style={{ cursor: 'pointer', fontSize: '16px' }}
                 >
-                  {SUBFILE_ICON[subStatus]}
-                </span>
+                  {SUBFILE_ICON[subStatus]}{SUBFILE_TEXT[subStatus] ? ` ${SUBFILE_TEXT[subStatus]}` : ''}
+                </button>
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
@@ -369,7 +369,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <span className="mtg-alert-date">{formatRegDate(s.regDttm)}</span>
               <span className="mtg-alert-ent">{s.entNm}</span>
               {contractBadge(s.contractType)}
-              <span className="mtg-alert-round">{s.round != null ? `${s.round}회` : '-'}</span>
+              <span className="mtg-alert-round">{s.round || '-'}</span>
             </div>
           ))}
           <div className="proto-alert-item proto-alert-delay" style={{ marginTop: '8px' }}>
@@ -382,7 +382,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <span className="mtg-alert-date">{formatRegDate(s.regDttm)}</span>
               <span className="mtg-alert-ent">{s.entNm}</span>
               {contractBadge(s.contractType)}
-              <span className="mtg-alert-round">{s.round != null ? `제${s.round}차` : '-'}</span>
+              <span className="mtg-alert-round">{s.round || '-'}</span>
             </div>
           ))}
         </div>
