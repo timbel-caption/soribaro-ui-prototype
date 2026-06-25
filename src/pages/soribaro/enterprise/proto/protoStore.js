@@ -44,3 +44,4 @@ const _updateSampleField = (id, patch) => {
 
 export const updateSampleNoteEntries = (id, noteEntries) => _updateSampleField(id, { noteEntries });
 export const updateSampleMemoEntries = (id, memoEntries) => _updateSampleField(id, { memoEntries });
+export const updateSamplePlayTime = (id, totalPlayTm) => _updateSampleField(id, { totalPlayTm });

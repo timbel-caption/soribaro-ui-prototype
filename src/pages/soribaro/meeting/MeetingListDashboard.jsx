@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { updateSampleSpecialNote, updateSampleSubfileStatus } from '../enterprise/proto/protoStore';
+import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime } from '../enterprise/proto/protoStore';
 
 const STATUS_LABEL = {
   WORKING:  { label: '작업중',  cls: 'mtg-status-working' },
@@ -104,6 +104,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const [editingManagerId, setEditingManagerId] = useState(null);
   const [managerInput, setManagerInput] = useState('');
   const [managerOverrides, setManagerOverrides] = useState({});
+  const [editingPlayTimeId, setEditingPlayTimeId] = useState(null);
+  const [playTimeInput, setPlayTimeInput] = useState('');
 
   const handleSearch = () => setSearchText(pendingSearch);
 
@@ -155,6 +157,20 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const cancelManager = () => setEditingManagerId(null);
 
+  const startEditPlayTime = (s, e) => {
+    e.stopPropagation();
+    setEditingPlayTimeId(s.id);
+    setPlayTimeInput(s.totalPlayTm || '');
+  };
+
+  const commitPlayTime = (s) => {
+    updateSamplePlayTime(s.id, playTimeInput);
+    onSamplesChange?.();
+    setEditingPlayTimeId(null);
+  };
+
+  const cancelPlayTime = () => setEditingPlayTimeId(null);
+
   const toDetailPath = (protoPath) =>
     protoPath.replace('/soribaro/enterprise/meeting-proto/', '/soribaro/meeting/detail/');
 
@@ -186,13 +202,37 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           const isEditingNote = editingNoteId === s.id;
           const isEditingManager = editingManagerId === s.id;
           const managerNm = managerOverrides[s.id] ?? s.managerNm ?? '';
+          const isEditingPlayTime = editingPlayTimeId === s.id;
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
               <td style={{ fontWeight: 600 }}>{s.entNm}</td>
               <td className="text-center">{contractBadge(s.contractType)}</td>
               <td className="text-center">{s.round || '-'}</td>
-              <td className="text-center">{s.totalPlayTm || '-'}</td>
+              <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '100px' }}>
+                {isEditingPlayTime ? (
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <input
+                      className="proto-note-inline-input"
+                      value={playTimeInput}
+                      onChange={(e) => setPlayTimeInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') commitPlayTime(s); if (e.key === 'Escape') cancelPlayTime(); }}
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button className="proto-note-save-btn" onClick={() => commitPlayTime(s)}>✓</button>
+                    <button className="proto-note-cancel-btn" onClick={cancelPlayTime}>✕</button>
+                  </div>
+                ) : (
+                  <div
+                    className="proto-note-cell"
+                    style={{ textAlign: 'center' }}
+                    onClick={(e) => startEditPlayTime(s, e)}
+                  >
+                    {s.totalPlayTm || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
+                  </div>
+                )}
+              </td>
               <td className="text-center">{s.dueDate}</td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '120px' }}>
                 {isEditingManager ? (
