@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-25',
+    author: '정윤실',
+    title: '엔터프라이즈 관리 업체 상세 담당자 관리 → 실무자 관리로 텍스트 변경',
+    description:
+      '업체 상세 하단 버튼명과 팝업 제목·라벨을 "담당자 관리/담당자"에서 "실무자 관리/실무자"로 일괄 변경했습니다.',
+  },
+  {
+    date: '2026-06-25',
     author: '정기태',
     title: 'AI QC 검수툴 전용 전환 및 마스킹 검토 필터 추가',
     description:
