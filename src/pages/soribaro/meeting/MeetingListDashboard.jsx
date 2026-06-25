@@ -212,29 +212,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <td style={{ fontWeight: 600 }}>{s.entNm}</td>
               <td className="text-center">{contractBadge(s.contractType)}</td>
               <td className="text-center">{s.round || '-'}</td>
-              <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '100px' }}>
-                {isEditingPlayTime ? (
-                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                    <input
-                      className="proto-note-inline-input"
-                      value={playTimeInput}
-                      onChange={(e) => setPlayTimeInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') commitPlayTime(s); if (e.key === 'Escape') cancelPlayTime(); }}
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <button className="proto-note-save-btn" onClick={() => commitPlayTime(s)}>✓</button>
-                    <button className="proto-note-cancel-btn" onClick={cancelPlayTime}>✕</button>
-                  </div>
-                ) : (
-                  <div
-                    className="proto-note-cell"
-                    style={{ textAlign: 'center' }}
-                    onClick={(e) => startEditPlayTime(s, e)}
-                  >
-                    {s.totalPlayTm || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
-                  </div>
-                )}
+              <td className="text-center" style={{ maxWidth: '100px', fontSize: '13px' }}>
+                {s.totalPlayTm || <span style={{ color: 'var(--text-muted)' }}>-</span>}
               </td>
               <td className="text-center">{s.dueDate}</td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '120px' }}>
