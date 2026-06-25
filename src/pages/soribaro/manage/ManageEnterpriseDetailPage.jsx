@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   getEnterpriseDetail,
@@ -11,6 +11,7 @@ import { toast } from '../../../stores/toastStore';
 import { useCommonCodeStore } from '../../../stores/commonCodeStore';
 import '../../../styles/notion-list.css';
 import './ManageEnterpriseDetailPage.css';
+import '../enterprise/proto/ProtoDetail.css';
 
 const getInitialFormData = () => ({
   entNm: '',
@@ -150,6 +151,23 @@ export default function ManageEnterpriseDetailPage() {
 
   const handleBack = () => navigate(-1);
 
+  // 담당자 관리 팝업
+  const [managerModal, setManagerModal] = useState(false);
+  const [managers, setManagers] = useState([
+    { id: 1, name: '김유빈', email: 'hong@go.kr', tel: '070-1234-5678' },
+    { id: 2, name: '김유리', email: 'kim@go.kr',  tel: '070-6788-4728' },
+  ]);
+  const [managerForm, setManagerForm] = useState({ name: '', email: '', tel: '' });
+  const managerNextId = useRef(3);
+
+  const handleAddManager = () => {
+    if (!managerForm.name.trim()) return;
+    setManagers(prev => [...prev, { id: managerNextId.current++, ...managerForm }]);
+    setManagerForm({ name: '', email: '', tel: '' });
+  };
+
+  const handleDeleteManager = (id) => setManagers(prev => prev.filter(m => m.id !== id));
+
   if (loading) {
     return (
       <div className="notion-page manage-enterprise-detail-page">
@@ -268,6 +286,99 @@ export default function ManageEnterpriseDetailPage() {
       </div>
 
       {renderProps()}
+
+      {/* 담당자 관리 버튼 (하단) */}
+      {!isCreateMode && (
+        <div style={{ marginTop: '20px' }}>
+          <button className="btn-ghost" style={{ fontSize: '13px' }} onClick={() => setManagerModal(true)}>
+            담당자 관리
+          </button>
+        </div>
+      )}
+
+      {/* 담당자 관리 팝업 */}
+      {managerModal && (
+        <div className="pm-overlay" onClick={() => setManagerModal(false)}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '680px', width: '90%' }} onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">담당자 관리</span>
+              <button className="preg-x-btn" onClick={() => setManagerModal(false)}>✕</button>
+            </div>
+
+            {/* 입력 행 */}
+            <div style={{ padding: '20px 24px 12px', display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
+                <label className="preg-label">담당자</label>
+                <input
+                  className="preg-input"
+                  value={managerForm.name}
+                  onChange={e => setManagerForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder=""
+                  onKeyDown={e => e.key === 'Enter' && handleAddManager()}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '2 1 200px' }}>
+                <label className="preg-label">이메일</label>
+                <input
+                  className="preg-input"
+                  value={managerForm.email}
+                  onChange={e => setManagerForm(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder=""
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '2 1 180px' }}>
+                <label className="preg-label">전화번호(직통)</label>
+                <input
+                  className="preg-input"
+                  value={managerForm.tel}
+                  onChange={e => setManagerForm(prev => ({ ...prev, tel: e.target.value }))}
+                  placeholder=""
+                />
+              </div>
+              <button
+                className="btn-primary"
+                style={{ height: '34px', padding: '0 18px', fontSize: '13px', flexShrink: 0 }}
+                onClick={handleAddManager}
+              >등록</button>
+            </div>
+
+            {/* 목록 */}
+            <div style={{ padding: '0 24px 8px' }}>
+              <p className="preg-label" style={{ marginBottom: '6px' }}>등록 관리</p>
+              <div className="proto-table-wrap">
+                <table className="proto-table">
+                  <thead>
+                    <tr>
+                      <th>담당자</th>
+                      <th>이메일</th>
+                      <th>전화번호(직통)</th>
+                      <th style={{ width: '60px' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {managers.length === 0 ? (
+                      <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>등록된 담당자가 없습니다.</td></tr>
+                    ) : managers.map(m => (
+                      <tr key={m.id}>
+                        <td>{m.name}</td>
+                        <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{m.email}</td>
+                        <td style={{ fontWeight: 600, fontSize: '13px' }}>{m.tel}</td>
+                        <td className="text-center">
+                          <button className="attach-del-btn" onClick={() => handleDeleteManager(m.id)}>삭제</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" style={{ minWidth: '72px' }} onClick={() => setManagerModal(false)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
