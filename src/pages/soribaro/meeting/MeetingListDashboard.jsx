@@ -3,26 +3,47 @@ import { useNavigate } from 'react-router-dom';
 import { updateSampleSpecialNote, updateSampleSubfileStatus } from '../enterprise/proto/protoStore';
 
 const STATUS_LABEL = {
-  WORKING:  { label: '작업중',  cls: 'proto-status-working' },
-  CHECKING: { label: '검수중',  cls: 'proto-status-checking' },
-  DONE:     { label: '완료',    cls: 'proto-status-done' },
+  WORKING:  { label: '작업중',  cls: 'mtg-status-working' },
+  CHECKING: { label: '검수중',  cls: 'mtg-status-checking' },
+  DONE:     { label: '완료',    cls: 'mtg-status-done' },
 };
 
 function statusBadge(s) {
-  const m = STATUS_LABEL[s] ?? { label: s, cls: 'proto-status-done' };
-  return <span className={`proto-status-badge ${m.cls}`} style={{ fontSize: '11px', padding: '2px 8px' }}>{m.label}</span>;
+  const m = STATUS_LABEL[s] ?? { label: s, cls: 'mtg-status-done' };
+  return <span className={`mtg-status-badge ${m.cls}`}>{m.label}</span>;
 }
 
 function settleBadge(s) {
-  if (s === '정산완료') return <span className="proto-settle-badge-done" style={{ fontSize: '11px' }}>{s}</span>;
-  if (s === '정산대기') return <span className="proto-settle-badge-wait" style={{ fontSize: '11px' }}>{s}</span>;
-  if (s === '부분정산') return <span className="proto-settle-badge-partial" style={{ fontSize: '11px' }}>{s}</span>;
-  return <span className="proto-settle-badge-pre" style={{ fontSize: '11px' }}>{s}</span>;
+  if (s === '정산완료') return <span className="mtg-settle-badge mtg-settle-done">{s}</span>;
+  if (s === '정산대기') return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
+  if (s === '부분정산') return <span className="mtg-settle-badge mtg-settle-partial">{s}</span>;
+  return <span className="mtg-settle-badge mtg-settle-pre">{s}</span>;
+}
+
+const CONTRACT_TYPE_COLOR = {
+  '학폭위':   { bg: 'rgba(239,68,68,0.12)',   color: '#f87171',  border: 'rgba(239,68,68,0.4)' },
+  '교권위':   { bg: 'rgba(99,102,241,0.12)',  color: '#818cf8',  border: 'rgba(99,102,241,0.4)' },
+  '성고충위': { bg: 'rgba(251,146,60,0.12)',  color: '#fb923c',  border: 'rgba(251,146,60,0.4)' },
+  '징계위':   { bg: 'rgba(168,85,247,0.12)',  color: '#c084fc',  border: 'rgba(168,85,247,0.4)' },
+  '특운위':   { bg: 'rgba(45,212,191,0.12)',  color: '#2dd4bf',  border: 'rgba(45,212,191,0.4)' },
+  '시청':     { bg: 'rgba(250,204,21,0.12)',  color: '#facc15',  border: 'rgba(250,204,21,0.4)' },
+  '의회':     { bg: 'rgba(96,165,250,0.12)',  color: '#60a5fa',  border: 'rgba(96,165,250,0.4)' },
+  '일반회의': { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8',  border: 'rgba(148,163,184,0.4)' },
+};
+
+function contractBadge(type) {
+  if (!type || type === '-') return <span style={{ color: 'var(--text-muted)' }}>-</span>;
+  const c = CONTRACT_TYPE_COLOR[type] || { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8', border: 'rgba(148,163,184,0.4)' };
+  return (
+    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
+      {type}
+    </span>
+  );
 }
 
 const SUBFILE_CYCLE = ['미요청', '요청', '수령'];
-const SUBFILE_ICON = { '미요청': '□', '요청': '✔', '수령': '⭕' };
-const SUBFILE_CLS = { '미요청': 'proto-subfile-none', '요청': 'proto-subfile-req', '수령': 'proto-subfile-recv' };
+const SUBFILE_ICON = { '미요청': '○', '요청': '✓', '수령': '◉' };
+const SUBFILE_CLS  = { '미요청': 'mtg-subfile-none', '요청': 'mtg-subfile-req', '수령': 'mtg-subfile-recv' };
 
 const CONTRACT_TYPE_OPTIONS = ['학폭위', '교권위', '성고충위', '징계위', '특운위', '시청', '의회', '일반회의'];
 
@@ -151,18 +172,19 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
               <td style={{ fontWeight: 600 }}>{s.entNm}</td>
-              <td className="text-center">{s.contractType || '-'}</td>
+              <td className="text-center">{contractBadge(s.contractType)}</td>
               <td className="text-center">{s.round != null ? `제${s.round}차` : '-'}</td>
               <td className="text-center">{s.totalPlayTm || '-'}</td>
               <td className="text-center">{s.dueDate}</td>
               <td className="text-center" onClick={(e) => e.stopPropagation()}>
-                <button
-                  className={`proto-subfile-btn ${SUBFILE_CLS[subStatus]}`}
+                <span
+                  className={`mtg-subfile-icon ${SUBFILE_CLS[subStatus]}`}
                   onClick={() => cycleSubfile(s)}
                   title={`현재: ${subStatus} (클릭하여 변경)`}
+                  style={{ cursor: 'pointer', fontSize: '16px' }}
                 >
-                  {SUBFILE_ICON[subStatus]} {subStatus}
-                </button>
+                  {SUBFILE_ICON[subStatus]}
+                </span>
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
@@ -193,7 +215,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <td className="text-center">{s.actualDeliveryDate || '-'}</td>
               <td className="text-center">
                 <button
-                  className="proto-dash-detail-btn"
+                  className="mtg-detail-btn"
                   onClick={(e) => { e.stopPropagation(); navigate(toDetailPath(s.protoPath)); }}
                 >
                   상세보기
