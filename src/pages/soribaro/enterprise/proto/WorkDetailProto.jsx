@@ -2986,7 +2986,7 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
 // ─── 탭 8: 정산확인 ───
 const SETTLE_WORKER_SEED = [
   { worker: '홍길동', grade: 'Pro', workTime: '00:00', accuracy: '99.61%', errors: 1, remark: '', amount: 415800, payRate: '90%', executor: '정윤실_관리자', netAmount: 374220, status: '완료' },
-  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '', executor: '-', netAmount: 45000, status: '정산대기' },
+  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '50%', executor: '', netAmount: 45000, status: '정산전' },
 ];
 const SETTLE_REVIEWER_SEED = [
   { worker: '김철수', grade: 'Elite', workTime: '00:00', executor: '정윤실_관리자', netAmount: 415800, status: '완료' },
@@ -3029,7 +3029,7 @@ function SettlementTab({ s }) {
   const handleConfirm = () => {
     const { index, table } = confirmModal;
     if (table === 'worker') {
-      const updated = workers.map((r, i) => i === index ? { ...r, status: '작업자 확인' } : r);
+      const updated = workers.map((r, i) => i === index ? { ...r, status: '작업자 확인', executor: '정윤실_관리자' } : r);
       setWorkers(updated);
       setSettleHistory(prev => [{ dttm: now(), actor: '관리자', event: '정산 확인 요청' }, ...prev]);
     }
@@ -3066,6 +3066,21 @@ function SettlementTab({ s }) {
     setRejectModal(null);
   };
 
+  // 집행자 열: 미배정이면 "확인" 버튼, 배정되면 이름 텍스트
+  const executorCell = (row, index, table) => {
+    if (row.executor) return <span>{row.executor}</span>;
+    if (row.status === '작업자 확인') return <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>확인 대기중</span>;
+    return (
+      <span className="settle-status-group">
+        <button className="settle-confirm-btn" onClick={() => handleConfirmClick(index, table)}>확인</button>
+        {row.rejectReason && (
+          <button className="settle-reject-view-btn" onClick={() => setRejectViewModal({ reason: row.rejectReason })} title="반려 사유 보기">반려사유</button>
+        )}
+      </span>
+    );
+  };
+
+  // 상태 열: 텍스트 배지 또는 승인/반려 버튼
   const statusCell = (row, index, table) => {
     if (row.status === '완료') return <span className="settle-status-badge settle-status-badge--done">완료</span>;
     if (row.status === '작업자 확인') return (
@@ -3074,15 +3089,8 @@ function SettlementTab({ s }) {
         <button className="settle-action-btn settle-action-btn--reject" onClick={() => handleRejectClick(index, table)}>반려</button>
       </span>
     );
-    // 정산대기
-    return (
-      <span className="settle-status-group">
-        <button className="settle-confirm-btn" onClick={() => handleConfirmClick(index, table)}>확인</button>
-        {row.rejectReason && (
-          <button className="settle-reject-view-btn" onClick={() => setRejectViewModal({ reason: row.rejectReason })} title="반려 사유 보기">반려</button>
-        )}
-      </span>
-    );
+    // 정산전 / 정산대기
+    return <span className="settle-status-badge settle-status-badge--pre">{row.status || '정산전'}</span>;
   };
 
   return (
@@ -3116,7 +3124,7 @@ function SettlementTab({ s }) {
                 <td style={{ whiteSpace: 'pre-line', color: 'var(--text-secondary)', fontSize: '12px' }}>{row.remark || <span style={{ color: 'var(--text-muted)' }}>수기 입력</span>}</td>
                 <td className="text-right">{fmt(row.amount)}</td>
                 <td className="text-center">{row.payRate || '-'}</td>
-                <td className="text-center">{row.executor}</td>
+                <td className="text-center">{executorCell(row, i, 'worker')}</td>
                 <td className="text-right">{fmt(row.netAmount)}</td>
                 <td className="text-center">{statusCell(row, i, 'worker')}</td>
               </tr>
