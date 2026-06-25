@@ -3312,7 +3312,7 @@ function SettlementTab({ s }) {
       {/* 확정 확인 팝업 */}
       {confirmModal && (
         <div className="pm-overlay" onClick={() => setConfirmModal(null)}>
-          <div className="pm-modal--workspy" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
               <span className="pm-modal-title">정산 확정</span>
               <button className="preg-x-btn" onClick={() => setConfirmModal(null)}>✕</button>
@@ -3332,7 +3332,7 @@ function SettlementTab({ s }) {
       {/* 반려 사유 입력 팝업 */}
       {rejectModal && (
         <div className="pm-overlay" onClick={() => setRejectModal(null)}>
-          <div className="pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
               <span className="pm-modal-title">정산 반려</span>
               <button className="preg-x-btn" onClick={() => setRejectModal(null)}>✕</button>
@@ -3358,7 +3358,7 @@ function SettlementTab({ s }) {
       {/* 반려 사유 조회 팝업 */}
       {rejectViewModal && (
         <div className="pm-overlay" onClick={() => setRejectViewModal(null)}>
-          <div className="pm-modal--workspy" style={{ maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
               <span className="pm-modal-title">반려 사유</span>
               <button className="preg-x-btn" onClick={() => setRejectViewModal(null)}>✕</button>
