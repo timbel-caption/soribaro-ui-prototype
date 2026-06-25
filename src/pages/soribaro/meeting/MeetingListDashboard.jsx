@@ -180,7 +180,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const tableBody = (
     <tbody>
       {filtered.length === 0 ? (
-        <tr><td colSpan={12} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
+        <tr><td colSpan={13} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
       ) : (
         filtered.map((s) => {
           const isEditingNote = editingNoteId === s.id;
@@ -217,6 +217,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     {managerNm || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
                   </div>
                 )}
+              </td>
+              <td style={{ maxWidth: '120px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                {[...new Set((s.files || []).map((f) => f.worker).filter(Boolean))].join(', ') || '-'}
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
@@ -270,6 +273,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th className="text-center">의뢰시간</th>
         <th className="text-center">납품기한</th>
         <th style={{ minWidth: '100px' }}>담당자</th>
+        <th style={{ minWidth: '100px' }}>작업자</th>
         <th style={{ minWidth: '140px' }}>특이사항</th>
         <th className="text-center">상태</th>
         <th className="text-center">정산</th>
