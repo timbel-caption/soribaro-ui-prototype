@@ -2400,10 +2400,14 @@ const DELIVERY_ITEMS_SEED = [
 ];
 
 const DELIVERY_HISTORY_SEED = [
-  { id: 'dh-001', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', historyType: '최초 납품',  processedDate: '2026-06-12', files: '2강_기초개념.mp4',      format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '1주차 2강 납품' },
-  { id: 'dh-002', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', historyType: '최초 납품',  processedDate: '2026-06-10', files: '3강_핵심이론.mp4',      format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '' },
-  { id: 'dh-003', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차', historyType: '수정 요청',  processedDate: '2026-06-14', files: '3강_핵심이론.mp4',      format: '-',   manager: '관리자', status: '수정 요청',  memo: '자막 싱크 오류 수정 요청' },
-  { id: 'dh-004', receivedDate: '2026-05-25', projectName: '기초영어회화', batchLabel: '1주차', historyType: '최초 납품',  processedDate: '2026-06-09', files: '1강_발음기초.mp4\n2강_회화패턴.mp4', format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '' },
+  // 지구과학개론 / 1주차
+  { id: 'dh-001', projectName: '지구과학개론', batchLabel: '1주차', historyType: '납품 완료',   processedDate: '2026-06-10', files: '3강_핵심이론.mp4',                    format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '' },
+  { id: 'dh-002', projectName: '지구과학개론', batchLabel: '1주차', historyType: '납품 완료',   processedDate: '2026-06-12', files: '2강_기초개념.mp4',                    format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '1주차 2강 납품' },
+  { id: 'dh-003', projectName: '지구과학개론', batchLabel: '1주차', historyType: '수정 요청',   processedDate: '2026-06-14', files: '3강_핵심이론.mp4',                    format: '-',   manager: '관리자', status: '수정 요청',  memo: '자막 싱크 오류 수정 요청' },
+  // 지구과학개론 / 2주차
+  { id: 'dh-005', projectName: '지구과학개론', batchLabel: '2주차', historyType: '납품 완료',   processedDate: '2026-06-20', files: '7강_심화학습.mp4',                    format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '2주차 7강 납품' },
+  // 기초영어회화 / 1주차
+  { id: 'dh-004', projectName: '기초영어회화', batchLabel: '1주차', historyType: '납품 완료',   processedDate: '2026-06-09', files: '1강_발음기초.mp4, 2강_회화패턴.mp4', format: 'SRT', manager: '관리자', status: '납품 완료',  memo: '1주차 납품' },
 ];
 
 function dlvProgressBadge(st) {
@@ -2428,9 +2432,9 @@ function dlvAvailBadge(st) {
 }
 
 function dlvHistoryTypeBadge(t) {
-  if (t === '최초 납품') return <span className="vod-dlv-hist-type vod-dlv-hist-type--first">{t}</span>;
-  if (t === '수정 요청') return <span className="vod-dlv-hist-type vod-dlv-hist-type--revision">{t}</span>;
-  if (t === '재납품')    return <span className="vod-dlv-hist-type vod-dlv-hist-type--redeliver">{t}</span>;
+  if (t === '납품 완료')   return <span className="vod-dlv-hist-type vod-dlv-hist-type--first">{t}</span>;
+  if (t === '수정 요청')   return <span className="vod-dlv-hist-type vod-dlv-hist-type--revision">{t}</span>;
+  if (t === '재납품 완료') return <span className="vod-dlv-hist-type vod-dlv-hist-type--redeliver">{t}</span>;
   return <span className="vod-dlv-hist-type">{t}</span>;
 }
 
@@ -2444,6 +2448,18 @@ function DeliveryTab({ s }) {
   const [redeliveryModal, setRedeliveryModal] = useState(null); // { item }
   const [editingDueDate, setEditingDueDate]   = useState(null); // id
   const [dueDateDraft, setDueDateDraft]       = useState('');
+  // 납품 이력 접기/펼치기: key = 'projectName::batchLabel', default all open
+  const [historyExpanded, setHistoryExpanded] = useState(() => {
+    const init = {};
+    const seen = new Set();
+    DELIVERY_ITEMS_SEED.forEach((it) => {
+      const k = `${it.projectName}::${it.batchLabel}`;
+      if (!seen.has(k)) { seen.add(k); init[k] = true; }
+    });
+    return init;
+  });
+  const toggleHistoryExpand = (key) =>
+    setHistoryExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const toggleSelect = (id) =>
     setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
@@ -2479,7 +2495,7 @@ function DeliveryTab({ s }) {
       receivedDate: t.receivedDate,
       projectName: t.projectName,
       batchLabel: t.batchLabel,
-      historyType: '최초 납품',
+      historyType: '납품 완료',
       processedDate: DELIVERY_TODAY,
       files: t.fileName,
       format: form.format || '-',
@@ -2523,7 +2539,7 @@ function DeliveryTab({ s }) {
       receivedDate: item.receivedDate,
       projectName: item.projectName,
       batchLabel: item.batchLabel,
-      historyType: '재납품',
+      historyType: '재납품 완료',
       processedDate: DELIVERY_TODAY,
       files: item.fileName,
       format: form.format || '-',
@@ -2540,11 +2556,23 @@ function DeliveryTab({ s }) {
     setDueDateDraft('');
   };
 
-  // history filtered by focused item (or all if none)
   const focusedItemData = items.find((it) => it.id === focusedItem);
-  const filteredHistory = focusedItemData
-    ? history.filter((h) => h.projectName === focusedItemData.projectName && h.batchLabel === focusedItemData.batchLabel)
-    : history;
+
+  // 납품 이력 그룹: DELIVERY_ITEMS_SEED 기준 projectName → batchLabel 계층 도출
+  const historyGroups = (() => {
+    const projMap = {};
+    DELIVERY_ITEMS_SEED.forEach((it) => {
+      if (!projMap[it.projectName]) projMap[it.projectName] = new Set();
+      projMap[it.projectName].add(it.batchLabel);
+    });
+    return Object.entries(projMap).map(([projName, batchSet]) => ({
+      projectName: projName,
+      batches: [...batchSet].map((batchLabel) => ({
+        batchLabel,
+        items: history.filter((h) => h.projectName === projName && h.batchLabel === batchLabel),
+      })),
+    }));
+  })();
 
   return (
     <div className="proto-tab-panel">
@@ -2693,66 +2721,84 @@ function DeliveryTab({ s }) {
         </div>
       </div>
 
-      {/* ── 3. 납품 이력 ── */}
+      {/* ── 3. 납품 이력 (프로젝트 → 차수/주차 그룹 구조) ── */}
       <div className="vod-dlv-history-section">
         <div className="vod-dlv-history-header">
           <p className="proto-section-title" style={{ margin: 0 }}>납품 이력</p>
-          {focusedItemData && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="vod-dlv-history-filter-label">
-                {focusedItemData.projectName} / {focusedItemData.batchLabel}
-              </span>
-              <button className="vod-dlv-history-clear-btn" onClick={() => setFocusedItem(null)}>전체 보기</button>
-            </div>
-          )}
         </div>
-        {filteredHistory.length === 0 ? (
-          <div className="proto-empty-state" style={{ padding: '20px' }}>
-            <span style={{ fontSize: '24px' }}>📋</span>
-            <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-              {focusedItemData ? '해당 파일의 납품 이력이 없습니다.' : '납품 이력이 없습니다.'}
-            </p>
-          </div>
-        ) : (
-          <div className="proto-table-wrap proto-table-wrap--scroll">
-            <table className="proto-table">
-              <thead>
-                <tr>
-                  <th className="text-center">의뢰/입고일</th>
-                  <th>프로젝트명</th>
-                  <th className="text-center">차수/주차</th>
-                  <th className="text-center">이력 유형</th>
-                  <th className="text-center">처리일</th>
-                  <th>납품 파일</th>
-                  <th className="text-center">납품 형식</th>
-                  <th className="text-center">납품 담당자</th>
-                  <th className="text-center">납품 상태</th>
-                  <th>납품 메모</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredHistory.map((h) => (
-                  <tr key={h.id}>
-                    <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{h.receivedDate}</td>
-                    <td style={{ fontSize: '13px' }}>{h.projectName}</td>
-                    <td className="text-center" style={{ fontSize: '12px' }}>{h.batchLabel}</td>
-                    <td className="text-center">{dlvHistoryTypeBadge(h.historyType)}</td>
-                    <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{h.processedDate}</td>
-                    <td style={{ fontSize: '12px' }}>{h.files}</td>
-                    <td className="text-center" style={{ fontSize: '12px' }}>{h.format}</td>
-                    <td className="text-center" style={{ fontSize: '12px' }}>{h.manager}</td>
-                    <td className="text-center">
-                      <span className={`vod-dlv-hist-status vod-dlv-hist-status--${h.status === '납품 완료' ? 'done' : h.status === '수정 요청' ? 'revision' : 'default'}`}>
-                        {h.status}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.memo || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+
+        <div className="vod-dlv-hist-group-list">
+          {historyGroups.map((proj) => (
+            <div key={proj.projectName} className="vod-dlv-hist-proj-card">
+              {/* 프로젝트명 헤더 */}
+              <div className="vod-dlv-hist-proj-header">
+                <span className="vod-dlv-hist-proj-name">{proj.projectName}</span>
+                <span className="vod-dlv-hist-proj-meta">{proj.batches.length}개 차수/주차</span>
+              </div>
+
+              {/* 차수/주차 목록 */}
+              <div className="vod-dlv-hist-batch-list">
+                {proj.batches.map((batch) => {
+                  const bKey = `${proj.projectName}::${batch.batchLabel}`;
+                  const isOpen = !!historyExpanded[bKey];
+                  return (
+                    <div key={bKey} className="vod-dlv-hist-batch-item">
+                      {/* 차수 토글 행 */}
+                      <button
+                        className="vod-dlv-hist-batch-toggle"
+                        onClick={() => toggleHistoryExpand(bKey)}
+                      >
+                        <span className="pm-expand-icon">{isOpen ? '▼' : '▶'}</span>
+                        <span className="vod-dlv-hist-batch-label">{batch.batchLabel} 납품 이력</span>
+                        <span className="vod-dlv-hist-batch-count">{batch.items.length}건</span>
+                      </button>
+
+                      {/* 이력 테이블 */}
+                      {isOpen && (
+                        batch.items.length === 0 ? (
+                          <div className="vod-dlv-hist-empty">납품 이력이 없습니다.</div>
+                        ) : (
+                          <div className="proto-table-wrap proto-table-wrap--scroll vod-dlv-hist-table-wrap">
+                            <table className="proto-table">
+                              <thead>
+                                <tr>
+                                  <th className="text-center">이력 유형</th>
+                                  <th className="text-center">처리일</th>
+                                  <th>납품 파일</th>
+                                  <th className="text-center">납품 형식</th>
+                                  <th className="text-center">납품 담당자</th>
+                                  <th className="text-center">납품 상태</th>
+                                  <th>납품 메모</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {batch.items.map((h) => (
+                                  <tr key={h.id}>
+                                    <td className="text-center">{dlvHistoryTypeBadge(h.historyType)}</td>
+                                    <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{h.processedDate}</td>
+                                    <td style={{ fontSize: '12px' }}>{h.files}</td>
+                                    <td className="text-center" style={{ fontSize: '12px' }}>{h.format}</td>
+                                    <td className="text-center" style={{ fontSize: '12px' }}>{h.manager}</td>
+                                    <td className="text-center">
+                                      <span className={`vod-dlv-hist-status vod-dlv-hist-status--${h.status === '납품 완료' ? 'done' : h.status === '수정 요청' ? 'revision' : 'default'}`}>
+                                        {h.status}
+                                      </span>
+                                    </td>
+                                    <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.memo || '-'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── 납품 완료 처리 모달 ── */}
