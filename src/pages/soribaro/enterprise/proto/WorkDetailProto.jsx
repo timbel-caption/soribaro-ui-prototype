@@ -698,6 +698,15 @@ function WorkspyRegisterModal({ proj, onConfirm, onClose }) {
   );
 }
 
+const SEED_MTG_PROJ1_FILES = [
+  { fileNo: 'mtg1-1', fileName: '학폭위 34회 (1).wav', split: '-', range: '', workTime: '0:28', status: '작업중', progress: 72, lastWork: '2026-06-17 14:00', worker: '홍길동', reviewer: '' },
+  { fileNo: 'mtg1-2', fileName: '학폭위 34회 (2).wav', split: '-', range: '', workTime: '0:32', status: '작업중', progress: 45, lastWork: '2026-06-17 13:30', worker: '홍길동', reviewer: '' },
+];
+const SEED_MTG_PROJ2_FILES = [
+  { fileNo: 'mtg2-1', fileName: '학폭위 34회 (3).wav', split: '-', range: '', workTime: '0:31', status: '작업중', progress: 20, lastWork: '2026-06-17 12:00', worker: '김나리', reviewer: '' },
+  { fileNo: 'mtg2-2', fileName: '학폭위 34회 (4).wav', split: '-', range: '', workTime: '0:27', status: '미배정', progress: 0,  lastWork: '-',                worker: '김나리', reviewer: '' },
+];
+
 const SEED_PROJ_FILES = [
   { fileNo: 'seed-1', fileName: '20260512135718_2026-12 피해교원 진술_심의장.wav', split: '분할', range: '00:07:55 ~ 00:44:05', workTime: '00:36:05', status: '검수완료', progress: 100, lastWork: '2026-06-07 17:00', worker: '유진_작업자(dbwls0681@naver.com)', reviewer: '' },
   { fileNo: 'seed-2', fileName: '20260512144220_2026-12 관련학생 진술_심의장.wav', split: '-',    range: '',                     workTime: '00:17:57', status: '검수완료', progress: 55,  lastWork: '2026-06-11 16:00', worker: '박현정_0459(phj951124@naver.com)', reviewer: '' },
@@ -1568,18 +1577,32 @@ function ProjectManageTab({ s }) {
     const subjs = cur?.subjects || s.subjects || [];
     if (subjs.length > 0) return subjs;
     if (s.bssTypeName === '회의록') {
-      return [{
-        id: 'proj-seed-001',
-        name: '회의록 전사 프로젝트',
-        status: '작업완료',
-        workTime: '1:12:00',
-        worker: '',
-        reviewer: '',
-        workspyRegistered: false,
-        projFiles: SEED_PROJ_FILES,
-        messages: { admin: '', worker: '', reviewer: '' },
-        expanded: true,
-      }];
+      return [
+        {
+          id: 'proj-seed-001',
+          name: '회의록 전사 프로젝트',
+          status: '작업중',
+          workTime: '1:00',
+          worker: '홍길동',
+          reviewer: '',
+          workspyRegistered: false,
+          projFiles: SEED_MTG_PROJ1_FILES,
+          messages: { admin: '', worker: '', reviewer: '' },
+          expanded: true,
+        },
+        {
+          id: 'proj-seed-002',
+          name: '회의록 전사 프로젝트',
+          status: '작업중',
+          workTime: '0:58',
+          worker: '김나리',
+          reviewer: '',
+          workspyRegistered: false,
+          projFiles: SEED_MTG_PROJ2_FILES,
+          messages: { admin: '', worker: '', reviewer: '' },
+          expanded: false,
+        },
+      ];
     }
     return [];
   };
