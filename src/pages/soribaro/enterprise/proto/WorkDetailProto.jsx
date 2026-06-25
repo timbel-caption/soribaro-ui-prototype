@@ -1584,6 +1584,7 @@ function ProjectManageTab({ s }) {
   const [assignModal, setAssignModal] = useState(null);
   const [fileAssignModal, setFileAssignModal] = useState(null);
   const [expandedMsgs, setExpandedMsgs] = useState({});
+  const [msgDraft, setMsgDraft] = useState({});
   const [workspyModal, setWorkspyModal] = useState(null);
   const [workTimeEdit, setWorkTimeEdit] = useState({});
 
@@ -1919,17 +1920,66 @@ function ProjectManageTab({ s }) {
                     const mk = `${proj.id}-${key}`;
                     const open = expandedMsgs[mk];
                     const msg = proj.messages?.[key] || '';
+                    const draft = msgDraft[mk] ?? msg;
+                    const isAdmin = key === 'admin';
                     return (
                       <div key={key} className="pm-msg-item">
-                        <button className="pm-msg-toggle" onClick={() => toggleMsg(proj.id, key)}>
-                          <span className="pm-msg-arrow">{open ? '▼' : '▶'}</span>
-                          <span>{label}</span>
-                          {!msg && <span className="pm-msg-empty-hint">내용 없음</span>}
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button className="pm-msg-toggle" style={{ flex: 1 }} onClick={() => toggleMsg(proj.id, key)}>
+                            <span className="pm-msg-arrow">{open ? '▼' : '▶'}</span>
+                            <span>{label}</span>
+                            {!msg && <span className="pm-msg-empty-hint">내용 없음</span>}
+                          </button>
+                          {isAdmin && (
+                            <button
+                              className="proto-log-btn"
+                              style={{ fontSize: '11px', padding: '2px 8px', whiteSpace: 'nowrap' }}
+                              title="의뢰자 요청 사항 내용을 관리자 메시지로 복사"
+                              onClick={() => {
+                                const store = getMeetingSamples();
+                                const cur = store.find((v) => v.id === s.id);
+                                const entries = cur?.memoEntries ?? s.memoEntries ?? [];
+                                const text = entries.map((e) => e.content).join('\n');
+                                setMsgDraft((prev) => ({ ...prev, [mk]: text }));
+                                setExpandedMsgs((prev) => ({ ...prev, [mk]: true }));
+                              }}
+                            >
+                              의뢰자 요청사항 복사
+                            </button>
+                          )}
+                        </div>
                         {open && (
-                          <div className="pm-msg-content">
-                            {msg || <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>등록된 메시지가 없습니다.</span>}
-                          </div>
+                          isAdmin ? (
+                            <div className="pm-msg-content" style={{ padding: '8px 0 4px' }}>
+                              <textarea
+                                className="preg-input"
+                                style={{ width: '100%', minHeight: '72px', resize: 'vertical', fontSize: '13px' }}
+                                value={draft}
+                                placeholder="관리자 메시지를 입력하세요"
+                                onChange={(e) => setMsgDraft((prev) => ({ ...prev, [mk]: e.target.value }))}
+                              />
+                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                                <button
+                                  className="proto-log-btn proto-log-btn--save"
+                                  onClick={() => {
+                                    syncStore(projects.map((p) => p.id === proj.id
+                                      ? { ...p, messages: { ...p.messages, admin: draft } }
+                                      : p
+                                    ));
+                                    setMsgDraft((prev) => { const n = { ...prev }; delete n[mk]; return n; });
+                                  }}
+                                >저장</button>
+                                <button
+                                  className="proto-log-btn"
+                                  onClick={() => setMsgDraft((prev) => { const n = { ...prev }; delete n[mk]; return n; })}
+                                >취소</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="pm-msg-content">
+                              {msg || <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>등록된 메시지가 없습니다.</span>}
+                            </div>
+                          )
                         )}
                       </div>
                     );
