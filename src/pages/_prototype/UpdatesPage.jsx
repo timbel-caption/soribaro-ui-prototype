@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-25',
+    author: '정윤실',
+    title: '현장속기 상세보기 기본정보에 첨부파일 섹션 복원 (빈 목록)',
+    description:
+      '현장속기 상세보기 기본정보 탭에 첨부파일 섹션을 복원했습니다. 회의록과 달리 현장속기는 초기 목록을 비워 빈 상태로 시작하며, 파일 업로드 버튼으로 추가할 수 있습니다.',
+  },
+  {
+    date: '2026-06-25',
     author: '정기태',
     title: 'VOD 프로젝트 이력 탭 빈 화면 버그 수정 — React.useState → useState 교체',
     description:

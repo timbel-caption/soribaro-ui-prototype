@@ -215,8 +215,10 @@ function BasicInfoTab({ s }) {
   };
   const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
 
-  // 첨부파일 (회의록 전용)
-  const [attachments, setAttachments] = useState(() => ATTACH_SEED.map(r => ({ ...r })));
+  // 첨부파일 (회의록·현장속기 전용) — 현장속기는 빈 목록으로 시작
+  const [attachments, setAttachments] = useState(() =>
+    s.bssTypeName === '회의록' ? ATTACH_SEED.map(r => ({ ...r })) : []
+  );
   const [attachChecked, setAttachChecked] = useState(new Set());
 
   const attachAllChecked = attachChecked.size === attachments.length && attachments.length > 0;
@@ -348,8 +350,8 @@ function BasicInfoTab({ s }) {
         </div>
       </div>
 
-      {/* 첨부파일 (회의록 전용) */}
-      {s.bssTypeName === '회의록' && (
+      {/* 첨부파일 (회의록·현장속기 전용) */}
+      {(s.bssTypeName === '회의록' || s.bssTypeName === '현장속기') && (
         <div className="attach-section">
           <div className="attach-section-header">
             <span className="proto-section-title" style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>첨부파일</span>
