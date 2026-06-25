@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-25',
+    author: '정윤실',
+    title: '회의록 정산확인 상태 기본값 정산대기로 변경 및 반려 후 재확인 요청 지원',
+    description:
+      '정산 상태 기본값을 \'정산전\'에서 \'정산대기\'로 변경하고, 반려 후에도 집행자 열에 \'확인\' 버튼이 유지되어 관리자가 재확인 요청(정산대기→작업자 확인)을 진행할 수 있도록 executorCell 분기 로직을 executor 유무 기준에서 status 기준으로 수정했습니다.',
+  },
+  {
+    date: '2026-06-25',
     author: '정기태',
     title: 'VOD 정산확인 탭 단순화 — 고객사 제출용 작업내역서 전용 화면으로 교체',
     description:
