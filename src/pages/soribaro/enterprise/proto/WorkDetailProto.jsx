@@ -1819,28 +1819,33 @@ function ProjectManageTab({ s }) {
 
   return (
     <div className="proto-tab-panel">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-        <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          {/* 견적서 */}
-          <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
-          <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
-          <button
-            className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
-            onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
-          >견적서 다운로드</button>
-          {/* 최종산출물 */}
-          <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
-          <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
-          <button
-            className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
-            onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
-          >최종산출물 다운로드</button>
-          {/* 알림발송 */}
-          <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
-          {/* 새 프로젝트 */}
+      <div style={{ marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            {/* 견적서 */}
+            <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
+            <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
+            <button
+              className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
+              onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
+            >견적서 다운로드</button>
+            {/* 최종산출물 */}
+            <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
+            <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
+            <button
+              className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
+              onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
+            >최종산출물 다운로드</button>
+            {/* 알림발송 */}
+            <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
+          </div>
+        </div>
+        {/* 새 프로젝트 — 두 번째 줄 우측 */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
           <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
         </div>
+      </div>
       </div>
 
       {/* 알림발송 팝업 */}
