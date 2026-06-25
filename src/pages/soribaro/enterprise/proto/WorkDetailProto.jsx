@@ -2984,51 +2984,253 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
 }
 
 // ─── 탭 8: 정산확인 ───
+const SETTLE_WORKER_SEED = [
+  { worker: '홍길동', grade: 'Pro', workTime: '00:00', accuracy: '99.61%', errors: 1, remark: '', amount: 415800, payRate: '90%', executor: '정윤실_관리자', netAmount: 374220, status: '완료' },
+  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '', executor: '-', netAmount: 45000, status: '정산대기' },
+];
+const SETTLE_REVIEWER_SEED = [
+  { worker: '김철수', grade: 'Elite', workTime: '00:00', executor: '정윤실_관리자', netAmount: 415800, status: '완료' },
+];
+const SETTLE_HISTORY_SEED = [
+  { dttm: '26/06/25 10:00', actor: '정윤실_관리자', event: '정산 확인' },
+];
+
 function SettlementTab({ s }) {
-  const total = s.settlement.items.reduce((acc, it) => acc + it.amount, 0);
-  const totalNet = s.settlement.items.reduce((acc, it) => acc + it.netAmount, 0);
+  const [workers, setWorkers] = useState(() =>
+    (s.settlement?.workerRows) || SETTLE_WORKER_SEED.map(r => ({ ...r }))
+  );
+  const [reviewers, setReviewers] = useState(() =>
+    (s.settlement?.reviewerRows) || SETTLE_REVIEWER_SEED.map(r => ({ ...r }))
+  );
+  const [settleHistory, setSettleHistory] = useState(() =>
+    (s.settlement?.settleHistory) || SETTLE_HISTORY_SEED.map(r => ({ ...r }))
+  );
+  const [confirmModal, setConfirmModal] = useState(null); // { index, table } | null
+  const [rejectModal, setRejectModal] = useState(null);   // { index, table } | null
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectViewModal, setRejectViewModal] = useState(null); // { reason }
+
+  const now = () => {
+    const d = new Date();
+    const yy = String(d.getFullYear()).slice(2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${yy}/${mm}/${dd} ${hh}:${mi}`;
+  };
+
+  // 관리자 "확인" 클릭 → 팝업
+  const handleConfirmClick = (index, table) => {
+    setConfirmModal({ index, table });
+  };
+
+  // 팝업 "확정" → 상태를 '작업자 확인'으로
+  const handleConfirm = () => {
+    const { index, table } = confirmModal;
+    if (table === 'worker') {
+      const updated = workers.map((r, i) => i === index ? { ...r, status: '작업자 확인' } : r);
+      setWorkers(updated);
+      setSettleHistory(prev => [{ dttm: now(), actor: '관리자', event: '정산 확인 요청' }, ...prev]);
+    }
+    setConfirmModal(null);
+  };
+
+  // 작업자 "승인" → '완료'
+  const handleApprove = (index, table) => {
+    if (table === 'worker') {
+      const updated = workers.map((r, i) => i === index ? { ...r, status: '완료', executor: '정윤실_관리자' } : r);
+      setWorkers(updated);
+      setSettleHistory(prev => [{ dttm: now(), actor: workers[index].worker, event: '정산 승인' }, ...prev]);
+    } else {
+      const updated = reviewers.map((r, i) => i === index ? { ...r, status: '완료', executor: '정윤실_관리자' } : r);
+      setReviewers(updated);
+    }
+  };
+
+  // 작업자 "반려" → 사유 입력 팝업
+  const handleRejectClick = (index, table) => {
+    setRejectReason('');
+    setRejectModal({ index, table });
+  };
+
+  // 반려 확정 → 상태 '정산대기'
+  const handleReject = () => {
+    const { index, table } = rejectModal;
+    const reason = rejectReason.trim() || '(사유 미입력)';
+    if (table === 'worker') {
+      const updated = workers.map((r, i) => i === index ? { ...r, status: '정산대기', rejectReason: reason } : r);
+      setWorkers(updated);
+      setSettleHistory(prev => [{ dttm: now(), actor: workers[index].worker, event: '정산 반려', detail: reason }, ...prev]);
+    }
+    setRejectModal(null);
+  };
+
+  const statusCell = (row, index, table) => {
+    if (row.status === '완료') return <span className="settle-status-badge settle-status-badge--done">완료</span>;
+    if (row.status === '작업자 확인') return (
+      <span className="settle-status-actions">
+        <button className="settle-action-btn settle-action-btn--approve" onClick={() => handleApprove(index, table)}>승인</button>
+        <button className="settle-action-btn settle-action-btn--reject" onClick={() => handleRejectClick(index, table)}>반려</button>
+      </span>
+    );
+    // 정산대기
+    return (
+      <span className="settle-status-group">
+        <button className="settle-confirm-btn" onClick={() => handleConfirmClick(index, table)}>확인</button>
+        {row.rejectReason && (
+          <button className="settle-reject-view-btn" onClick={() => setRejectViewModal({ reason: row.rejectReason })} title="반려 사유 보기">반려</button>
+        )}
+      </span>
+    );
+  };
 
   return (
     <div className="proto-tab-panel">
-      <div className="proto-settle-status">
-        <span className="proto-settle-status-label">정산 상태</span>
-        {settleBadge(s.settlement.status)}
-      </div>
-
-      <p className="proto-section-title">작업자별 정산 내역</p>
+      <p className="proto-section-title">작업자 정산 내역</p>
       <div className="proto-table-wrap">
-        <table className="proto-table">
+        <table className="proto-table settle-table">
           <thead>
             <tr>
-              <th>담당자</th>
-              <th className="text-center">역할</th>
+              <th>작업자</th>
+              <th className="text-center">작업자 등급</th>
+              <th className="text-center">작업시간</th>
+              <th className="text-center">정확도</th>
+              <th className="text-center">회의록 오류</th>
+              <th>비고</th>
               <th className="text-right">작업금액 (원)</th>
-              <th className="text-center">세율</th>
-              <th className="text-right">실수령액 (원)</th>
+              <th className="text-center">지급비율</th>
+              <th className="text-center">집행자</th>
+              <th className="text-right">실제 정산금액 (원)</th>
+              <th className="text-center">상태</th>
             </tr>
           </thead>
           <tbody>
-            {s.settlement.items.map((it, i) => (
+            {workers.map((row, i) => (
               <tr key={i}>
-                <td style={{ fontWeight: 600 }}>{it.worker}</td>
-                <td className="text-center">{it.role}</td>
-                <td className="text-right">{fmt(it.amount)}</td>
-                <td className="text-center">{it.taxRate}%</td>
-                <td className="text-right">{fmt(it.netAmount)}</td>
+                <td style={{ fontWeight: 600 }}>{row.worker}</td>
+                <td className="text-center"><span className="settle-grade-badge">{row.grade}</span></td>
+                <td className="text-center" style={{ color: '#60a5fa' }}>{row.workTime}</td>
+                <td className="text-center">{row.accuracy}</td>
+                <td className="text-center">{row.errors}</td>
+                <td style={{ whiteSpace: 'pre-line', color: 'var(--text-secondary)', fontSize: '12px' }}>{row.remark || <span style={{ color: 'var(--text-muted)' }}>수기 입력</span>}</td>
+                <td className="text-right">{fmt(row.amount)}</td>
+                <td className="text-center">{row.payRate || '-'}</td>
+                <td className="text-center">{row.executor}</td>
+                <td className="text-right">{fmt(row.netAmount)}</td>
+                <td className="text-center">{statusCell(row, i, 'worker')}</td>
               </tr>
             ))}
-            <tr style={{ fontWeight: 700, background: 'var(--surface-light)' }}>
-              <td colSpan={2}>합계</td>
-              <td className="text-right">{fmt(total)}</td>
-              <td className="text-center">-</td>
-              <td className="text-right">{fmt(totalNet)}</td>
-            </tr>
           </tbody>
         </table>
       </div>
-      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-        * 세금은 3.3% 원천징수 기준입니다. 정산 확정은 정식 서비스에서 처리됩니다.
-      </p>
+
+      <p className="proto-section-title" style={{ marginTop: '24px' }}>검수자 정산 내역</p>
+      <div className="proto-table-wrap">
+        <table className="proto-table settle-table">
+          <thead>
+            <tr>
+              <th>작업자</th>
+              <th className="text-center">작업자 등급</th>
+              <th className="text-center">작업시간</th>
+              <th className="text-center">집행자</th>
+              <th className="text-right">정산금액 (원)</th>
+              <th className="text-center">상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reviewers.map((row, i) => (
+              <tr key={i}>
+                <td style={{ fontWeight: 600 }}>{row.worker}</td>
+                <td className="text-center"><span className="settle-grade-badge">{row.grade}</span></td>
+                <td className="text-center" style={{ color: '#60a5fa' }}>{row.workTime}</td>
+                <td className="text-center">{row.executor}</td>
+                <td className="text-right">{fmt(row.netAmount)}</td>
+                <td className="text-center">{statusCell(row, i, 'reviewer')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="proto-section-title" style={{ marginTop: '24px' }}>정산 이력</p>
+      <div className="settle-history-list">
+        {settleHistory.length === 0
+          ? <div className="proto-empty-state" style={{ padding: '16px' }}>정산 이력이 없습니다.</div>
+          : settleHistory.map((h, i) => (
+            <div key={i} className="settle-history-row">
+              <span className="settle-history-dttm">{h.dttm}</span>
+              <span className="settle-history-actor">{h.actor}</span>
+              <span className="settle-history-event">{h.event}</span>
+              {h.detail && <span className="settle-history-detail">{h.detail}</span>}
+            </div>
+          ))
+        }
+      </div>
+
+      {/* 확정 확인 팝업 */}
+      {confirmModal && (
+        <div className="pm-overlay" onClick={() => setConfirmModal(null)}>
+          <div className="pm-modal--workspy" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">정산 확정</span>
+              <button className="preg-x-btn" onClick={() => setConfirmModal(null)}>✕</button>
+            </div>
+            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
+              <p style={{ margin: 0, fontSize: '14px' }}>정산을 확정하시겠습니까?</p>
+              <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>확정 후 작업자에게 정산 내역이 전달됩니다.</p>
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setConfirmModal(null)}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={handleConfirm}>확정</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 반려 사유 입력 팝업 */}
+      {rejectModal && (
+        <div className="pm-overlay" onClick={() => setRejectModal(null)}>
+          <div className="pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">정산 반려</span>
+              <button className="preg-x-btn" onClick={() => setRejectModal(null)}>✕</button>
+            </div>
+            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
+              <label className="preg-label">반려 사유</label>
+              <textarea
+                className="preg-input"
+                style={{ height: '90px', resize: 'vertical', marginTop: '6px' }}
+                placeholder="반려 사유를 입력하세요"
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+              />
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setRejectModal(null)}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" style={{ background: '#ef4444' }} onClick={handleReject}>반려</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 반려 사유 조회 팝업 */}
+      {rejectViewModal && (
+        <div className="pm-overlay" onClick={() => setRejectViewModal(null)}>
+          <div className="pm-modal--workspy" style={{ maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">반려 사유</span>
+              <button className="preg-x-btn" onClick={() => setRejectViewModal(null)}>✕</button>
+            </div>
+            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
+              <p style={{ margin: 0, fontSize: '14px', whiteSpace: 'pre-wrap' }}>{rejectViewModal.reason}</p>
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn proto-log-btn--save" onClick={() => setRejectViewModal(null)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
