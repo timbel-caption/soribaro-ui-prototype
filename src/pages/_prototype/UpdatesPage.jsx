@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-25',
+    author: '정윤실',
+    title: '회의록 상세보기 탭에서 납품관리 항목 제거',
+    description:
+      '회의록 작업관리 상세보기에서 납품관리 탭을 숨겼습니다. bssTypeName이 회의록인 경우 TAB_LABELS_MTG와 tabContent를 별도로 구성하여 납품관리 탭을 제외했습니다.',
+  },
+  {
+    date: '2026-06-25',
     author: '정기태',
     title: 'VOD 납품 이력 영역 프로젝트/차수 그룹 아코디언 구조로 개편',
     description:

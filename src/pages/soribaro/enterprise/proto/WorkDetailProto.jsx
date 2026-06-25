@@ -9,9 +9,13 @@ import Box from '@mui/material/Box';
 import '../../../../styles/notion-list.css';
 import './ProtoDetail.css';
 
-const TAB_LABELS = [
+const TAB_LABELS_VOD = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
   'AI QC 결과 요약', '납품관리', '정산확인', '이력/메모',
+];
+const TAB_LABELS_MTG = [
+  '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
+  'AI QC 결과 요약', '정산확인', '이력/메모',
 ];
 
 const STATUS_MAP = {
@@ -3485,16 +3489,28 @@ export default function WorkDetailProto({ samples, backPath }) {
     );
   }
 
-  const tabContent = [
-    <BasicInfoTab s={s} />,
-    <FileManageTab s={s} />,
-    <ProjectManageTab s={s} />,
-    <ManualGlossaryTab s={s} />,
-    <AiQcTab s={s} />,
-    <DeliveryTab s={s} />,
-    <SettlementTab s={s} />,
-    <HistoryMemoTab s={s} />,
-  ];
+  const isMtg = s.bssTypeName === '회의록';
+  const TAB_LABELS = isMtg ? TAB_LABELS_MTG : TAB_LABELS_VOD;
+  const tabContent = isMtg
+    ? [
+        <BasicInfoTab s={s} />,
+        <FileManageTab s={s} />,
+        <ProjectManageTab s={s} />,
+        <ManualGlossaryTab s={s} />,
+        <AiQcTab s={s} />,
+        <SettlementTab s={s} />,
+        <HistoryMemoTab s={s} />,
+      ]
+    : [
+        <BasicInfoTab s={s} />,
+        <FileManageTab s={s} />,
+        <ProjectManageTab s={s} />,
+        <ManualGlossaryTab s={s} />,
+        <AiQcTab s={s} />,
+        <DeliveryTab s={s} />,
+        <SettlementTab s={s} />,
+        <HistoryMemoTab s={s} />,
+      ];
 
   return (
     <div className={`notion-page proto-detail-page${tab === 2 ? ' proto-detail-page--wide' : ''}`}>
