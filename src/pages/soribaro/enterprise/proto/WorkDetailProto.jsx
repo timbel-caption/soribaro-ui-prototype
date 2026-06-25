@@ -9,9 +9,13 @@ import Box from '@mui/material/Box';
 import '../../../../styles/notion-list.css';
 import './ProtoDetail.css';
 
-const TAB_LABELS = [
+const TAB_LABELS_VOD = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
   'AI QC 결과 요약', '납품관리', '정산확인', '이력/메모',
+];
+const TAB_LABELS_MTG = [
+  '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
+  'AI QC 결과 요약', '정산확인', '이력/메모',
 ];
 
 const STATUS_MAP = {
@@ -1583,6 +1587,8 @@ function ProjectManageTab({ s }) {
           name: '회의록 전사 프로젝트',
           status: '작업중',
           workTime: '1:00',
+          accuracy: '99.61%',
+          errors: 1,
           worker: '홍길동',
           reviewer: '',
           workspyRegistered: false,
@@ -1595,6 +1601,8 @@ function ProjectManageTab({ s }) {
           name: '회의록 전사 프로젝트',
           status: '작업중',
           workTime: '0:58',
+          accuracy: '98.27%',
+          errors: 5,
           worker: '김나리',
           reviewer: '',
           workspyRegistered: false,
@@ -1763,10 +1771,12 @@ function ProjectManageTab({ s }) {
         </div>
       )}
 
+      <div className="pm-project-list-wrap">
       <div className="pm-project-list">
         {projects.map(proj => (
           <div key={proj.id} className="pm-project-card">
             <div className="pm-project-header" onClick={() => toggleExpand(proj.id)}>
+              {/* 왼쪽: 이름 · 상태 · 작업시간 · 정확도 */}
               <span className="pm-expand-icon">{proj.expanded ? '▼' : '▶'}</span>
               <span className="pm-project-name">{proj.name}</span>
               <span className={`proto-status-badge ${proj.status === '작업완료' ? 'proto-status-done' : 'proto-status-working'}`}>
@@ -1799,6 +1809,11 @@ function ProjectManageTab({ s }) {
                   총 {proj.workTime || calcProjWorkTime(proj.projFiles)}
                 </span>
               )}
+              {(proj.accuracy || proj.errors != null) && (
+                <span className="pm-accuracy-chip">
+                  정확도 {proj.accuracy || '-'} / 회의록 오류 {proj.errors ?? '-'}
+                </span>
+              )}
               {proj.workspyRegistered && proj.workspyData && (() => {
                 const d = proj.workspyData;
                 const fmtD = (iso) => iso ? iso.split('T')[0].replace(/-/g, '.') : '-';
@@ -1811,8 +1826,19 @@ function ProjectManageTab({ s }) {
                   </>
                 );
               })()}
+
+              {/* 스페이서 — 우측 그룹을 끝으로 밀기 */}
+              <span style={{ flex: 1 }} />
+
+              {/* 오른쪽: 병합검수 + 배정 버튼 */}
+              <button
+                className="pm-merge-qc-btn"
+                onClick={e => { e.stopPropagation(); window.alert('[프로토타입] 병합검수 기능은 정식 서비스 단계에서 구현 예정입니다.'); }}
+              >
+                병합검수
+              </button>
               {!proj.workspyRegistered && (
-                <span className="pm-assign-area">
+                <span className="pm-assign-area" style={{ marginLeft: 0 }}>
                   <span className="pm-assign-label">작업자</span>
                   <button className="pm-chip pm-chip--worker" onClick={e => { e.stopPropagation(); setAssignModal({ projId: proj.id, type: 'worker' }); }}>
                     {proj.worker || '작업자 배정'}
@@ -2021,6 +2047,7 @@ function ProjectManageTab({ s }) {
             )}
           </div>
         ))}
+      </div>
       </div>
 
       {fileModalFor && (
@@ -3155,9 +3182,17 @@ const SETTLE_HISTORY_SEED = [
 ];
 
 function SettlementTab({ s }) {
-  const [workers, setWorkers] = useState(() =>
-    (s.settlement?.workerRows) || SETTLE_WORKER_SEED.map(r => ({ ...r }))
-  );
+  const [workers, setWorkers] = useState(() => {
+    if (s.settlement?.workerRows) return s.settlement.workerRows;
+    // 프로젝트 관리 탭에서 저장된 최신 subjects(projects)를 읽어 작업시간 연동
+    const store = s.bssTypeName === '회의록' ? getMeetingSamples() : getVodSamples();
+    const cur = store.find((v) => v.id === s.id);
+    const subjects = cur?.subjects || [];
+    return SETTLE_WORKER_SEED.map((r) => {
+      const proj = subjects.find((p) => p.worker === r.worker);
+      return { ...r, workTime: proj?.workTime ?? r.workTime };
+    });
+  });
   const [reviewers, setReviewers] = useState(() =>
     (s.settlement?.reviewerRows) || SETTLE_REVIEWER_SEED.map(r => ({ ...r }))
   );
@@ -3339,7 +3374,7 @@ function SettlementTab({ s }) {
       {/* 확정 확인 팝업 */}
       {confirmModal && (
         <div className="pm-overlay" onClick={() => setConfirmModal(null)}>
-          <div className="pm-modal--workspy" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
               <span className="pm-modal-title">정산 확정</span>
               <button className="preg-x-btn" onClick={() => setConfirmModal(null)}>✕</button>
@@ -3359,7 +3394,7 @@ function SettlementTab({ s }) {
       {/* 반려 사유 입력 팝업 */}
       {rejectModal && (
         <div className="pm-overlay" onClick={() => setRejectModal(null)}>
-          <div className="pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
               <span className="pm-modal-title">정산 반려</span>
               <button className="preg-x-btn" onClick={() => setRejectModal(null)}>✕</button>
@@ -3385,7 +3420,7 @@ function SettlementTab({ s }) {
       {/* 반려 사유 조회 팝업 */}
       {rejectViewModal && (
         <div className="pm-overlay" onClick={() => setRejectViewModal(null)}>
-          <div className="pm-modal--workspy" style={{ maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
               <span className="pm-modal-title">반려 사유</span>
               <button className="preg-x-btn" onClick={() => setRejectViewModal(null)}>✕</button>
@@ -3466,16 +3501,28 @@ export default function WorkDetailProto({ samples, backPath }) {
     );
   }
 
-  const tabContent = [
-    <BasicInfoTab s={s} />,
-    <FileManageTab s={s} />,
-    <ProjectManageTab s={s} />,
-    <ManualGlossaryTab s={s} />,
-    <AiQcTab s={s} />,
-    <DeliveryTab s={s} />,
-    <SettlementTab s={s} />,
-    <HistoryMemoTab s={s} />,
-  ];
+  const isMtg = s.bssTypeName === '회의록';
+  const TAB_LABELS = isMtg ? TAB_LABELS_MTG : TAB_LABELS_VOD;
+  const tabContent = isMtg
+    ? [
+        <BasicInfoTab s={s} />,
+        <FileManageTab s={s} />,
+        <ProjectManageTab s={s} />,
+        <ManualGlossaryTab s={s} />,
+        <AiQcTab s={s} />,
+        <SettlementTab s={s} />,
+        <HistoryMemoTab s={s} />,
+      ]
+    : [
+        <BasicInfoTab s={s} />,
+        <FileManageTab s={s} />,
+        <ProjectManageTab s={s} />,
+        <ManualGlossaryTab s={s} />,
+        <AiQcTab s={s} />,
+        <DeliveryTab s={s} />,
+        <SettlementTab s={s} />,
+        <HistoryMemoTab s={s} />,
+      ];
 
   return (
     <div className={`notion-page proto-detail-page${tab === 2 ? ' proto-detail-page--wide' : ''}`}>
