@@ -704,6 +704,91 @@
 .proto-settle-badge-partial { display:inline-block; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600; background:rgba(96,165,250,0.18); color:#60a5fa; }
 .proto-settle-badge-done    { display:inline-block; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600; background:rgba(34,197,94,0.18); color:#4ade80; }
 
+/* ─── 정산확인 탭 ─── */
+.settle-table th, .settle-table td { white-space: nowrap; }
+.settle-grade-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(99,102,241,0.15);
+  color: #818cf8;
+}
+.settle-status-badge--done {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(34,197,94,0.15);
+  color: #4ade80;
+}
+.settle-status-badge--pre {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+}
+.settle-confirm-btn {
+  display: inline-block;
+  padding: 3px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: rgba(96,165,250,0.18);
+  color: #60a5fa;
+}
+.settle-confirm-btn:hover { background: rgba(96,165,250,0.32); }
+.settle-reject-view-btn {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  margin-left: 4px;
+}
+.settle-status-actions { display: flex; gap: 4px; justify-content: center; }
+.settle-action-btn {
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.settle-action-btn--approve { background: rgba(34,197,94,0.18); color: #4ade80; }
+.settle-action-btn--approve:hover { background: rgba(34,197,94,0.32); }
+.settle-action-btn--reject  { background: rgba(239,68,68,0.15); color: #f87171; }
+.settle-action-btn--reject:hover  { background: rgba(239,68,68,0.28); }
+.settle-status-group { display: inline-flex; align-items: center; gap: 4px; }
+.settle-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.settle-history-row {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.settle-history-dttm  { color: var(--text-secondary); min-width: 110px; }
+.settle-history-actor { color: #60a5fa; min-width: 110px; }
+.settle-history-event { font-weight: 500; }
+.settle-history-detail { color: var(--text-secondary); font-size: 12px; }
+
 /* ─── 이력 타임라인 ─── */
 .proto-timeline {
   position: relative;
@@ -1062,6 +1147,74 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ─── 회의록 작업관리 목록 전용 ─── */
+.mtg-status-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mtg-status-working  { background: rgba(251,191,36,0.18);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); }
+.mtg-status-checking { background: rgba(45,212,191,0.15);  color: #2dd4bf; border: 1px solid rgba(45,212,191,0.4); }
+.mtg-status-done     { background: var(--bg-hover);         color: var(--text-muted); border: 1px solid var(--border-color); }
+
+.mtg-settle-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.mtg-settle-done    { background: rgba(34,197,94,0.15);    color: #4ade80; }
+.mtg-settle-wait    { background: rgba(251,191,36,0.15);   color: #fbbf24; }
+.mtg-settle-partial { background: rgba(96,165,250,0.15);   color: #60a5fa; }
+.mtg-settle-pre     { background: var(--bg-hover);          color: var(--text-muted); }
+
+.mtg-subfile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  background: transparent;
+  transition: background 0.1s;
+}
+.mtg-subfile-none { color: var(--text-muted); border-color: var(--border-color); }
+.mtg-subfile-req  { color: #4ade80; border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.08); }
+.mtg-subfile-recv { color: #60a5fa; border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.08); }
+.mtg-subfile-btn:hover { opacity: 0.8; }
+
+.mtg-detail-btn {
+  padding: 3px 10px;
+  background: rgba(45,212,191,0.15);
+  color: #2dd4bf;
+  border: 1px solid rgba(45,212,191,0.4);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.mtg-detail-btn:hover { background: rgba(45,212,191,0.28); }
+
+.mtg-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.mtg-alert-row:hover { background: var(--bg-hover); }
+.mtg-alert-date  { color: var(--text-muted); min-width: 44px; }
+.mtg-alert-ent   { font-weight: 500; color: var(--text-primary); }
+.mtg-alert-round { color: var(--text-muted); }
 
 /* ─── 새 프로젝트 등록 버튼 (목록 페이지) ─── */
 .proto-register-page-btn {
@@ -2072,6 +2225,21 @@
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+.pm-total-time-chip--editable { cursor: pointer; }
+.pm-total-time-chip--editable:hover { background: rgba(99,102,241,0.28); }
+.pm-total-time-input {
+  width: 80px;
+  padding: 2px 8px;
+  border: 1.5px solid #818cf8;
+  border-radius: 20px;
+  background: rgba(99,102,241,0.1);
+  color: #818cf8;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  font-family: inherit;
 }
 
 .pm-wspy-chip {
