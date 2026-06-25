@@ -4862,3 +4862,113 @@
   font-weight: 600;
 }
 .pm-doc-btn--notify:hover { opacity: 0.85; background: var(--accent-color); }
+
+/* ── 프로젝트 이력 탭 (VOD) ── */
+.proj-hist-filter-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.proj-hist-filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.proj-hist-filter-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.proj-hist-filter-btn--active {
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+  font-weight: 600;
+}
+
+.proj-hist-proj-block {
+  margin-bottom: 24px;
+}
+
+.proj-hist-proj-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 6px 0 8px 0;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 10px;
+}
+
+.proj-hist-batch-block {
+  margin-bottom: 8px;
+}
+
+.proj-hist-batch-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s;
+  margin-bottom: 0;
+}
+.proj-hist-batch-toggle:hover { background: var(--bg-hover); }
+
+.proj-hist-batch-caret { font-size: 10px; color: var(--text-muted); width: 10px; }
+.proj-hist-batch-label { font-size: 13px; font-weight: 600; color: var(--text-primary); flex: 1; }
+.proj-hist-batch-count { font-size: 11px; color: var(--text-muted); }
+
+.proj-hist-timeline {
+  margin-top: 4px;
+  margin-left: 14px;
+  margin-bottom: 4px;
+}
+
+.proj-hist-item-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.proj-hist-dttm {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-family: monospace;
+}
+
+.proj-hist-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.proj-hist-actor {
+  font-size: 12px;
+  color: var(--accent-color);
+  white-space: nowrap;
+}
+
+.proj-hist-detail {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
