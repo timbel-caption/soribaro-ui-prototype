@@ -175,6 +175,14 @@ function BasicInfoTab({ s }) {
   const isVod = s.bssTypeName !== '회의록';
   const authorName = useUserStore((st) => st.user?.membNm) || '관리자';
 
+  // 견적서/최종산출물/알림발송 (회의록·현장속기 전용)
+  const [quoteFile, setQuoteFile] = useState(null);
+  const [outputFile, setOutputFile] = useState(null);
+  const [notifyModal, setNotifyModal] = useState(false);
+  const [notifyTarget, setNotifyTarget] = useState('all');
+  const quoteInputRef = useRef();
+  const outputInputRef = useRef();
+
   // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const [noteEntries, setNoteEntries] = useState(() => {
     const store = isVod ? getVodSamples() : getMeetingSamples();
@@ -203,33 +211,6 @@ function BasicInfoTab({ s }) {
     if (!isVod) updateSampleSpecialNote(s.id, next[next.length - 1]?.content ?? '');
   };
   const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
-
-  // 첨부파일 (회의록 전용)
-  const [attachments, setAttachments] = useState(() => ATTACH_SEED.map(r => ({ ...r })));
-  const [attachChecked, setAttachChecked] = useState(new Set());
-
-  const attachAllChecked = attachChecked.size === attachments.length && attachments.length > 0;
-  const toggleAttachAll = () => {
-    setAttachChecked(attachAllChecked ? new Set() : new Set(attachments.map(a => a.id)));
-  };
-  const toggleAttachOne = (id) => {
-    setAttachChecked(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-  const handleShareConvert = () => {
-    setAttachments(prev => prev.map(a => attachChecked.has(a.id) ? { ...a, shared: !a.shared } : a));
-    setAttachChecked(new Set());
-  };
-  const handleBulkDownload = () => {
-    window.alert(`[프로토타입 안내]\n${attachChecked.size}개 파일 일괄 다운로드는 정식 서비스 단계에서 구현 예정입니다.`);
-  };
-  const handleDeleteAttach = (id) => {
-    setAttachments(prev => prev.filter(a => a.id !== id));
-    setAttachChecked(prev => { const next = new Set(prev); next.delete(id); return next; });
-  };
 
   const row1 = isVod ? [
     { label: '작업 유형', value: s.bssTypeName },
@@ -337,69 +318,48 @@ function BasicInfoTab({ s }) {
         </div>
       </div>
 
-      {/* 첨부파일 (회의록 전용) */}
+      {/* 견적서/최종산출물/알림발송 (회의록·현장속기 전용) */}
       {!isVod && (
-        <div className="attach-section">
-          <div className="attach-section-header">
-            <span className="proto-section-title" style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>첨부파일</span>
-            <div className="attach-section-actions">
-              {attachChecked.size > 0 && (
-                <>
-                  <button className="attach-action-btn attach-action-btn--share" onClick={handleShareConvert}>
-                    공유 전환 ({attachChecked.size}건)
-                  </button>
-                  <button className="attach-action-btn attach-action-btn--dl" onClick={handleBulkDownload}>
-                    일괄 다운로드 ({attachChecked.size}건)
-                  </button>
-                </>
-              )}
-              <button className="proto-file-add-btn" onClick={() => window.alert('[프로토타입 안내]\n파일 업로드는 정식 서비스 단계에서 구현 예정입니다.')}>
-                + 파일 업로드
-              </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+          <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
+          <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
+          <button
+            className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
+            onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
+          >견적서 다운로드</button>
+          <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
+          <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
+          <button
+            className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
+            onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
+          >최종산출물 다운로드</button>
+          <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
+        </div>
+      )}
+
+      {/* 알림발송 팝업 (회의록·현장속기 전용) */}
+      {!isVod && notifyModal && (
+        <div className="pm-overlay" onClick={() => setNotifyModal(false)}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">알림 발송</span>
+              <button className="preg-x-btn" onClick={() => setNotifyModal(false)}>✕</button>
             </div>
-          </div>
-          <div className="proto-table-wrap">
-            <table className="proto-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '36px' }}>
-                    <input type="checkbox" checked={attachAllChecked} onChange={toggleAttachAll} />
-                  </th>
-                  <th>파일명</th>
-                  <th style={{ width: '110px' }}>유형</th>
-                  <th style={{ width: '90px' }} className="text-center">파일크기</th>
-                  <th style={{ width: '140px' }} className="text-center">등록일</th>
-                  <th style={{ width: '50px' }} className="text-center">공유</th>
-                  <th style={{ width: '100px' }} className="text-center">액션</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attachments.map(a => (
-                  <tr key={a.id} className={attachChecked.has(a.id) ? 'attach-row--checked' : ''}>
-                    <td>
-                      <input type="checkbox" checked={attachChecked.has(a.id)} onChange={() => toggleAttachOne(a.id)} />
-                    </td>
-                    <td style={{ wordBreak: 'break-all' }}>{a.name}</td>
-                    <td>
-                      <span className={`attach-type-badge ${a.type === '공유파일' ? 'attach-type-badge--shared' : 'attach-type-badge--client'}`}>
-                        {a.type}
-                      </span>
-                    </td>
-                    <td className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{a.size}</td>
-                    <td className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{a.regDttm}</td>
-                    <td className="text-center" style={{ fontSize: '12px', color: a.shared ? 'var(--accent-color)' : 'var(--text-muted)' }}>
-                      {a.shared ? '공유' : '-'}
-                    </td>
-                    <td className="text-center">
-                      <button className="attach-dl-btn" onClick={() => window.alert('[프로토타입 안내]\n다운로드는 정식 서비스 단계에서 구현 예정입니다.')}>다운로드</button>
-                      {a.type === '공유파일' && (
-                        <button className="attach-del-btn" onClick={() => handleDeleteAttach(a.id)}>삭제</button>
-                      )}
-                    </td>
-                  </tr>
+            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
+              <label className="preg-label">발송 대상</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                {[{ value: 'all', label: '전체 (작업자 + 검수자)' }, { value: 'worker', label: '작업자만' }, { value: 'reviewer', label: '검수자만' }].map(opt => (
+                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                    <input type="radio" name="notify-target" value={opt.value} checked={notifyTarget === opt.value} onChange={() => setNotifyTarget(opt.value)} />
+                    {opt.label}
+                  </label>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setNotifyModal(false)}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save pm-doc-btn--notify" style={{ border: 'none' }} onClick={() => { setNotifyModal(false); window.alert('[프로토타입 안내]\n알림이 발송되었습니다.'); }}>발송</button>
+            </div>
           </div>
         </div>
       )}
@@ -1746,12 +1706,6 @@ function ProjectManageTab({ s }) {
   const [msgDraft, setMsgDraft] = useState({});
   const [workspyModal, setWorkspyModal] = useState(null);
   const [workTimeEdit, setWorkTimeEdit] = useState({});
-  const [quoteFile, setQuoteFile] = useState(null);       // 견적서 파일명
-  const [outputFile, setOutputFile] = useState(null);     // 최종산출물 파일명
-  const [notifyModal, setNotifyModal] = useState(false);  // 알림발송 팝업
-  const [notifyTarget, setNotifyTarget] = useState('all');
-  const quoteInputRef = useRef();
-  const outputInputRef = useRef();
 
   const syncStore = (updated) => {
     setProjects(updated);
@@ -1837,24 +1791,6 @@ function ProjectManageTab({ s }) {
       <div style={{ marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
           <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            {/* 견적서 */}
-            <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
-            <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
-            <button
-              className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
-              onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
-            >견적서 다운로드</button>
-            {/* 최종산출물 */}
-            <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
-            <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
-            <button
-              className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
-              onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
-            >최종산출물 다운로드</button>
-            {/* 알림발송 */}
-            <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
-          </div>
         </div>
         {/* 새 프로젝트 — 두 번째 줄 우측 */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
@@ -1862,32 +1798,6 @@ function ProjectManageTab({ s }) {
         </div>
       </div>
 
-      {/* 알림발송 팝업 */}
-      {notifyModal && (
-        <div className="pm-overlay" onClick={() => setNotifyModal(false)}>
-          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-            <div className="pm-modal-hd">
-              <span className="pm-modal-title">알림 발송</span>
-              <button className="preg-x-btn" onClick={() => setNotifyModal(false)}>✕</button>
-            </div>
-            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
-              <label className="preg-label">발송 대상</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                {[{ value: 'all', label: '전체 (작업자 + 검수자)' }, { value: 'worker', label: '작업자만' }, { value: 'reviewer', label: '검수자만' }].map(opt => (
-                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                    <input type="radio" name="notify-target" value={opt.value} checked={notifyTarget === opt.value} onChange={() => setNotifyTarget(opt.value)} />
-                    {opt.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="pm-modal-ft">
-              <button className="proto-log-btn" onClick={() => setNotifyModal(false)}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save pm-doc-btn--notify" style={{ border: 'none' }} onClick={() => { setNotifyModal(false); window.alert('[프로토타입 안내]\n알림이 발송되었습니다.'); }}>발송</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showAddForm && (
         <div className="pm-overlay" onClick={cancelAddForm}>
