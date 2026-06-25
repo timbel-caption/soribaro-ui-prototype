@@ -212,6 +212,33 @@ function BasicInfoTab({ s }) {
   };
   const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
 
+  // 첨부파일 (회의록 전용)
+  const [attachments, setAttachments] = useState(() => ATTACH_SEED.map(r => ({ ...r })));
+  const [attachChecked, setAttachChecked] = useState(new Set());
+
+  const attachAllChecked = attachChecked.size === attachments.length && attachments.length > 0;
+  const toggleAttachAll = () => {
+    setAttachChecked(attachAllChecked ? new Set() : new Set(attachments.map(a => a.id)));
+  };
+  const toggleAttachOne = (id) => {
+    setAttachChecked(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const handleShareConvert = () => {
+    setAttachments(prev => prev.map(a => attachChecked.has(a.id) ? { ...a, shared: !a.shared } : a));
+    setAttachChecked(new Set());
+  };
+  const handleBulkDownload = () => {
+    window.alert(`[프로토타입 안내]\n${attachChecked.size}개 파일 일괄 다운로드는 정식 서비스 단계에서 구현 예정입니다.`);
+  };
+  const handleDeleteAttach = (id) => {
+    setAttachments(prev => prev.filter(a => a.id !== id));
+    setAttachChecked(prev => { const next = new Set(prev); next.delete(id); return next; });
+  };
+
   const row1 = isVod ? [
     { label: '작업 유형', value: s.bssTypeName },
     { label: '입체명', value: s.entNm },
@@ -317,6 +344,73 @@ function BasicInfoTab({ s }) {
           ))}
         </div>
       </div>
+
+      {/* 첨부파일 (회의록 전용) */}
+      {!isVod && (
+        <div className="attach-section">
+          <div className="attach-section-header">
+            <span className="proto-section-title" style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>첨부파일</span>
+            <div className="attach-section-actions">
+              {attachChecked.size > 0 && (
+                <>
+                  <button className="attach-action-btn attach-action-btn--share" onClick={handleShareConvert}>
+                    공유 전환 ({attachChecked.size}건)
+                  </button>
+                  <button className="attach-action-btn attach-action-btn--dl" onClick={handleBulkDownload}>
+                    일괄 다운로드 ({attachChecked.size}건)
+                  </button>
+                </>
+              )}
+              <button className="proto-file-add-btn" onClick={() => window.alert('[프로토타입 안내]\n파일 업로드는 정식 서비스 단계에서 구현 예정입니다.')}>
+                + 파일 업로드
+              </button>
+            </div>
+          </div>
+          <div className="proto-table-wrap">
+            <table className="proto-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '36px' }}>
+                    <input type="checkbox" checked={attachAllChecked} onChange={toggleAttachAll} />
+                  </th>
+                  <th>파일명</th>
+                  <th style={{ width: '110px' }}>유형</th>
+                  <th style={{ width: '90px' }} className="text-center">파일크기</th>
+                  <th style={{ width: '140px' }} className="text-center">등록일</th>
+                  <th style={{ width: '50px' }} className="text-center">공유</th>
+                  <th style={{ width: '100px' }} className="text-center">액션</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attachments.map(a => (
+                  <tr key={a.id} className={attachChecked.has(a.id) ? 'attach-row--checked' : ''}>
+                    <td>
+                      <input type="checkbox" checked={attachChecked.has(a.id)} onChange={() => toggleAttachOne(a.id)} />
+                    </td>
+                    <td style={{ wordBreak: 'break-all' }}>{a.name}</td>
+                    <td>
+                      <span className={`attach-type-badge ${a.type === '공유파일' ? 'attach-type-badge--shared' : 'attach-type-badge--client'}`}>
+                        {a.type}
+                      </span>
+                    </td>
+                    <td className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{a.size}</td>
+                    <td className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{a.regDttm}</td>
+                    <td className="text-center" style={{ fontSize: '12px', color: a.shared ? 'var(--accent-color)' : 'var(--text-muted)' }}>
+                      {a.shared ? '공유' : '-'}
+                    </td>
+                    <td className="text-center">
+                      <button className="attach-dl-btn" onClick={() => window.alert('[프로토타입 안내]\n다운로드는 정식 서비스 단계에서 구현 예정입니다.')}>다운로드</button>
+                      {a.type === '공유파일' && (
+                        <button className="attach-del-btn" onClick={() => handleDeleteAttach(a.id)}>삭제</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* 견적서/최종산출물/알림발송 (회의록·현장속기 전용) */}
       {!isVod && (
