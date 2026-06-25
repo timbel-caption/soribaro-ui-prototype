@@ -11,7 +11,7 @@ import './ProtoDetail.css';
 
 const TAB_LABELS_VOD = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
-  'AI QC 결과 요약', '납품관리', '정산확인', '이력/메모',
+  'AI QC 결과 요약', '납품관리', '정산확인', '프로젝트 이력',
 ];
 const TAB_LABELS_MTG = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
@@ -3426,11 +3426,158 @@ function SettlementTab() {
   );
 }
 
-// ─── 탭 9: 이력/메모 ───
+// ─── 탭 9: 프로젝트 이력 (VOD) / 이력/메모 (회의록) ───
+
+// VOD 프로젝트 이력 데이터 — 파일 업로드부터 정산까지 주요 단계
+const VOD_PROJECT_HISTORY = [
+  // 지구과학개론 / 1주차 / 1차 입고
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-21 10:30', historyType: '파일 업로드',    actor: '관리자', detail: '1강~5강 원본 영상 업로드' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-22 09:00', historyType: '프로젝트 등록',  actor: '관리자', detail: '지구과학개론 1주차 프로젝트 생성' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-28 14:30', historyType: '작업 배정 완료', actor: '관리자', detail: '1강~5강 작업자 배정 완료' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-07 16:20', historyType: '검수 완료',      actor: '정채원', detail: '1강~2강 검수 완료' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-10 10:00', historyType: '납품 완료',      actor: '관리자', detail: '1강_오리엔테이션.mp4, 2강_기초개념.mp4 SRT 납품 완료' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-14 15:20', historyType: '수정 요청',      actor: '관리자', detail: '3강_핵심이론.mp4 자막 싱크 오류 수정 요청' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-15 11:00', historyType: '재납품 완료',    actor: '관리자', detail: '3강_핵심이론.mp4 수정 반영 후 재납품 완료' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-25 10:00', historyType: '정산 완료',      actor: '관리자', detail: '고객사 작업내역서 확인 및 정산 완료' },
+  // 지구과학개론 / 2주차 / 2차 입고
+  { projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', dttm: '2026-05-28 09:20', historyType: '파일 업로드',    actor: '관리자', detail: '6강~9강 원본 영상 업로드' },
+  { projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', dttm: '2026-05-28 10:00', historyType: '프로젝트 등록',  actor: '관리자', detail: '지구과학개론 2주차 프로젝트 생성' },
+  { projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', dttm: '2026-06-20 15:30', historyType: '검수 완료',      actor: '정채원', detail: '7강_실습II.mp4 검수 완료' },
+  { projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', dttm: '2026-06-30 11:00', historyType: '납품 완료',      actor: '관리자', detail: '7강_실습II.mp4 SRT 납품 완료' },
+  // 기초영어회화 / 1주차 / 1차 입고
+  { projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-25 11:00', historyType: '파일 업로드',    actor: '관리자', detail: '1강~3강 원본 영상 업로드' },
+  { projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-25 14:00', historyType: '프로젝트 등록',  actor: '관리자', detail: '기초영어회화 1주차 프로젝트 생성' },
+  { projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-26 10:00', historyType: '작업 배정 완료', actor: '관리자', detail: '1강~3강 작업자 배정 완료' },
+  { projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-04 17:00', historyType: '검수 완료',      actor: '김검수', detail: '1강_발음기초.mp4 검수 완료' },
+  { projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-05 15:00', historyType: '검수 완료',      actor: '김검수', detail: '2강_회화패턴.mp4 검수 완료' },
+  { projectName: '기초영어회화', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-09 13:00', historyType: '납품 완료',      actor: '관리자', detail: '1강_발음기초.mp4, 2강_회화패턴.mp4 SRT 납품 완료' },
+];
+
+// 이력 유형 → 필터 카테고리 매핑
+const HIST_FILTER_MAP = {
+  '전체':       null,
+  '파일/프로젝트': ['파일 업로드', '프로젝트 등록'],
+  '작업/검수':  ['작업 배정 완료', '검수 완료'],
+  '납품':       ['납품 완료', '수정 요청', '재납품 완료'],
+  '정산':       ['정산 완료'],
+};
+
+// 이력 유형 → 배지 색상 매핑
+function histTypeBadge(type) {
+  const styles = {
+    '파일 업로드':    { bg: 'rgba(96,165,250,0.12)',  color: '#60a5fa',  border: 'rgba(96,165,250,0.3)' },
+    '프로젝트 등록':  { bg: 'rgba(167,139,250,0.12)', color: '#a78bfa',  border: 'rgba(167,139,250,0.3)' },
+    '작업 배정 완료': { bg: 'rgba(251,191,36,0.12)',  color: '#fbbf24',  border: 'rgba(251,191,36,0.3)' },
+    '검수 완료':      { bg: 'rgba(52,211,153,0.12)',  color: '#34d399',  border: 'rgba(52,211,153,0.3)' },
+    '납품 완료':      { bg: 'rgba(99,102,241,0.12)',  color: '#818cf8',  border: 'rgba(99,102,241,0.3)' },
+    '수정 요청':      { bg: 'rgba(251,113,133,0.12)', color: '#fb7185',  border: 'rgba(251,113,133,0.3)' },
+    '재납품 완료':    { bg: 'rgba(45,212,191,0.12)',  color: '#2dd4bf',  border: 'rgba(45,212,191,0.3)' },
+    '정산 완료':      { bg: 'rgba(34,197,94,0.12)',   color: '#22c55e',  border: 'rgba(34,197,94,0.3)' },
+  };
+  const st = styles[type] ?? { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8', border: 'rgba(148,163,184,0.3)' };
+  return (
+    <span className="proj-hist-type-badge" style={{ background: st.bg, color: st.color, borderColor: st.border }}>
+      {type}
+    </span>
+  );
+}
+
+function VodProjectHistoryTab() {
+  const [activeFilter, setActiveFilter] = React.useState('전체');
+  const [expandedKeys, setExpandedKeys] = React.useState(() => {
+    // 기본 모두 펼침
+    const keys = {};
+    VOD_PROJECT_HISTORY.forEach((h) => {
+      keys[`${h.projectName}::${h.batchLabel}`] = true;
+    });
+    return keys;
+  });
+
+  const filterTypes = HIST_FILTER_MAP[activeFilter];
+  const filtered = filterTypes
+    ? VOD_PROJECT_HISTORY.filter((h) => filterTypes.includes(h.historyType))
+    : VOD_PROJECT_HISTORY;
+
+  // projectName → batchLabel 순서 유지 (DELIVERY_ITEMS_SEED 기준)
+  const projOrder = [];
+  const batchOrder = {};
+  DELIVERY_ITEMS_SEED.forEach((it) => {
+    if (!projOrder.includes(it.projectName)) projOrder.push(it.projectName);
+    if (!batchOrder[it.projectName]) batchOrder[it.projectName] = [];
+    if (!batchOrder[it.projectName].includes(it.batchLabel)) batchOrder[it.projectName].push(it.batchLabel);
+  });
+
+  const toggleKey = (k) => setExpandedKeys((prev) => ({ ...prev, [k]: !prev[k] }));
+
+  return (
+    <div className="proto-tab-panel">
+      {/* 필터 */}
+      <div className="proj-hist-filter-row">
+        {Object.keys(HIST_FILTER_MAP).map((label) => (
+          <button
+            key={label}
+            className={`proj-hist-filter-btn${activeFilter === label ? ' proj-hist-filter-btn--active' : ''}`}
+            onClick={() => setActiveFilter(label)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* 프로젝트 → 차수/주차 그룹 */}
+      {projOrder.map((projName) => {
+        const batches = batchOrder[projName] || [];
+        const projHasItems = batches.some((b) =>
+          filtered.some((h) => h.projectName === projName && h.batchLabel === b)
+        );
+        if (!projHasItems) return null;
+        return (
+          <div key={projName} className="proj-hist-proj-block">
+            <div className="proj-hist-proj-title">{projName}</div>
+            {batches.map((batchLabel) => {
+              const bKey = `${projName}::${batchLabel}`;
+              const items = filtered.filter((h) => h.projectName === projName && h.batchLabel === batchLabel);
+              if (items.length === 0) return null;
+              const isOpen = !!expandedKeys[bKey];
+              return (
+                <div key={bKey} className="proj-hist-batch-block">
+                  <button className="proj-hist-batch-toggle" onClick={() => toggleKey(bKey)}>
+                    <span className="proj-hist-batch-caret">{isOpen ? '▼' : '▶'}</span>
+                    <span className="proj-hist-batch-label">{batchLabel}</span>
+                    <span className="proj-hist-batch-count">{items.length}건</span>
+                  </button>
+                  {isOpen && (
+                    <div className="proto-timeline proj-hist-timeline">
+                      {items.map((h, i) => (
+                        <div key={i} className="proto-timeline-item">
+                          <div className={`proto-timeline-dot proj-hist-dot--${h.historyType.replace(/\s/g, '-')}`} />
+                          <div className="proj-hist-item-row">
+                            <span className="proj-hist-dttm">{h.dttm}</span>
+                            {histTypeBadge(h.historyType)}
+                            <span className="proj-hist-actor">{h.actor}</span>
+                            <span className="proj-hist-detail">{h.detail}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function HistoryMemoTab({ s }) {
   const handleAddMemo = () => {
     window.alert('[프로토타입 안내]\n메모 작성 기능은 정식 서비스 단계에서 구현 예정입니다.');
   };
+  const isVod = s.bssTypeName !== '회의록';
+
+  if (isVod) return <VodProjectHistoryTab />;
 
   return (
     <div className="proto-tab-panel">
