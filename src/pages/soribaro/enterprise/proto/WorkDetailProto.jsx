@@ -2523,14 +2523,14 @@ const DELIVERY_TODAY = '2026-06-24';
 
 const DELIVERY_ITEMS_SEED = [
   // 지구과학개론 / 1주차 / 1차 입고
-  { id: 'di-001', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '1강_오리엔테이션.mp4', worker: '이민정', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-09', dueDate: '2026-06-25', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-001', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '1강_오리엔테이션.mp4', worker: '이민정', reviewer: '정채원', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-09', dueDate: '2026-06-25', actualDeliveryDate: '2026-06-10', deliveryFormat: 'SRT', revisionNote: '' },
   { id: 'di-002', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '2강_기초개념.mp4',      worker: '박정호', reviewer: '정채원', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-08', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-12', deliveryFormat: 'SRT', revisionNote: '' },
-  { id: 'di-003', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '3강_핵심이론.mp4',       worker: '최수영', reviewer: '정채원', progressStatus: '수정 요청', reviewCompletedDate: '2026-06-07', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-10', deliveryFormat: 'SRT', revisionNote: '자막 싱크 오류 수정 요청' },
+  { id: 'di-003', receivedDate: '2026-05-21', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '3강_핵심이론.mp4',       worker: '최수영', reviewer: '정채원', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-07', dueDate: '2026-06-15', actualDeliveryDate: '2026-06-15', deliveryFormat: 'SRT', revisionNote: '' },
   { id: 'di-004', receivedDate: '2026-05-23', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '4강_응용예제.mp4',       worker: '김동훈', reviewer: '',      progressStatus: '작업 중',   reviewCompletedDate: '',           dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
   { id: 'di-005', receivedDate: '2026-05-24', projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', fileName: '5강_종합정리.mp4',       worker: '이수연', reviewer: '한지민', progressStatus: '검수 중',   reviewCompletedDate: '',           dueDate: '2026-06-29', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
   // 지구과학개론 / 2주차 / 2차 입고
   { id: 'di-006', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '6강_실습I.mp4',          worker: '이민정', reviewer: '',      progressStatus: '배정 완료', reviewCompletedDate: '',           dueDate: '2026-07-06', actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
-  { id: 'di-007', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '7강_실습II.mp4',         worker: '박정호', reviewer: '정채원', progressStatus: '검수 완료', reviewCompletedDate: '2026-06-20', dueDate: '2026-06-30', actualDeliveryDate: '', deliveryFormat: 'SRT', revisionNote: '' },
+  { id: 'di-007', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '7강_실습II.mp4',         worker: '박정호', reviewer: '정채원', progressStatus: '납품 완료', reviewCompletedDate: '2026-06-20', dueDate: '2026-06-30', actualDeliveryDate: '2026-06-30', deliveryFormat: 'SRT', revisionNote: '' },
   { id: 'di-008', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '8강_중간정리.mp4',       worker: '',       reviewer: '',      progressStatus: '배정 중',   reviewCompletedDate: '',           dueDate: '',           actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
   { id: 'di-012', receivedDate: '2026-05-28', projectName: '지구과학개론', batchLabel: '2주차 / 2차 입고', fileName: '9강_응용심화.mp4',       worker: '',       reviewer: '',      progressStatus: '배정 중',   reviewCompletedDate: '',           dueDate: '',           actualDeliveryDate: '', deliveryFormat: '', revisionNote: '' },
   // 기초영어회화 / 1주차 / 1차 입고
@@ -3170,270 +3170,82 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
 }
 
 // ─── 탭 8: 정산확인 ───
-const SETTLE_WORKER_SEED = [
-  { worker: '홍길동', grade: 'Pro', workTime: '00:00', accuracy: '99.61%', errors: 1, remark: '', amount: 415800, payRate: '90%', executor: '정윤실_관리자', netAmount: 374220, status: '완료' },
-  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '50%', executor: '', netAmount: 45000, status: '정산대기' },
-];
-const SETTLE_REVIEWER_SEED = [
-  { worker: '김철수', grade: 'Elite', workTime: '00:00', executor: '정윤실_관리자', netAmount: 415800, status: '완료' },
-];
-const SETTLE_HISTORY_SEED = [
-  { dttm: '26/06/25 10:00', actor: '정윤실_관리자', event: '정산 확인' },
+// 납품 완료 파일 기준 고객사 제출용 작업내역서 시드 (DELIVERY_ITEMS_SEED + VOD_PROJECTS 기준)
+const SETTLEMENT_SHEET_SEED = [
+  { receivedDate: '2026-05-21', projectName: '지구과학개론', fileName: '1강_오리엔테이션.mp4', batchLabel: '1주차 / 1차 입고', workTime: '00:52:30', deliveryDate: '2026-06-10' },
+  { receivedDate: '2026-05-21', projectName: '지구과학개론', fileName: '2강_기초개념.mp4',      batchLabel: '1주차 / 1차 입고', workTime: '00:48:20', deliveryDate: '2026-06-12' },
+  { receivedDate: '2026-05-21', projectName: '지구과학개론', fileName: '3강_핵심이론.mp4',      batchLabel: '1주차 / 1차 입고', workTime: '00:27:15', deliveryDate: '2026-06-15' },
+  { receivedDate: '2026-05-28', projectName: '지구과학개론', fileName: '7강_실습II.mp4',        batchLabel: '2주차 / 2차 입고', workTime: '00:47:30', deliveryDate: '2026-06-30' },
+  { receivedDate: '2026-05-25', projectName: '기초영어회화', fileName: '1강_발음기초.mp4',      batchLabel: '1주차 / 1차 입고', workTime: '00:45:00', deliveryDate: '2026-06-09' },
+  { receivedDate: '2026-05-25', projectName: '기초영어회화', fileName: '2강_회화패턴.mp4',      batchLabel: '1주차 / 1차 입고', workTime: '00:42:30', deliveryDate: '2026-06-09' },
 ];
 
-function SettlementTab({ s }) {
-  const [workers, setWorkers] = useState(() => {
-    if (s.settlement?.workerRows) return s.settlement.workerRows;
-    // 프로젝트 관리 탭에서 저장된 최신 subjects(projects)를 읽어 작업시간 연동
-    const store = s.bssTypeName === '회의록' ? getMeetingSamples() : getVodSamples();
-    const cur = store.find((v) => v.id === s.id);
-    const subjects = cur?.subjects || [];
-    return SETTLE_WORKER_SEED.map((r) => {
-      const proj = subjects.find((p) => p.worker === r.worker);
-      return { ...r, workTime: proj?.workTime ?? r.workTime };
-    });
+function sumWorkTime(rows) {
+  let total = 0;
+  rows.forEach((r) => {
+    const [h, m, s] = r.workTime.split(':').map(Number);
+    total += h * 3600 + m * 60 + (s || 0);
   });
-  const [reviewers, setReviewers] = useState(() =>
-    (s.settlement?.reviewerRows) || SETTLE_REVIEWER_SEED.map(r => ({ ...r }))
-  );
-  const [settleHistory, setSettleHistory] = useState(() =>
-    (s.settlement?.settleHistory) || SETTLE_HISTORY_SEED.map(r => ({ ...r }))
-  );
-  const [confirmModal, setConfirmModal] = useState(null); // { index, table } | null
-  const [rejectModal, setRejectModal] = useState(null);   // { index, table } | null
-  const [rejectReason, setRejectReason] = useState('');
-  const [rejectViewModal, setRejectViewModal] = useState(null); // { reason }
+  const hh = String(Math.floor(total / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+  const ss = String(total % 60).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
+}
 
-  const now = () => {
-    const d = new Date();
-    const yy = String(d.getFullYear()).slice(2);
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mi = String(d.getMinutes()).padStart(2, '0');
-    return `${yy}/${mm}/${dd} ${hh}:${mi}`;
-  };
-
-  // 관리자 "확인" 클릭 → 팝업
-  const handleConfirmClick = (index, table) => {
-    setConfirmModal({ index, table });
-  };
-
-  // 팝업 "확정" → 상태를 '작업자 확인'으로
-  const handleConfirm = () => {
-    const { index, table } = confirmModal;
-    if (table === 'worker') {
-      const updated = workers.map((r, i) => i === index ? { ...r, status: '작업자 확인', executor: '정윤실_관리자' } : r);
-      setWorkers(updated);
-      setSettleHistory(prev => [{ dttm: now(), actor: '관리자', event: '정산 확인 요청' }, ...prev]);
-    }
-    setConfirmModal(null);
-  };
-
-  // 작업자 "승인" → '완료'
-  const handleApprove = (index, table) => {
-    if (table === 'worker') {
-      const updated = workers.map((r, i) => i === index ? { ...r, status: '완료', executor: '정윤실_관리자' } : r);
-      setWorkers(updated);
-      setSettleHistory(prev => [{ dttm: now(), actor: workers[index].worker, event: '정산 승인' }, ...prev]);
-    } else {
-      const updated = reviewers.map((r, i) => i === index ? { ...r, status: '완료', executor: '정윤실_관리자' } : r);
-      setReviewers(updated);
-    }
-  };
-
-  // 작업자 "반려" → 사유 입력 팝업
-  const handleRejectClick = (index, table) => {
-    setRejectReason('');
-    setRejectModal({ index, table });
-  };
-
-  // 반려 확정 → 상태 '정산대기'
-  const handleReject = () => {
-    const { index, table } = rejectModal;
-    const reason = rejectReason.trim() || '(사유 미입력)';
-    if (table === 'worker') {
-      const updated = workers.map((r, i) => i === index ? { ...r, status: '정산대기', rejectReason: reason } : r);
-      setWorkers(updated);
-      setSettleHistory(prev => [{ dttm: now(), actor: workers[index].worker, event: '정산 반려', detail: reason }, ...prev]);
-    }
-    setRejectModal(null);
-  };
-
-  // 집행자 열: 정산대기이면 "확인" 버튼(재요청 포함), 작업자 확인 중이면 대기 텍스트, 완료이면 이름
-  const executorCell = (row, index, table) => {
-    if (row.status === '완료') return <span>{row.executor}</span>;
-    if (row.status === '작업자 확인') return <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>확인 대기중</span>;
-    // 정산대기 (초기 또는 반려 후): 확인 버튼 항상 표시
-    return (
-      <span className="settle-status-group">
-        <button className="settle-confirm-btn" onClick={() => handleConfirmClick(index, table)}>확인</button>
-        {row.rejectReason && (
-          <button className="settle-reject-view-btn" onClick={() => setRejectViewModal({ reason: row.rejectReason })} title="반려 사유 보기">반려사유</button>
-        )}
-      </span>
-    );
-  };
-
-  // 상태 열: 텍스트 배지 또는 승인/반려 버튼
-  const statusCell = (row, index, table) => {
-    if (row.status === '완료') return <span className="settle-status-badge settle-status-badge--done">완료</span>;
-    if (row.status === '작업자 확인') return (
-      <span className="settle-status-actions">
-        <button className="settle-action-btn settle-action-btn--approve" onClick={() => handleApprove(index, table)}>승인</button>
-        <button className="settle-action-btn settle-action-btn--reject" onClick={() => handleRejectClick(index, table)}>반려</button>
-      </span>
-    );
-    // 정산대기
-    return <span className="settle-status-badge settle-status-badge--pre">{row.status || '정산대기'}</span>;
-  };
-
+function SettlementTab() {
   return (
     <div className="proto-tab-panel">
-      <p className="proto-section-title">작업자 정산 내역</p>
-      <div className="proto-table-wrap">
-        <table className="proto-table settle-table">
+
+      {/* ── 1. 상단 안내 ── */}
+      <div className="settle-info-banner">
+        <span className="settle-info-label">기준</span>
+        <span className="settle-info-text">납품관리에서 납품 완료 처리된 파일만 작업내역서에 표시됩니다.</span>
+      </div>
+
+      {/* ── 2. 작업내역서 헤더 ── */}
+      <div className="settle-sheet-hd">
+        <p className="proto-section-title" style={{ margin: 0 }}>고객사 제출용 작업내역서</p>
+        <button
+          className="settle-excel-btn"
+          onClick={() => alert('[프로토타입 안내]\n고객사 제출용 작업내역서를 엑셀로 다운로드합니다.')}
+        >
+          작업내역서 엑셀 다운로드
+        </button>
+      </div>
+
+      {/* ── 3. 작업내역서 테이블 ── */}
+      <div className="proto-table-wrap proto-table-wrap--scroll">
+        <table className="proto-table">
           <thead>
             <tr>
-              <th>작업자</th>
-              <th className="text-center">작업자 등급</th>
-              <th className="text-center">작업시간</th>
-              <th className="text-center">정확도</th>
-              <th className="text-center">회의록 오류</th>
-              <th>비고</th>
-              <th className="text-right">작업금액 (원)</th>
-              <th className="text-center">지급비율</th>
-              <th className="text-center">집행자</th>
-              <th className="text-right">실제 정산금액 (원)</th>
-              <th className="text-center">상태</th>
+              <th className="text-center">의뢰일</th>
+              <th>프로젝트명/과목명</th>
+              <th>파일명</th>
+              <th className="text-center">회차/주차</th>
+              <th className="text-center">분량(시:분:초)</th>
+              <th className="text-center">납품일</th>
             </tr>
           </thead>
           <tbody>
-            {workers.map((row, i) => (
+            {SETTLEMENT_SHEET_SEED.map((row, i) => (
               <tr key={i}>
-                <td style={{ fontWeight: 600 }}>{row.worker}</td>
-                <td className="text-center"><span className="settle-grade-badge">{row.grade}</span></td>
-                <td className="text-center" style={{ color: '#60a5fa' }}>{row.workTime}</td>
-                <td className="text-center">{row.accuracy}</td>
-                <td className="text-center">{row.errors}</td>
-                <td style={{ whiteSpace: 'pre-line', color: 'var(--text-secondary)', fontSize: '12px' }}>{row.remark || <span style={{ color: 'var(--text-muted)' }}>수기 입력</span>}</td>
-                <td className="text-right">{fmt(row.amount)}</td>
-                <td className="text-center">{row.payRate || '-'}</td>
-                <td className="text-center">{executorCell(row, i, 'worker')}</td>
-                <td className="text-right">{fmt(row.netAmount)}</td>
-                <td className="text-center">{statusCell(row, i, 'worker')}</td>
+                <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{row.receivedDate}</td>
+                <td style={{ fontSize: '13px', fontWeight: 600 }}>{row.projectName}</td>
+                <td style={{ fontSize: '12px' }}>{row.fileName}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{row.batchLabel}</td>
+                <td className="text-center settle-worktime-cell">{row.workTime}</td>
+                <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{row.deliveryDate}</td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="proto-section-title" style={{ marginTop: '24px' }}>검수자 정산 내역</p>
-      <div className="proto-table-wrap">
-        <table className="proto-table settle-table">
-          <thead>
-            <tr>
-              <th>작업자</th>
-              <th className="text-center">작업자 등급</th>
-              <th className="text-center">작업시간</th>
-              <th className="text-center">집행자</th>
-              <th className="text-right">정산금액 (원)</th>
-              <th className="text-center">상태</th>
+            {/* 합계 행 */}
+            <tr className="settle-total-row">
+              <td colSpan={4} className="text-right">합계</td>
+              <td className="text-center settle-worktime-cell">{sumWorkTime(SETTLEMENT_SHEET_SEED)}</td>
+              <td />
             </tr>
-          </thead>
-          <tbody>
-            {reviewers.map((row, i) => (
-              <tr key={i}>
-                <td style={{ fontWeight: 600 }}>{row.worker}</td>
-                <td className="text-center"><span className="settle-grade-badge">{row.grade}</span></td>
-                <td className="text-center" style={{ color: '#60a5fa' }}>{row.workTime}</td>
-                <td className="text-center">{row.executor}</td>
-                <td className="text-right">{fmt(row.netAmount)}</td>
-                <td className="text-center">{statusCell(row, i, 'reviewer')}</td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
-
-      <p className="proto-section-title" style={{ marginTop: '24px' }}>정산 이력</p>
-      <div className="settle-history-list">
-        {settleHistory.length === 0
-          ? <div className="proto-empty-state" style={{ padding: '16px' }}>정산 이력이 없습니다.</div>
-          : settleHistory.map((h, i) => (
-            <div key={i} className="settle-history-row">
-              <span className="settle-history-dttm">{h.dttm}</span>
-              <span className="settle-history-actor">{h.actor}</span>
-              <span className="settle-history-event">{h.event}</span>
-              {h.detail && <span className="settle-history-detail">{h.detail}</span>}
-            </div>
-          ))
-        }
-      </div>
-
-      {/* 확정 확인 팝업 */}
-      {confirmModal && (
-        <div className="pm-overlay" onClick={() => setConfirmModal(null)}>
-          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
-            <div className="pm-modal-hd">
-              <span className="pm-modal-title">정산 확정</span>
-              <button className="preg-x-btn" onClick={() => setConfirmModal(null)}>✕</button>
-            </div>
-            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
-              <p style={{ margin: 0, fontSize: '14px' }}>정산을 확정하시겠습니까?</p>
-              <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>확정 후 작업자에게 정산 내역이 전달됩니다.</p>
-            </div>
-            <div className="pm-modal-ft">
-              <button className="proto-log-btn" onClick={() => setConfirmModal(null)}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save" onClick={handleConfirm}>확정</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 반려 사유 입력 팝업 */}
-      {rejectModal && (
-        <div className="pm-overlay" onClick={() => setRejectModal(null)}>
-          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-            <div className="pm-modal-hd">
-              <span className="pm-modal-title">정산 반려</span>
-              <button className="preg-x-btn" onClick={() => setRejectModal(null)}>✕</button>
-            </div>
-            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
-              <label className="preg-label">반려 사유</label>
-              <textarea
-                className="preg-input"
-                style={{ height: '90px', resize: 'vertical', marginTop: '6px' }}
-                placeholder="반려 사유를 입력하세요"
-                value={rejectReason}
-                onChange={e => setRejectReason(e.target.value)}
-              />
-            </div>
-            <div className="pm-modal-ft">
-              <button className="proto-log-btn" onClick={() => setRejectModal(null)}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save" style={{ background: '#ef4444' }} onClick={handleReject}>반려</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 반려 사유 조회 팝업 */}
-      {rejectViewModal && (
-        <div className="pm-overlay" onClick={() => setRejectViewModal(null)}>
-          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
-            <div className="pm-modal-hd">
-              <span className="pm-modal-title">반려 사유</span>
-              <button className="preg-x-btn" onClick={() => setRejectViewModal(null)}>✕</button>
-            </div>
-            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
-              <p style={{ margin: 0, fontSize: '14px', whiteSpace: 'pre-wrap' }}>{rejectViewModal.reason}</p>
-            </div>
-            <div className="pm-modal-ft">
-              <button className="proto-log-btn proto-log-btn--save" onClick={() => setRejectViewModal(null)}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
