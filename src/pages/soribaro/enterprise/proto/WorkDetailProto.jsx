@@ -220,7 +220,7 @@ function BasicInfoTab({ s }) {
     });
   };
   const handleShareConvert = () => {
-    setAttachments(prev => prev.map(a => attachChecked.has(a.id) ? { ...a, shared: true } : a));
+    setAttachments(prev => prev.map(a => attachChecked.has(a.id) ? { ...a, shared: !a.shared } : a));
     setAttachChecked(new Set());
   };
   const handleBulkDownload = () => {
