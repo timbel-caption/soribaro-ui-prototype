@@ -445,7 +445,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <div className="proto-alert-list">
           <div className="proto-alert-item proto-alert-urgent">
             <span className="proto-alert-icon">△</span>
-            <span className="proto-alert-text">오늘 마감</span>
+            <span className="proto-alert-text">금일 납품 건</span>
             <span className="proto-alert-count">{alerts.todayDue}건</span>
           </div>
           {alerts.todayDueItems.map((s) => (
@@ -458,7 +458,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           ))}
           <div className="proto-alert-item proto-alert-delay" style={{ marginTop: '8px' }}>
             <span className="proto-alert-icon">🔔</span>
-            <span className="proto-alert-text">납품 지연</span>
+            <span className="proto-alert-text">납품 일정 확인 건</span>
             <span className="proto-alert-count">{alerts.overdue}건</span>
           </div>
           {alerts.overdueItems.map((s) => (
