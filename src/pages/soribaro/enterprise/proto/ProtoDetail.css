@@ -1187,6 +1187,21 @@
 }
 .mtg-detail-btn:hover { background: rgba(45,212,191,0.28); }
 
+.mtg-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.mtg-alert-row:hover { background: var(--bg-hover); }
+.mtg-alert-date  { color: var(--text-muted); min-width: 44px; }
+.mtg-alert-ent   { font-weight: 500; color: var(--text-primary); }
+.mtg-alert-round { color: var(--text-muted); }
+
 /* ─── 새 프로젝트 등록 버튼 (목록 페이지) ─── */
 .proto-register-page-btn {
   padding: 8px 16px;

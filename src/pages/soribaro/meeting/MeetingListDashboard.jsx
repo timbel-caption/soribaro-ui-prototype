@@ -83,9 +83,9 @@ function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlemen
 
 function computeAlerts(samples) {
   const today = new Date().toISOString().split('T')[0];
-  const todayDue = samples.filter((s) => s.dueDate === today && s.overallStatus !== 'DONE').length;
-  const overdue  = samples.filter((s) => s.dueDate < today && s.overallStatus !== 'DONE').length;
-  return { todayDue, overdue };
+  const todayDueItems = samples.filter((s) => s.dueDate === today && s.overallStatus !== 'DONE');
+  const overdueItems  = samples.filter((s) => s.dueDate < today  && s.overallStatus !== 'DONE');
+  return { todayDue: todayDueItems.length, overdue: overdueItems.length, todayDueItems, overdueItems };
 }
 
 export default function MeetingListDashboard({ samples, onSamplesChange, showAll }) {
@@ -360,15 +360,31 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <p className="proto-dash-section-title">긴급 알림</p>
         <div className="proto-alert-list">
           <div className="proto-alert-item proto-alert-urgent">
-            <span className="proto-alert-icon">⚠️</span>
+            <span className="proto-alert-icon">△</span>
             <span className="proto-alert-text">오늘 마감</span>
             <span className="proto-alert-count">{alerts.todayDue}건</span>
           </div>
-          <div className="proto-alert-item proto-alert-delay">
+          {alerts.todayDueItems.map((s) => (
+            <div key={s.id} className="mtg-alert-row" onClick={() => navigate(toDetailPath(s.protoPath))} style={{ cursor: 'pointer' }}>
+              <span className="mtg-alert-date">{formatRegDate(s.regDttm)}</span>
+              <span className="mtg-alert-ent">{s.entNm}</span>
+              {contractBadge(s.contractType)}
+              <span className="mtg-alert-round">{s.round != null ? `${s.round}회` : '-'}</span>
+            </div>
+          ))}
+          <div className="proto-alert-item proto-alert-delay" style={{ marginTop: '8px' }}>
             <span className="proto-alert-icon">🔔</span>
             <span className="proto-alert-text">납품 지연</span>
             <span className="proto-alert-count">{alerts.overdue}건</span>
           </div>
+          {alerts.overdueItems.map((s) => (
+            <div key={s.id} className="mtg-alert-row" onClick={() => navigate(toDetailPath(s.protoPath))} style={{ cursor: 'pointer' }}>
+              <span className="mtg-alert-date">{formatRegDate(s.regDttm)}</span>
+              <span className="mtg-alert-ent">{s.entNm}</span>
+              {contractBadge(s.contractType)}
+              <span className="mtg-alert-round">{s.round != null ? `제${s.round}차` : '-'}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
