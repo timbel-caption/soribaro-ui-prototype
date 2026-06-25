@@ -3459,6 +3459,7 @@ function MtgSettlementTab({ s }) {
   );
   const [confirmModal, setConfirmModal] = useState(null);
   const [rejectModal, setRejectModal] = useState(null);
+  const [remarkEdit, setRemarkEdit] = useState({});  // { [rowIndex]: draft string }
   const [rejectReason, setRejectReason] = useState('');
   const [rejectViewModal, setRejectViewModal] = useState(null);
 
@@ -3564,7 +3565,32 @@ function MtgSettlementTab({ s }) {
                 <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
-                <td style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>{row.remark || '-'}</td>
+                <td style={{ fontSize: '12px', minWidth: '120px' }}>
+                  {remarkEdit[i] !== undefined ? (
+                    <span style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <textarea
+                        className="proto-log-input"
+                        style={{ minHeight: '52px', fontSize: '12px', resize: 'vertical' }}
+                        value={remarkEdit[i]}
+                        onChange={e => setRemarkEdit(prev => ({ ...prev, [i]: e.target.value }))}
+                        autoFocus
+                      />
+                      <span style={{ display: 'flex', gap: '4px' }}>
+                        <button className="proto-note-save-btn" onClick={() => {
+                          setWorkers(prev => prev.map((r2, idx) => idx === i ? { ...r2, remark: remarkEdit[i] } : r2));
+                          setRemarkEdit(prev => { const n = { ...prev }; delete n[i]; return n; });
+                        }}>저장</button>
+                        <button className="proto-note-cancel-btn" onClick={() => setRemarkEdit(prev => { const n = { ...prev }; delete n[i]; return n; })}>취소</button>
+                      </span>
+                    </span>
+                  ) : (
+                    <span
+                      style={{ whiteSpace: 'pre-wrap', cursor: 'pointer', display: 'block', minHeight: '20px' }}
+                      title="클릭하여 수정"
+                      onClick={() => setRemarkEdit(prev => ({ ...prev, [i]: row.remark || '' }))}
+                    >{row.remark || <span style={{ color: 'var(--text-muted)' }}>-</span>}</span>
+                  )}
+                </td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.amount.toLocaleString()}원</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.payRate}</td>
                 <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'worker')}</td>
