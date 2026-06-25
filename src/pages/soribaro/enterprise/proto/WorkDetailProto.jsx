@@ -18,7 +18,7 @@ const TAB_LABELS_MTG = [
   'AI QC 결과 요약', '정산확인', '이력/메모',
 ];
 const TAB_LABELS_STG = [
-  '기본정보', '매뉴얼·용어집 세팅', 'AI QC 결과 요약', '정산확인', '이력/메모',
+  '기본정보', '배정 관리', '매뉴얼·용어집 세팅', 'AI QC 결과 요약', '정산확인', '이력/메모',
 ];
 
 const STATUS_MAP = {
@@ -3406,6 +3406,125 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
   );
 }
 
+// ─── 탭 (현장속기 전용): 배정 관리 ───
+const STG_ASSIGN_HISTORY_SEED = [
+  { dttm: '26/06/25 10:00', actor: '정윤실_관리자', event: "작업자 '이선재' 배정" },
+  { dttm: '26/06/25 11:00', actor: '작업자_이선재', event: '배정 취소 (중복 배정)' },
+  { dttm: '26/06/25 11:30', actor: '정윤실_관리자', event: "작업자 '김혜리' 배정" },
+];
+
+function StenographyAssignTab() {
+  const [worker, setWorker] = useState('-');
+  const [workTime, setWorkTime] = useState('');
+  const [editingTime, setEditingTime] = useState(false);
+  const [timeDraft, setTimeDraft] = useState('');
+  const [status] = useState('배정 중');
+  const [assignHistory] = useState(STG_ASSIGN_HISTORY_SEED.map(r => ({ ...r })));
+  const [assignModal, setAssignModal] = useState(false);
+  const [assignName, setAssignName] = useState('');
+
+  const confirmAssign = () => {
+    const name = assignName.trim();
+    if (!name) return;
+    setWorker(name);
+    setAssignModal(false);
+    setAssignName('');
+  };
+
+  return (
+    <div className="proto-tab-panel">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+        <p className="proto-section-title" style={{ margin: 0 }}>작업자 배정</p>
+        <button className="proto-log-btn proto-log-btn--save" style={{ fontSize: '12px', padding: '4px 12px' }} onClick={() => { setAssignName(''); setAssignModal(true); }}>배정하기</button>
+      </div>
+
+      <div className="proto-table-wrap" style={{ marginBottom: '28px' }}>
+        <table className="proto-table">
+          <thead>
+            <tr>
+              <th className="text-center">작업자</th>
+              <th className="text-center">작업시간</th>
+              <th className="text-center">상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="text-center" style={{ fontSize: '13px' }}>{worker}</td>
+              <td className="text-center" style={{ fontSize: '13px', minWidth: '120px' }}>
+                {editingTime ? (
+                  <span style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
+                    <input
+                      className="proto-note-inline-input"
+                      style={{ width: '90px', textAlign: 'center' }}
+                      value={timeDraft}
+                      onChange={e => setTimeDraft(e.target.value)}
+                      placeholder="HH:MM"
+                      autoFocus
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') { setWorkTime(timeDraft); setEditingTime(false); }
+                        if (e.key === 'Escape') setEditingTime(false);
+                      }}
+                    />
+                    <button className="proto-note-save-btn" onClick={() => { setWorkTime(timeDraft); setEditingTime(false); }}>저장</button>
+                    <button className="proto-note-cancel-btn" onClick={() => setEditingTime(false)}>취소</button>
+                  </span>
+                ) : (
+                  <span
+                    style={{ cursor: 'pointer', color: workTime ? 'var(--text-primary)' : 'var(--text-muted)' }}
+                    title="클릭하여 수정"
+                    onClick={() => { setTimeDraft(workTime); setEditingTime(true); }}
+                  >{workTime || '수기 입력'}</span>
+                )}
+              </td>
+              <td className="text-center">
+                <span className="proto-status-badge proto-status-working" style={{ fontSize: '12px' }}>{status}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p className="proto-section-title">배정 이력</p>
+      <div className="settle-history-list">
+        {assignHistory.map((h, i) => (
+          <div key={i} className="settle-history-item">
+            <span className="settle-history-dttm">{h.dttm}</span>
+            <span className="settle-history-actor">{h.actor}</span>
+            <span className="settle-history-event">{h.event}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* 배정하기 모달 */}
+      {assignModal && (
+        <div className="pm-overlay" onClick={() => setAssignModal(false)}>
+          <div className="pm-modal pm-modal--sm" onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">작업자 배정</span>
+              <button className="preg-x-btn" onClick={() => setAssignModal(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>작업자 이름</label>
+              <input
+                className="preg-input"
+                value={assignName}
+                onChange={e => setAssignName(e.target.value)}
+                placeholder="이름을 입력하세요"
+                autoFocus
+                onKeyDown={e => e.key === 'Enter' && confirmAssign()}
+              />
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setAssignModal(false)}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={confirmAssign}>배정</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── 탭 8: 정산확인 ───
 // VOD — 납품 완료 파일 기준 고객사 제출용 작업내역서 시드
 const SETTLEMENT_SHEET_SEED = [
@@ -3989,6 +4108,7 @@ export default function WorkDetailProto({ samples, backPath }) {
     : isStenography
     ? [
         <BasicInfoTab s={s} />,
+        <StenographyAssignTab />,
         <ManualGlossaryTab s={s} />,
         <AiQcTab s={s} />,
         <MtgSettlementTab s={s} />,
