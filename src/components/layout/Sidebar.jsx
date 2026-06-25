@@ -119,6 +119,19 @@ const menuData = [
         ],
       },
       {
+        id: "stenography",
+        labelKey: "sidebar.stenography",
+        icon: "FileText",
+        adminOnly: true,
+        children: [
+          {
+            id: "stenography-work",
+            labelKey: "sidebar.stenographyWorkManagement",
+            path: "/soribaro/stenography/work",
+          },
+        ],
+      },
+      {
         id: "enterprise",
         labelKey: "sidebar.enterprise",
         icon: "Building2",
