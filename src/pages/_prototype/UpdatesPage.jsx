@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-25',
+    author: '정기태',
+    title: 'VOD 프로젝트 이력 탭 빈 화면 버그 수정 — React.useState → useState 교체',
+    description:
+      'VodProjectHistoryTab에서 React.useState를 사용하여 런타임 오류로 탭 내용이 렌더링되지 않던 문제를 수정했습니다. 파일 상단 named import인 useState로 교체했습니다.',
+  },
+  {
+    date: '2026-06-25',
     author: '정윤실',
     title: '현장속기·회의록 데이터 및 라우트 완전 분리',
     description:
