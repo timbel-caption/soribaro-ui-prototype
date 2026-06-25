@@ -261,8 +261,15 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                   </div>
                 )}
               </td>
-              <td style={{ maxWidth: '120px', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                {[...new Set((s.files || []).map((f) => f.worker).filter(Boolean))].join(', ') || '-'}
+              <td style={{ maxWidth: '120px', fontSize: '13px' }}>
+                {s.assignWorker ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                    <span style={{ color: s.assignStatus === '배정취소' ? 'var(--text-muted)' : 'var(--text-secondary)', textDecoration: s.assignStatus === '배정취소' ? 'line-through' : 'none' }}>{s.assignWorker}</span>
+                    {s.assignStatus === '배정취소' && <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>}
+                  </span>
+                ) : (
+                  <span style={{ color: 'var(--text-secondary)' }}>{[...new Set((s.files || []).map((f) => f.worker).filter(Boolean))].join(', ') || '-'}</span>
+                )}
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
