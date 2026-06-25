@@ -287,28 +287,28 @@ export default function ManageEnterpriseDetailPage() {
 
       {renderProps()}
 
-      {/* 담당자 관리 버튼 (하단) */}
+      {/* 실무자 관리 버튼 (하단) */}
       {!isCreateMode && (
         <div style={{ marginTop: '20px' }}>
           <button className="btn-ghost" style={{ fontSize: '13px' }} onClick={() => setManagerModal(true)}>
-            담당자 관리
+            실무자 관리
           </button>
         </div>
       )}
 
-      {/* 담당자 관리 팝업 */}
+      {/* 실무자 관리 팝업 */}
       {managerModal && (
         <div className="pm-overlay" onClick={() => setManagerModal(false)}>
           <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '680px', width: '90%' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">담당자 관리</span>
+              <span className="pm-modal-title">실무자 관리</span>
               <button className="preg-x-btn" onClick={() => setManagerModal(false)}>✕</button>
             </div>
 
             {/* 입력 행 */}
             <div style={{ padding: '20px 24px 12px', display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
-                <label className="preg-label">담당자</label>
+                <label className="preg-label">실무자</label>
                 <input
                   className="preg-input"
                   value={managerForm.name}
@@ -349,7 +349,7 @@ export default function ManageEnterpriseDetailPage() {
                 <table className="proto-table">
                   <thead>
                     <tr>
-                      <th>담당자</th>
+                      <th>실무자</th>
                       <th>이메일</th>
                       <th>전화번호(직통)</th>
                       <th style={{ width: '60px' }}></th>
@@ -357,7 +357,7 @@ export default function ManageEnterpriseDetailPage() {
                   </thead>
                   <tbody>
                     {managers.length === 0 ? (
-                      <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>등록된 담당자가 없습니다.</td></tr>
+                      <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>등록된 실무자가 없습니다.</td></tr>
                     ) : managers.map(m => (
                       <tr key={m.id}>
                         <td>{m.name}</td>
