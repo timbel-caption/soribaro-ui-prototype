@@ -231,7 +231,7 @@ function BasicInfoTab({ s }) {
     setAttachChecked(prev => { const next = new Set(prev); next.delete(id); return next; });
   };
 
-  const row1 = [
+  const row1 = isVod ? [
     { label: '작업 유형', value: s.bssTypeName },
     { label: '입체명', value: s.entNm },
     { label: '프로젝트명', value: s.servTitle },
@@ -239,12 +239,26 @@ function BasicInfoTab({ s }) {
     { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
     { label: '납품예정일', value: s.dueDate || '-' },
     { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
+  ] : [
+    { label: '업체명', value: s.entNm || '-' },
+    { label: '계약구분', value: s.contractType || '-' },
+    { label: '회차', value: s.round || '-' },
+    { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
+    { label: '납품예정일', value: s.dueDate || '-' },
+    { label: '실제납품일', value: s.actualDeliveryDate || '-' },
+    { label: '담당자', value: s.managerNm || s.membNm || '-' },
   ];
-  const row2 = [
+  const row2 = isVod ? [
     { label: '담당 관리자', value: s.managerNm || s.membNm },
     { label: '총 파일 수', value: `${s.files.length}개` },
     { label: '총 분량', value: s.totalDuration || s.totalPlayTm },
     { label: '납품 형식', value: s.deliveryFormats || '-' },
+    { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
+    { label: '정산 상태', value: s.settlement?.status || '-' },
+  ] : [
+    { label: '연락처', value: s.phone || '010-1234-5678' },
+    { label: '이메일', value: s.email || 'contact@edu.go.kr' },
+    { label: '총분량', value: s.totalPlayTm || '-' },
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ];
@@ -254,7 +268,7 @@ function BasicInfoTab({ s }) {
       <div className="proto-basic-card">
         <div className="proto-basic-card-header">
           <span>📋</span>
-          <span>프로젝트 기본정보</span>
+          <span>{isVod ? '프로젝트 기본정보' : '의뢰 기본 정보'}</span>
         </div>
         <div className="proto-basic-card-body">
           {row1.map(({ label, value }, i) => (
