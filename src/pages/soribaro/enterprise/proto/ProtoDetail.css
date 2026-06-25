@@ -1841,13 +1841,16 @@
 }
 
 /* ─── 프로젝트 관리 탭 (pm-*) ─── */
+.pm-project-list-wrap {
+  overflow-y: auto;
+  max-height: calc(100vh - 320px);
+  padding-right: 4px;
+}
+
 .pm-project-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 600px;
-  overflow-y: auto;
-  padding-right: 4px;
 }
 
 .pm-project-card {
