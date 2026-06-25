@@ -17,6 +17,13 @@ const UPDATES = [
   {
     date: '2026-06-25',
     author: '정윤실',
+    title: '현장속기 상세보기에서 파일관리·프로젝트 관리 탭 제거',
+    description:
+      '현장속기 상세보기 탭 구성(TAB_LABELS_STG)을 신설하여 파일관리와 프로젝트 관리 탭을 제거했습니다. 회의록 탭 구성은 그대로 유지됩니다.',
+  },
+  {
+    date: '2026-06-25',
+    author: '정윤실',
     title: '현장속기·회의록 데이터 및 라우트 완전 분리',
     description:
       '현장속기 전용 샘플 데이터(stenographySampleData.js)와 스토어 함수(getStenographySamples 등)를 신설하고, StenographyWorkPage가 독립 스토어를 사용하도록 변경했습니다. 현장속기 상세보기용 라우트(/soribaro/stenography/detail/:id)와 StenographyMenuDetailProto를 추가하여 회의록 데이터와 상호 영향 없이 독립 운영됩니다.',
