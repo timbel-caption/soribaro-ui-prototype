@@ -17,6 +17,13 @@ const UPDATES = [
   {
     date: '2026-06-25',
     author: '정기태',
+    title: 'AI QC UI 재적용 — 필터 인라인 전환, 오류 배너, 수정 제안 버튼·모달',
+    description:
+      'AI QC 필터를 전체·확정 오류·의심 구간 3가지로 단순화하고 툴바 아래 인라인 바로 전환했습니다. 자막 카드에 오류 유형·설명 배너를 추가하고 오류 배너 겹침을 flex 레이아웃으로 수정했습니다. 각 배너 우측에 "AI 수정 제안" 버튼과 현재 자막·AI 제안·판단 근거를 보여주는 모달을 추가했습니다.',
+  },
+  {
+    date: '2026-06-25',
+    author: '정기태',
     title: 'VOD 프로젝트 이력 탭 빈 화면 버그 수정 — React.useState → useState 교체',
     description:
       'VodProjectHistoryTab에서 React.useState를 사용하여 런타임 오류로 탭 내용이 렌더링되지 않던 문제를 수정했습니다. 파일 상단 named import인 useState로 교체했습니다.',

@@ -121,37 +121,31 @@ const AI_QC_ISSUES = [
   { id: 9, kind: "suspect", type: "문맥 어색", text: "00:15:03,200 → 00:15:06,400\n앞 자막과 이어지는 맥락이 자연스럽지 않습니다.", time: "00:15:03" },
 ];
 
-const AI_QC_FILTERS = ["전체", "확정 오류", "의심 구간", "띄어쓰기", "맞춤법", "CPS"];
+const AI_QC_FILTERS = ["전체", "확정 오류", "의심 구간"];
 
-// 자막 index → ai-qc 종류 (더미: 0~4 확정 오류, 5~8 의심 구간)
-const AI_QC_INDEX_MAP = { 0: "error", 1: "error", 2: "error", 3: "error", 4: "error", 5: "suspect", 6: "suspect", 7: "suspect", 8: "suspect" };
+// 자막 index → { kind, type, desc } 더미 매핑 (0~4: 확정 오류, 5~8: 의심 구간)
+const AI_QC_INDEX_MAP = {
+  0: { kind: "error",   type: "CPS 오류",       desc: "자막이 CPS 기준(17)을 초과합니다." },
+  1: { kind: "error",   type: "글자 수 오류",   desc: "한 줄 최대 글자 수(16자)를 초과합니다." },
+  2: { kind: "error",   type: "싱크 오류",       desc: "시작 시간이 종료 시간보다 늦습니다." },
+  3: { kind: "error",   type: "용어집 불일치",   desc: "'캐릭터' → 용어집 기준 '캐릭터(character)'" },
+  4: { kind: "error",   type: "줄 수 오류",      desc: "줄 수가 최대(2줄)를 초과합니다." },
+  5: { kind: "suspect", type: "문맥 어색",       desc: "발화 맥락과 어울리지 않을 가능성이 있습니다." },
+  6: { kind: "suspect", type: "발화 불명확",     desc: "노이즈·웅얼거림으로 발화 내용이 불명확합니다." },
+  7: { kind: "suspect", type: "발화 누락 가능", desc: "자막 없이 발화가 감지된 구간입니다." },
+  8: { kind: "suspect", type: "문맥 어색",       desc: "앞 자막과 이어지는 맥락이 자연스럽지 않습니다." },
+};
 
-function AiQcPanel({ filter, onFilterChange, onClose }) {
+function AiQcInlineFilter({ filter, onFilterChange, onClose }) {
   const errorCount = AI_QC_ISSUES.filter((i) => i.kind === "error").length;
   const suspectCount = AI_QC_ISSUES.filter((i) => i.kind === "suspect").length;
-
-  const filtered = AI_QC_ISSUES.filter((issue) => {
-    if (filter === "전체") return true;
-    if (filter === "확정 오류") return issue.kind === "error";
-    if (filter === "의심 구간") return issue.kind === "suspect";
-    if (filter === "CPS") return issue.type === "CPS 오류";
-    if (filter === "띄어쓰기") return issue.type === "띄어쓰기 오류";
-    if (filter === "맞춤법") return issue.type === "맞춤법 오류";
-    return true;
-  });
-
   return (
-    <div className="ai-qc-panel">
-      <div className="ai-qc-panel-header">
-        <span className="ai-qc-panel-title">AI QC 결과 필터</span>
-        <div className="ai-qc-panel-counts">
-          <span className="ai-qc-count-error">총 오류: {errorCount}건</span>
-          <span className="ai-qc-count-suspect">의심: {suspectCount}건</span>
-        </div>
-        <button className="ai-qc-panel-close" onClick={onClose}>×</button>
+    <div className="ai-qc-inline-filter">
+      <div className="ai-qc-inline-counts">
+        <span className="ai-qc-count-error">확정 오류 {errorCount}건</span>
+        <span className="ai-qc-count-suspect">의심 구간 {suspectCount}건</span>
       </div>
-
-      <div className="ai-qc-filters">
+      <div className="ai-qc-inline-chips">
         {AI_QC_FILTERS.map((f) => (
           <button
             key={f}
@@ -162,31 +156,71 @@ function AiQcPanel({ filter, onFilterChange, onClose }) {
           </button>
         ))}
       </div>
+      <button className="ai-qc-inline-close" onClick={onClose}>×</button>
+    </div>
+  );
+}
+// AI QC 수정 제안 더미 데이터 (오류 type → 제안 텍스트)
+const AI_QC_SUGGESTIONS = {
+  "CPS 오류":       { suggested: "매번 재무보고서 작성할 때\n숫자 정리는 끝도 없고", reason: "CPS 기준(17)을 초과합니다. 자막을 두 줄로 분리하면 가독성이 향상됩니다." },
+  "글자 수 오류":   { suggested: "표현은 막막하셨죠?", reason: "한 줄 최대 글자 수(16자)를 초과합니다. 줄 바꿈으로 분리해 주세요." },
+  "싱크 오류":      { suggested: "시작: 00:03:45,600\n종료: 00:03:47,200", reason: "시작 시간이 종료 시간보다 늦습니다. 시간 순서를 교정했습니다." },
+  "용어집 불일치":  { suggested: "캐릭터(character)", reason: "용어집 기준 표기로 수정합니다. '캐릭터' → '캐릭터(character)'" },
+  "줄 수 오류":     { suggested: "숫자 정리는 끝도 없고\n표현은 막막하셨죠?", reason: "줄 수가 최대(2줄)를 초과합니다. 3줄을 2줄로 압축했습니다." },
+  "문맥 어색":      { suggested: "발화 맥락을 확인하여\n자연스러운 표현으로 수정하세요.", reason: "발화 맥락과 어울리지 않을 가능성이 있습니다. 전후 자막 흐름을 확인해 주세요." },
+  "발화 불명확":    { suggested: "[불명확]", reason: "노이즈·웅얼거림으로 발화 내용이 불명확합니다. 원본 음성을 다시 확인해 주세요." },
+  "발화 누락 가능": { suggested: "(무음 처리 또는 직접 입력)", reason: "자막 없이 발화가 감지된 구간입니다. 해당 구간 오디오를 확인해 주세요." },
+};
 
-      <div className="ai-qc-issue-list">
-        {filtered.map((issue) => (
-          <div key={issue.id} className="ai-qc-issue-item">
-            <span className="ai-qc-issue-num">#{issue.id}</span>
-            <span className="ai-qc-issue-icon">
-              {issue.kind === "error" ? "🔴" : "🟠"}
-            </span>
-            <div className="ai-qc-issue-body">
-              <div className={`ai-qc-issue-type ${issue.kind}`}>{issue.type}</div>
-              <div className="ai-qc-issue-text">{issue.text.split("\n")[1]}</div>
-              <div className="ai-qc-issue-time">{issue.time}</div>
+function AiQcSuggestModal({ issue, subtitle, onClose }) {
+  if (!issue || !subtitle === undefined) return null;
+  const suggestion = AI_QC_SUGGESTIONS[issue.type] || {
+    suggested: "(AI 제안 없음)",
+    reason: issue.desc,
+  };
+  return (
+    <div className="ai-qc-modal-overlay" onClick={onClose}>
+      <div className="ai-qc-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="ai-qc-modal-header">
+          <span className={`ai-qc-modal-badge ai-qc-modal-badge-${issue.kind}`}>
+            {issue.kind === "error" ? "확정 오류" : "의심 구간"}
+          </span>
+          <span className="ai-qc-modal-type">{issue.type}</span>
+          <button className="ai-qc-modal-x" onClick={onClose}>×</button>
+        </div>
+        <div className="ai-qc-modal-body">
+          <div className="ai-qc-modal-section">
+            <div className="ai-qc-modal-section-label">현재 자막</div>
+            <div className="ai-qc-modal-section-content ai-qc-modal-current">
+              {subtitle}
             </div>
           </div>
-        ))}
-      </div>
-
-      <div className="ai-qc-feature-cards">
-        <div className="ai-qc-feature-cards-title">핵심 기능</div>
-        <div className="ai-qc-feature-grid">
-          <div className="ai-qc-feature-card">라인별 QC 표시</div>
-          <div className="ai-qc-feature-card">오류 유형별 필터</div>
-          <div className="ai-qc-feature-card">해당 라인 바로 이동</div>
-          <div className="ai-qc-feature-card">확인 후 즉시 수정</div>
-          <div className="ai-qc-feature-card full-width">확정 오류·의심 구간 색상 하이라이트</div>
+          <div className="ai-qc-modal-section">
+            <div className="ai-qc-modal-section-label">AI 수정 제안</div>
+            <div className={`ai-qc-modal-section-content ai-qc-modal-suggested ai-qc-modal-suggested-${issue.kind}`}>
+              {suggestion.suggested}
+            </div>
+          </div>
+          <div className="ai-qc-modal-section">
+            <div className="ai-qc-modal-section-label">오류 판단 근거</div>
+            <div className="ai-qc-modal-section-content ai-qc-modal-reason">
+              {suggestion.reason}
+            </div>
+          </div>
+        </div>
+        <div className="ai-qc-modal-footer">
+          <button className="ai-qc-modal-btn ai-qc-modal-btn-keep" onClick={() => alert("현재 자막을 유지합니다.")}>
+            현재 자막 유지
+          </button>
+          <button className={`ai-qc-modal-btn ai-qc-modal-btn-apply ai-qc-modal-btn-apply-${issue.kind}`} onClick={() => alert("AI 제안이 적용되었습니다. (UI 프로토타입)")}>
+            AI 제안 적용
+          </button>
+          <button className="ai-qc-modal-btn ai-qc-modal-btn-manual" onClick={() => alert("직접 수정 모드입니다. 자막 카드를 클릭하여 편집하세요.")}>
+            직접 수정
+          </button>
+          <button className="ai-qc-modal-btn ai-qc-modal-btn-close" onClick={onClose}>
+            닫기
+          </button>
         </div>
       </div>
     </div>
@@ -546,7 +580,8 @@ const SubtitleItem = memo(
     onSpeakerDropdownRef,
     onContextMenu,
     isContextTarget = false,
-    aiQcKind,
+    aiQcIssue,
+    onAiQcSuggest,
   }) {
     const subtitle = useSubtitleStore(
       (s) => getSubtitleById(s.subtitles, subtitleId),
@@ -1577,7 +1612,7 @@ const SubtitleItem = memo(
     return (
       <div
         ref={setRefs}
-        className={`subtitle-card ${isSelected ? "selected" : ""} ${isActive ? "active" : ""} ${validationResult?.severity ? `validation-${validationResult.severity}` : ""} ${aiQcKind ? `ai-qc-${aiQcKind}` : ""} ${searchMatch ? "search-match" : ""} ${isContextTarget ? "context-target" : ""}`}
+        className={`subtitle-card ${isSelected ? "selected" : ""} ${isActive ? "active" : ""} ${validationResult?.severity ? `validation-${validationResult.severity}` : ""} ${aiQcIssue ? `ai-qc-${aiQcIssue.kind}` : ""} ${searchMatch ? "search-match" : ""} ${isContextTarget ? "context-target" : ""}`}
         tabIndex={isSelected ? 0 : -1}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
@@ -1918,6 +1953,22 @@ const SubtitleItem = memo(
             </span>
           </div>
         </div>
+        {/* AI QC 오류 설명 배너 + 수정 제안 버튼 */}
+        {aiQcIssue && (
+          <div className={`ai-qc-desc-strip ai-qc-desc-${aiQcIssue.kind}`}>
+            <span className="ai-qc-desc-content">
+              <span className="ai-qc-desc-type">{aiQcIssue.type}</span>
+              <span className="ai-qc-desc-sep">·</span>
+              <span className="ai-qc-desc-text">{aiQcIssue.desc}</span>
+            </span>
+            <button
+              className={`ai-qc-suggest-btn ai-qc-suggest-btn-${aiQcIssue.kind}`}
+              onClick={(e) => { e.stopPropagation(); onAiQcSuggest?.({ issue: aiQcIssue, subtitleId }); }}
+            >
+              AI 수정 제안
+            </button>
+          </div>
+        )}
       </div>
     );
   },
@@ -1926,6 +1977,8 @@ const SubtitleItem = memo(
       prevProps.subtitleId === nextProps.subtitleId &&
       prevProps.index === nextProps.index &&
       prevProps.validationResult === nextProps.validationResult &&
+      prevProps.aiQcIssue === nextProps.aiQcIssue &&
+      prevProps.onAiQcSuggest === nextProps.onAiQcSuggest &&
       prevProps.speakers === nextProps.speakers &&
       prevProps.isTranslatorMode === nextProps.isTranslatorMode &&
       prevProps.showMiddleText === nextProps.showMiddleText &&
@@ -2001,7 +2054,7 @@ function VirtualRowInner({
           itemRef={onItemRef}
           forceEditing={forceEditing}
           validationResult={validationResults[subtitleId]}
-          aiQcKind={aiQcMap?.[indexById.get(subtitleId)]}
+          aiQcIssue={aiQcMap?.[indexById.get(subtitleId)]}
           searchMatch={searchMatchMap[subtitleId]}
           appliedReviewTags={subtitleReviewTagMap[subtitleId] || EMPTY_ARRAY}
           appliedComments={subtitleCommentMap[subtitleId] || EMPTY_ARRAY}
@@ -2240,6 +2293,11 @@ function SubtitleList({ mediaRef, workCategory = null }) {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showAiQcPanel, setShowAiQcPanel] = useState(false);
   const [aiQcFilter, setAiQcFilter] = useState("전체");
+  const [aiQcSuggestModal, setAiQcSuggestModal] = useState(null); // { issue, subtitleId }
+
+  const handleAiQcSuggest = useCallback(({ issue, subtitleId: sid }) => {
+    setAiQcSuggestModal({ issue, subtitleId: sid });
+  }, []);
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -6004,6 +6062,15 @@ function SubtitleList({ mediaRef, workCategory = null }) {
         </button>
       </div>
 
+      {/* AI QC 인라인 필터 바 */}
+      {showAiQcPanel && (
+        <AiQcInlineFilter
+          filter={aiQcFilter}
+          onFilterChange={setAiQcFilter}
+          onClose={() => setShowAiQcPanel(false)}
+        />
+      )}
+
       {/* 필터 패널 */}
       {showFilterPanel && (
         <div className="subtitle-filter-panel">
@@ -6521,7 +6588,7 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                 className="virtual-subtitle-list"
                 rowComponent={VirtualRow}
                 rowCount={filteredSubtitleIds.length}
-                rowHeight={SUBTITLE_ROW_HEIGHT}
+                rowHeight={showAiQcPanel ? SUBTITLE_ROW_HEIGHT + 30 : SUBTITLE_ROW_HEIGHT}
                 overscanCount={6}
                 rowProps={{
                   subtitleIds: filteredSubtitleIds,
@@ -6555,6 +6622,7 @@ function SubtitleList({ mediaRef, workCategory = null }) {
                   forceEditingId: inlineEditingId,
                   validationResults,
                   aiQcMap: showAiQcPanel ? AI_QC_INDEX_MAP : undefined,
+                  onAiQcSuggest: showAiQcPanel ? handleAiQcSuggest : undefined,
                   speakers,
                   isTranslatorMode: computedIsTranslatorMode,
                   showMiddleText: computedShowMiddleText,
@@ -6847,16 +6915,19 @@ function SubtitleList({ mediaRef, workCategory = null }) {
         skipRedirect={true}
       />
 
-      {/* 분할파일 병합검수 — 분할 경계 자막 겹침 해결 (STT 모달 UI 재사용) */}
-      {/* AI QC 패널 */}
-      {showAiQcPanel && (
-        <AiQcPanel
-          filter={aiQcFilter}
-          onFilterChange={setAiQcFilter}
-          onClose={() => setShowAiQcPanel(false)}
-        />
-      )}
+      {/* AI QC 수정 제안 모달 */}
+      {aiQcSuggestModal && (() => {
+        const sub = subtitles.find((s) => s.id === aiQcSuggestModal.subtitleId);
+        return (
+          <AiQcSuggestModal
+            issue={aiQcSuggestModal.issue}
+            subtitle={sub?.text ?? ""}
+            onClose={() => setAiQcSuggestModal(null)}
+          />
+        );
+      })()}
 
+      {/* 분할파일 병합검수 — 분할 경계 자막 겹침 해결 (STT 모달 UI 재사용) */}
       {mergeConflict && (
         <SttMergeConflictModal
           isOpen
