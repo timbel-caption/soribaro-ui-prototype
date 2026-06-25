@@ -58,3 +58,9 @@ const _updateSampleField = (id, patch) => {
 export const updateSampleNoteEntries = (id, noteEntries) => _updateSampleField(id, { noteEntries });
 export const updateSampleMemoEntries = (id, memoEntries) => _updateSampleField(id, { memoEntries });
 export const updateSamplePlayTime = (id, totalPlayTm) => _updateSampleField(id, { totalPlayTm });
+
+// 현장속기 배정 관리 탭: 작업자 배정·취소 정보를 protoStore에 반영
+// (진행의뢰현황 목록에서 배정취소 상태를 즉시 읽을 수 있도록)
+export const updateStenographyWorkerAssign = (id, patch) => {
+  _stenographySamples = _stenographySamples.map((s) => s.id === id ? { ...s, ...patch } : s);
+};

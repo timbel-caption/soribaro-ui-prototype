@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign } from './protoStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
@@ -36,6 +36,7 @@ function assignBadge(status) {
   if (status === '완료') return <span className="proto-badge-done">{status}</span>;
   if (status === '작업중') return <span className="proto-badge-working">{status}</span>;
   if (status === '검수중') return <span className="proto-badge-check">{status}</span>;
+  if (status === '배정취소') return <span className="proto-badge-cancel">{status}</span>;
   return <span className="proto-badge-wait">{status}</span>;
 }
 
@@ -3413,29 +3414,61 @@ const STG_ASSIGN_HISTORY_SEED = [
   { dttm: '26/06/25 11:30', actor: '정윤실_관리자', event: "작업자 '김혜리' 배정" },
 ];
 
-function StenographyAssignTab() {
-  const [worker, setWorker] = useState('-');
+function stgNowStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${String(d.getFullYear()).slice(2)}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function StenographyAssignTab({ s }) {
+  const [worker, setWorker] = useState(() => s?.assignWorker || '김혜리');
+  const [workerStatus, setWorkerStatus] = useState(() => s?.assignStatus || '배정 중');
   const [workTime, setWorkTime] = useState('');
   const [editingTime, setEditingTime] = useState(false);
   const [timeDraft, setTimeDraft] = useState('');
-  const [status] = useState('배정 중');
-  const [assignHistory] = useState(STG_ASSIGN_HISTORY_SEED.map(r => ({ ...r })));
+  const [assignHistory, setAssignHistory] = useState(() =>
+    s?.assignHistory ? s.assignHistory.map(r => ({ ...r })) : STG_ASSIGN_HISTORY_SEED.map(r => ({ ...r }))
+  );
   const [assignModal, setAssignModal] = useState(false);
   const [assignName, setAssignName] = useState('');
+  const [cancelModal, setCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
 
   const confirmAssign = () => {
     const name = assignName.trim();
     if (!name) return;
+    const dttm = stgNowStamp();
+    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `작업자 '${name}' 배정` }];
     setWorker(name);
+    setWorkerStatus('배정 중');
+    setAssignHistory(newHistory);
     setAssignModal(false);
     setAssignName('');
+    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: name, assignStatus: '배정 중', assignHistory: newHistory });
   };
+
+  const confirmCancel = () => {
+    const reason = cancelReason.trim();
+    const dttm = stgNowStamp();
+    const eventText = reason ? `배정 취소 (${reason})` : '배정 취소';
+    const newHistory = [...assignHistory, { dttm, actor: `${worker}_작업자`, event: eventText }];
+    setWorkerStatus('배정취소');
+    setAssignHistory(newHistory);
+    setCancelModal(false);
+    setCancelReason('');
+    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '배정취소', assignHistory: newHistory });
+  };
+
+  const isCancelled = workerStatus === '배정취소';
 
   return (
     <div className="proto-tab-panel">
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
         <p className="proto-section-title" style={{ margin: 0 }}>작업자 배정</p>
         <button className="proto-log-btn proto-log-btn--save" style={{ fontSize: '12px', padding: '4px 12px' }} onClick={() => { setAssignName(''); setAssignModal(true); }}>배정하기</button>
+        {worker && worker !== '-' && !isCancelled && (
+          <button className="proto-log-btn" style={{ fontSize: '12px', padding: '4px 12px', color: 'var(--error-color, #f87171)', borderColor: 'var(--error-color, #f87171)' }} onClick={() => { setCancelReason(''); setCancelModal(true); }}>배정 취소</button>
+        )}
       </div>
 
       <div className="proto-table-wrap" style={{ marginBottom: '28px' }}>
@@ -3477,7 +3510,10 @@ function StenographyAssignTab() {
                 )}
               </td>
               <td className="text-center">
-                <span className="proto-status-badge proto-status-working" style={{ fontSize: '12px' }}>{status}</span>
+                {isCancelled
+                  ? <span className="proto-badge-cancel" style={{ fontSize: '12px' }}>{workerStatus}</span>
+                  : <span className="proto-status-badge proto-status-working" style={{ fontSize: '12px' }}>{workerStatus}</span>
+                }
               </td>
             </tr>
           </tbody>
@@ -3517,6 +3553,36 @@ function StenographyAssignTab() {
             <div className="pm-modal-ft">
               <button className="proto-log-btn" onClick={() => setAssignModal(false)}>취소</button>
               <button className="proto-log-btn proto-log-btn--save" onClick={confirmAssign}>배정</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 배정 취소 모달 */}
+      {cancelModal && (
+        <div className="pm-overlay" onClick={() => setCancelModal(false)}>
+          <div className="pm-modal pm-modal--sm" onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">배정 취소</span>
+              <button className="preg-x-btn" onClick={() => setCancelModal(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                작업자 <strong>{worker}</strong>의 배정을 취소합니다.
+              </p>
+              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>취소 사유</label>
+              <input
+                className="preg-input"
+                value={cancelReason}
+                onChange={e => setCancelReason(e.target.value)}
+                placeholder="취소 사유를 입력하세요 (예: 다른 일정이 있습니다.)"
+                autoFocus
+                onKeyDown={e => e.key === 'Enter' && confirmCancel()}
+              />
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setCancelModal(false)}>닫기</button>
+              <button className="proto-log-btn" style={{ color: 'var(--error-color, #f87171)', borderColor: 'var(--error-color, #f87171)' }} onClick={confirmCancel}>배정 취소 확인</button>
             </div>
           </div>
         </div>
@@ -4108,7 +4174,7 @@ export default function WorkDetailProto({ samples, backPath }) {
     : isStenography
     ? [
         <BasicInfoTab s={s} />,
-        <StenographyAssignTab />,
+        <StenographyAssignTab s={s} />,
         <ManualGlossaryTab s={s} />,
         <AiQcTab s={s} />,
         <MtgSettlementTab s={s} />,
