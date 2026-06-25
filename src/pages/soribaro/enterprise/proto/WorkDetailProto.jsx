@@ -3013,7 +3013,7 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
 // ─── 탭 8: 정산확인 ───
 const SETTLE_WORKER_SEED = [
   { worker: '홍길동', grade: 'Pro', workTime: '00:00', accuracy: '99.61%', errors: 1, remark: '', amount: 415800, payRate: '90%', executor: '정윤실_관리자', netAmount: 374220, status: '완료' },
-  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '50%', executor: '', netAmount: 45000, status: '정산전' },
+  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '50%', executor: '', netAmount: 45000, status: '정산대기' },
 ];
 const SETTLE_REVIEWER_SEED = [
   { worker: '김철수', grade: 'Elite', workTime: '00:00', executor: '정윤실_관리자', netAmount: 415800, status: '완료' },
@@ -3093,10 +3093,11 @@ function SettlementTab({ s }) {
     setRejectModal(null);
   };
 
-  // 집행자 열: 미배정이면 "확인" 버튼, 배정되면 이름 텍스트
+  // 집행자 열: 정산대기이면 "확인" 버튼(재요청 포함), 작업자 확인 중이면 대기 텍스트, 완료이면 이름
   const executorCell = (row, index, table) => {
-    if (row.executor) return <span>{row.executor}</span>;
+    if (row.status === '완료') return <span>{row.executor}</span>;
     if (row.status === '작업자 확인') return <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>확인 대기중</span>;
+    // 정산대기 (초기 또는 반려 후): 확인 버튼 항상 표시
     return (
       <span className="settle-status-group">
         <button className="settle-confirm-btn" onClick={() => handleConfirmClick(index, table)}>확인</button>
@@ -3116,8 +3117,8 @@ function SettlementTab({ s }) {
         <button className="settle-action-btn settle-action-btn--reject" onClick={() => handleRejectClick(index, table)}>반려</button>
       </span>
     );
-    // 정산전 / 정산대기
-    return <span className="settle-status-badge settle-status-badge--pre">{row.status || '정산전'}</span>;
+    // 정산대기
+    return <span className="settle-status-badge settle-status-badge--pre">{row.status || '정산대기'}</span>;
   };
 
   return (
