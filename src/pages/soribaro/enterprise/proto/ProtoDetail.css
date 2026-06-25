@@ -4671,6 +4671,72 @@
   border-top: 1px solid var(--border-color);
 }
 
+/* ── 정산확인 탭 — 고객사 작업내역서 ── */
+.settle-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.2);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.settle-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(99,102,241,0.18);
+  color: #818cf8;
+  white-space: nowrap;
+}
+
+.settle-info-text {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.settle-sheet-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.settle-excel-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  background: rgba(34,197,94,0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.3);
+  transition: background 0.15s;
+}
+
+.settle-excel-btn:hover {
+  background: rgba(34,197,94,0.22);
+}
+
+.settle-worktime-cell {
+  font-size: 12px;
+  font-family: monospace;
+  color: #60a5fa;
+}
+
+.settle-total-row td {
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--surface-light);
+  border-top: 2px solid var(--border-color);
+}
+
 /* ─── 첨부파일 섹션 (기본정보 탭) ─── */
 .attach-section {
   margin-top: 20px;
