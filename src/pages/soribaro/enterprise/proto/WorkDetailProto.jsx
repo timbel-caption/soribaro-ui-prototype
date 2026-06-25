@@ -3410,8 +3410,9 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
 // ─── 탭 (현장속기 전용): 배정 관리 ───
 const STG_ASSIGN_HISTORY_SEED = [
   { dttm: '26/06/25 10:00', actor: '정윤실_관리자', event: "작업자 '이선재' 배정" },
-  { dttm: '26/06/25 11:00', actor: '작업자_이선재', event: '배정 취소 (중복 배정)' },
+  { dttm: '26/06/25 11:00', actor: '작업자_이선재', event: '배정 취소', reason: '그날 다른 회의가 있습니다.' },
   { dttm: '26/06/25 11:30', actor: '정윤실_관리자', event: "작업자 '김혜리' 배정" },
+  { dttm: '26/06/25 12:00', actor: '김혜리_작업자', event: '배정 취소', reason: '개인 일정이 있습니다.' },
 ];
 
 function stgNowStamp() {
@@ -3421,8 +3422,8 @@ function stgNowStamp() {
 }
 
 function StenographyAssignTab({ s }) {
-  const [worker, setWorker] = useState(() => s?.assignWorker || '김혜리');
-  const [workerStatus, setWorkerStatus] = useState(() => s?.assignStatus || '배정 중');
+  const [worker, setWorker] = useState(() => s?.assignWorker || '-');
+  const [workerStatus, setWorkerStatus] = useState(() => s?.assignStatus || (s?.assignWorker ? '배정완료' : '미배정'));
   const [workTime, setWorkTime] = useState('');
   const [editingTime, setEditingTime] = useState(false);
   const [timeDraft, setTimeDraft] = useState('');
@@ -3440,18 +3441,17 @@ function StenographyAssignTab({ s }) {
     const dttm = stgNowStamp();
     const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `작업자 '${name}' 배정` }];
     setWorker(name);
-    setWorkerStatus('배정 중');
+    setWorkerStatus('배정완료');
     setAssignHistory(newHistory);
     setAssignModal(false);
     setAssignName('');
-    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: name, assignStatus: '배정 중', assignHistory: newHistory });
+    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: name, assignStatus: '배정완료', assignHistory: newHistory });
   };
 
   const confirmCancel = () => {
     const reason = cancelReason.trim();
     const dttm = stgNowStamp();
-    const eventText = reason ? `배정 취소 (${reason})` : '배정 취소';
-    const newHistory = [...assignHistory, { dttm, actor: `${worker}_작업자`, event: eventText }];
+    const newHistory = [...assignHistory, { dttm, actor: `${worker}_작업자`, event: '배정 취소', reason: reason || undefined }];
     setWorkerStatus('배정취소');
     setAssignHistory(newHistory);
     setCancelModal(false);
@@ -3482,7 +3482,7 @@ function StenographyAssignTab({ s }) {
           </thead>
           <tbody>
             <tr>
-              <td className="text-center" style={{ fontSize: '13px' }}>{worker}</td>
+              <td className="text-center" style={{ fontSize: '13px' }}>{isCancelled ? '-' : worker}</td>
               <td className="text-center" style={{ fontSize: '13px', minWidth: '120px' }}>
                 {editingTime ? (
                   <span style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
@@ -3510,9 +3510,11 @@ function StenographyAssignTab({ s }) {
                 )}
               </td>
               <td className="text-center">
-                {isCancelled
-                  ? <span className="proto-badge-cancel" style={{ fontSize: '12px' }}>{workerStatus}</span>
-                  : <span className="proto-status-badge proto-status-working" style={{ fontSize: '12px' }}>{workerStatus}</span>
+                {workerStatus === '배정취소'
+                  ? <span className="proto-badge-cancel" style={{ fontSize: '12px' }}>배정취소</span>
+                  : workerStatus === '배정완료'
+                  ? <span className="proto-status-badge proto-status-done" style={{ fontSize: '12px' }}>배정완료</span>
+                  : <span className="proto-status-badge proto-status-wait" style={{ fontSize: '12px' }}>미배정</span>
                 }
               </td>
             </tr>
@@ -3527,6 +3529,7 @@ function StenographyAssignTab({ s }) {
             <span className="settle-history-dttm">{h.dttm}</span>
             <span className="settle-history-actor">{h.actor}</span>
             <span className="settle-history-event">{h.event}</span>
+            {h.reason && <span className="settle-history-reason">{h.reason}</span>}
           </div>
         ))}
       </div>

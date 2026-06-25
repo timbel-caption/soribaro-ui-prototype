@@ -30,6 +30,8 @@ export const STENOGRAPHY_SAMPLES = [
       { date: '2026-06-16', label: '배정완료' },
       { date: '2026-06-16', label: '작업중 전환' },
     ],
+    assignWorker: '김혜리',
+    assignStatus: '배정취소',
     protoPath: '/soribaro/stenography/detail/PROTO-STG-001',
     files: [
       { fileNo: 1, fileName: '316임시회_오전본회의.wav', duration: '1:45', size: '792 MB', uploadDttm: '2026-06-16' },
@@ -96,6 +98,8 @@ export const STENOGRAPHY_SAMPLES = [
       { date: '2026-06-17', label: '작업중 전환' },
       { date: '2026-06-18', label: '검수중 전환' },
     ],
+    assignWorker: '김나리',
+    assignStatus: '배정완료',
     protoPath: '/soribaro/stenography/detail/PROTO-STG-002',
     files: [
       { fileNo: 1, fileName: '경기도의회_380정례회.wav', duration: '2:45', size: '1.2 GB', uploadDttm: '2026-06-17' },
