@@ -160,13 +160,13 @@ function EditableLogCard({ variant, icon, iconClass, title, entries, author, onC
 
 // ─── 첨부파일 시드 (회의록 기본정보 탭용) ───
 const ATTACH_SEED = [
-  { id: 'at-1', name: '2026학년도 제105회 학교폭력대책심의위원회(서울시강서양천교육지원청)-260619(260619)_이주은.hwp', type: '공유파일',     size: '110.5 KB', regDttm: '2026.06.22 21:41:00', shared: true },
-  { id: 'at-2', name: '(온라인)개인정보 피기 확인서_학폭위_이주은.hwp',                                                   type: '공유파일',     size: '38.5 KB',  regDttm: '2026.06.22 21:41:00', shared: true },
-  { id: 'at-3', name: '(강서양천-2026-105)학교폭력대책심의위원회 회의록.hwp',                                             type: '고객첨부(의뢰)', size: '77.0 KB',  regDttm: '2026.06.19 11:27:00', shared: true },
-  { id: 'at-4', name: '20260619092352_강서양천-2026-105_3층 심의실.wav',                                                   type: '고객첨부(의뢰)', size: '182.2 MB', regDttm: '2026.06.19 11:26:00', shared: true },
-  { id: 'at-5', name: '강서양천-2026-105.txt',                                                                             type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:26:00', shared: true },
-  { id: 'at-6', name: '20260619092352_강서양천-2026-105_3층 심의실.hwp',                                                   type: '고객첨부(의뢰)', size: '65.5 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
-  { id: 'at-7', name: '20260619092352_강서양천-2026-105_3층 심의실.txt',                                                   type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
+  { id: 'at-1', name: '2026학년도 제105회 학교폭력대책심의위원회(서울시서울중부교육지원청)-260619(260619)_홍길동.hwp', type: '공유파일',     size: '110.5 KB', regDttm: '2026.06.22 21:41:00', shared: true },
+  { id: 'at-2', name: '(온라인)개인정보 피기 확인서_학폭위_홍길동.hwp',                                                   type: '공유파일',     size: '38.5 KB',  regDttm: '2026.06.22 21:41:00', shared: true },
+  { id: 'at-3', name: '(서울중부-2026-105)학교폭력대책심의위원회 회의록.hwp',                                             type: '고객첨부(의뢰)', size: '77.0 KB',  regDttm: '2026.06.19 11:27:00', shared: true },
+  { id: 'at-4', name: '20260619092352_서울중부-2026-105_3층 심의실.wav',                                                   type: '고객첨부(의뢰)', size: '182.2 MB', regDttm: '2026.06.19 11:26:00', shared: true },
+  { id: 'at-5', name: '서울중부-2026-105.txt',                                                                             type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:26:00', shared: true },
+  { id: 'at-6', name: '20260619092352_서울중부-2026-105_3층 심의실.hwp',                                                   type: '고객첨부(의뢰)', size: '65.5 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
+  { id: 'at-7', name: '20260619092352_서울중부-2026-105_3층 심의실.txt',                                                   type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
 ];
 
 // ─── 탭 1: 기본정보 ───
