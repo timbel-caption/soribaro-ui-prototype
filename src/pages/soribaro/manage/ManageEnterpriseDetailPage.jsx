@@ -311,7 +311,7 @@ export default function ManageEnterpriseDetailPage() {
         <div className="pm-overlay" onClick={() => setManagerModal(false)}>
           <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '680px', width: '90%' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">실무자 관리</span>
+              <span className="pm-modal-title">실무자 관리{originalData?.entNm ? ` — ${originalData.entNm}` : ''}</span>
               <button className="preg-x-btn" onClick={() => setManagerModal(false)}>✕</button>
             </div>
 
