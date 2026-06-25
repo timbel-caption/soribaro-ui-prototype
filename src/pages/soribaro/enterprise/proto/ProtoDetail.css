@@ -4670,3 +4670,99 @@
 .vod-dlv-hist-table-wrap {
   border-top: 1px solid var(--border-color);
 }
+
+/* ─── 첨부파일 섹션 (기본정보 탭) ─── */
+.attach-section {
+  margin-top: 20px;
+}
+
+.attach-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.attach-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attach-action-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.attach-action-btn:hover { opacity: 0.8; }
+
+.attach-action-btn--share {
+  background: rgba(45,212,191,0.12);
+  color: #2dd4bf;
+  border-color: rgba(45,212,191,0.4);
+}
+
+.attach-action-btn--dl {
+  background: rgba(96,165,250,0.12);
+  color: #60a5fa;
+  border-color: rgba(96,165,250,0.35);
+}
+
+.attach-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.attach-type-badge--shared {
+  background: rgba(96,165,250,0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(96,165,250,0.3);
+}
+.attach-type-badge--client {
+  background: rgba(251,146,60,0.12);
+  color: #fb923c;
+  border: 1px solid rgba(251,146,60,0.3);
+}
+
+.attach-row--checked td {
+  background: rgba(45,212,191,0.05) !important;
+}
+
+.attach-dl-btn {
+  padding: 3px 8px;
+  background: rgba(96,165,250,0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(96,165,250,0.3);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-right: 4px;
+}
+.attach-dl-btn:hover { background: rgba(96,165,250,0.22); }
+
+.attach-del-btn {
+  padding: 3px 8px;
+  background: rgba(239,68,68,0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.attach-del-btn:hover { background: rgba(239,68,68,0.2); }
