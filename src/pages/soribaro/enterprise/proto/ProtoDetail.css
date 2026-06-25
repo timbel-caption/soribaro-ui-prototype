@@ -2226,6 +2226,21 @@
   font-weight: 700;
   white-space: nowrap;
 }
+.pm-total-time-chip--editable { cursor: pointer; }
+.pm-total-time-chip--editable:hover { background: rgba(99,102,241,0.28); }
+.pm-total-time-input {
+  width: 80px;
+  padding: 2px 8px;
+  border: 1.5px solid #818cf8;
+  border-radius: 20px;
+  background: rgba(99,102,241,0.1);
+  color: #818cf8;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  font-family: inherit;
+}
 
 .pm-wspy-chip {
   display: inline-flex;

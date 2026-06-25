@@ -1585,6 +1585,7 @@ function ProjectManageTab({ s }) {
   const [fileAssignModal, setFileAssignModal] = useState(null);
   const [expandedMsgs, setExpandedMsgs] = useState({});
   const [workspyModal, setWorkspyModal] = useState(null);
+  const [workTimeEdit, setWorkTimeEdit] = useState({});
 
   const syncStore = (updated) => {
     setProjects(updated);
@@ -1739,7 +1740,33 @@ function ProjectManageTab({ s }) {
               <span className={`proto-status-badge ${proj.status === '작업완료' ? 'proto-status-done' : 'proto-status-working'}`}>
                 {proj.status}
               </span>
-              <span className="pm-total-time-chip">총 {calcProjWorkTime(proj.projFiles)}</span>
+              {workTimeEdit[proj.id] !== undefined ? (
+                <input
+                  className="pm-total-time-input"
+                  value={workTimeEdit[proj.id]}
+                  onChange={e => setWorkTimeEdit(prev => ({ ...prev, [proj.id]: e.target.value }))}
+                  onBlur={e => {
+                    const val = e.target.value.trim();
+                    syncStore(projects.map(p => p.id === proj.id ? { ...p, workTime: val } : p));
+                    setWorkTimeEdit(prev => { const n = { ...prev }; delete n[proj.id]; return n; });
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') e.target.blur();
+                    if (e.key === 'Escape') setWorkTimeEdit(prev => { const n = { ...prev }; delete n[proj.id]; return n; });
+                  }}
+                  placeholder="HH:MM"
+                  onClick={e => e.stopPropagation()}
+                  autoFocus
+                />
+              ) : (
+                <span
+                  className="pm-total-time-chip pm-total-time-chip--editable"
+                  title="클릭하여 수정"
+                  onClick={e => { e.stopPropagation(); setWorkTimeEdit(prev => ({ ...prev, [proj.id]: proj.workTime || '' })); }}
+                >
+                  총 {proj.workTime || calcProjWorkTime(proj.projFiles)}
+                </span>
+              )}
               {proj.workspyRegistered && proj.workspyData && (() => {
                 const d = proj.workspyData;
                 const fmtD = (iso) => iso ? iso.split('T')[0].replace(/-/g, '.') : '-';
