@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-25',
     author: '정윤실',
+    title: '회의록 새 의뢰 등록 팝업 제목 및 내부 메모 필드명 변경',
+    description:
+      'MeetingRegisterModal 팝업 제목을 \'새 프로젝트 등록\'에서 \'새 의뢰 등록\'으로, 내부 메모 레이블을 \'의뢰인 요청사항\'으로 변경했습니다.',
+  },
+  {
+    date: '2026-06-25',
+    author: '정윤실',
     title: '소리바로 메뉴에 현장속기 작업관리 탭 신설',
     description:
       '사이드바에 현장속기 메뉴를 추가하고 /soribaro/stenography/work 라우트와 StenographyWorkPage를 신설했습니다. 회의록 작업관리와 동일한 레이아웃을 재사용하며 타이틀과 서비스 유형만 현장속기로 변경했습니다.',

@@ -107,7 +107,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
       <div className="preg-modal" style={{ maxWidth: '760px' }}>
         {/* 헤더 */}
         <div className="preg-header">
-          <span className="preg-header-title">새 프로젝트 등록</span>
+          <span className="preg-header-title">새 의뢰 등록</span>
           <button className="preg-x-btn" onClick={onClose}>✕</button>
         </div>
 
@@ -243,7 +243,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
                 />
               </div>
               <div className="preg-field">
-                <label className="preg-label">내부 메모</label>
+                <label className="preg-label">의뢰인 요청사항</label>
                 <textarea
                   className="preg-textarea"
                   value={form.internalMemo}
