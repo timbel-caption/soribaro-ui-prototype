@@ -240,13 +240,13 @@ function BasicInfoTab({ s }) {
     { label: '납품예정일', value: s.dueDate || '-' },
     { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
   ] : [
+    { label: '작업 유형', value: s.bssTypeName },
     { label: '업체명', value: s.entNm || '-' },
-    { label: '계약구분', value: s.contractType || '-' },
-    { label: '회차', value: s.round || '-' },
+    { label: '프로젝트명', value: s.servTitle || '-' },
+    { label: '기관/학교명', value: s.orgNm || '-' },
     { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
     { label: '납품예정일', value: s.dueDate || '-' },
-    { label: '실제납품일', value: s.actualDeliveryDate || '-' },
-    { label: '담당자', value: s.managerNm || s.membNm || '-' },
+    { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
   ];
   const row2 = isVod ? [
     { label: '담당 관리자', value: s.managerNm || s.membNm },
@@ -256,9 +256,10 @@ function BasicInfoTab({ s }) {
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ] : [
+    { label: '담당 관리자', value: s.managerNm || s.membNm || '-' },
     { label: '연락처', value: s.phone || '010-1234-5678' },
-    { label: '이메일', value: s.email || 'contact@edu.go.kr' },
-    { label: '총분량', value: s.totalPlayTm || '-' },
+    { label: '이메일', value: s.email || 'kim@go.kr' },
+    { label: '총 분량', value: s.totalPlayTm || '-' },
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ];
