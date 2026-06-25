@@ -1767,6 +1767,7 @@ function ProjectManageTab({ s }) {
         </div>
       )}
 
+      <div className="pm-project-list-wrap">
       <div className="pm-project-list">
         {projects.map(proj => (
           <div key={proj.id} className="pm-project-card">
@@ -2042,6 +2043,7 @@ function ProjectManageTab({ s }) {
             )}
           </div>
         ))}
+      </div>
       </div>
 
       {fileModalFor && (
