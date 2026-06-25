@@ -32,6 +32,10 @@ export const COMPANY_DATA = [
       { name: '이철호', contractTypes: ['단건계약', '긴급계약', '연간계약'] },
     ],
   },
+  {
+    entNm: '서울중부교육지원청',
+    managers: [],
+  },
 ];
 
 // ─── 실무자 공유 스토어 (prototype용 module-level state) ───
@@ -45,6 +49,7 @@ const _companyStaff = {
   '한국방송공사': [],
   '국회사무처': [],
   '부산광역시의회': [],
+  '서울중부교육지원청': [],
 };
 let _nextStaffId = 10;
 

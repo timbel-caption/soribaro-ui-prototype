@@ -19,12 +19,17 @@
 import {
   MOCK_USER,
   COMMON_CODES,
+  ENTERPRISE_ROWS,
   recordRows,
   workerRows,
   settlementRows,
   projectRows,
   noticeRows,
 } from './fixtures/index.js';
+
+// ─── 엔터프라이즈 업체 인메모리 스토어 ───────────────────────────────────────
+let _enterprises = ENTERPRISE_ROWS.map((r) => ({ ...r }));
+let _entSeq = Math.max(...ENTERPRISE_ROWS.map((r) => r.entNo)) + 1;
 
 // 응답 지연(ms) — 로딩 스피너가 자연스럽게 보이도록 약간의 지연을 둔다.
 const MOCK_DELAY_MS = 120;
@@ -165,6 +170,48 @@ const REGISTRY = [
     test: /\/notices?$/i,
     handler: ({ params, method }) =>
       method === 'GET' ? listData(noticeRows(8), params) : null,
+  },
+
+  // ── 엔터프라이즈 업체 상세 (PUT/DELETE) ──────────────────────────────
+  {
+    test: /\/enterprise\/(\d+)$/i,
+    handler: ({ method, match, body }) => {
+      const entNo = Number(match[1]);
+      if (method === 'GET') {
+        return _enterprises.find((e) => e.entNo === entNo) || null;
+      }
+      if (method === 'PUT') {
+        _enterprises = _enterprises.map((e) =>
+          e.entNo === entNo ? { ...e, ...body, entNo, chgDttm: '2026-06-25 12:00:00' } : e
+        );
+        return _enterprises.find((e) => e.entNo === entNo);
+      }
+      if (method === 'DELETE') {
+        _enterprises = _enterprises.filter((e) => e.entNo !== entNo);
+        return { entNo };
+      }
+      return null;
+    },
+  },
+
+  // ── 엔터프라이즈 업체 목록/등록 ──────────────────────────────────────
+  {
+    test: /\/enterprise$/i,
+    handler: ({ method, params, body }) => {
+      if (method === 'GET') {
+        const txt = (params.searchTxt || '').toLowerCase();
+        const rows = txt
+          ? _enterprises.filter((e) => e.entNm.toLowerCase().includes(txt))
+          : _enterprises;
+        return listData(rows, params);
+      }
+      if (method === 'POST') {
+        const newEnt = { ...body, entNo: _entSeq++, useYn: body.useYn || 'Y', regDttm: '2026-06-25 09:00:00', chgDttm: null, regr: '정윤실', chgr: null };
+        _enterprises = [..._enterprises, newEnt];
+        return newEnt;
+      }
+      return null;
+    },
   },
 ];
 

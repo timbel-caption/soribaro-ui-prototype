@@ -222,6 +222,18 @@ export function mockWorktoolSubtitles() {
   }));
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// 엔터프라이즈 업체 목록 (서울중부교육지원청 포함)
+// ────────────────────────────────────────────────────────────────────────────
+export const ENTERPRISE_ROWS = [
+  { entNo: 1, entNm: '서울시의회',          bssType: 'public', bssTypeNm: '공공기관', picTelNo: '02-1234-5001', useYn: 'Y', regDttm: '2026-01-10 09:00:00', chgDttm: '2026-05-20 14:30:00', entDomain: 'council.seoul.go.kr',      entDesc: '서울특별시의회 전문 자막/회의록 서비스', regr: '정윤실', chgr: '정윤실' },
+  { entNo: 2, entNm: '서울특별시교육청',    bssType: 'edu',    bssTypeNm: '교육기관', picTelNo: '02-1234-5002', useYn: 'Y', regDttm: '2026-01-15 09:00:00', chgDttm: '2026-06-01 10:00:00', entDomain: 'sen.go.kr',                entDesc: '서울특별시교육청 교육 영상 자막 서비스',  regr: '정윤실', chgr: '정윤실' },
+  { entNo: 3, entNm: '한국방송공사',        bssType: 'media',  bssTypeNm: '미디어',   picTelNo: '02-1234-5003', useYn: 'Y', regDttm: '2026-02-01 09:00:00', chgDttm: '2026-06-10 11:00:00', entDomain: 'kbs.co.kr',                entDesc: 'KBS 방송 자막 처리 전용 채널',          regr: '정윤실', chgr: '정윤실' },
+  { entNo: 4, entNm: '국회사무처',          bssType: 'public', bssTypeNm: '공공기관', picTelNo: '02-1234-5004', useYn: 'Y', regDttm: '2026-02-10 09:00:00', chgDttm: '2026-06-05 13:00:00', entDomain: 'na.go.kr',                 entDesc: '국회 본회의·위원회 회의록 서비스',      regr: '정윤실', chgr: '정윤실' },
+  { entNo: 5, entNm: '부산광역시의회',      bssType: 'public', bssTypeNm: '공공기관', picTelNo: '051-1234-5005', useYn: 'Y', regDttm: '2026-03-01 09:00:00', chgDttm: '2026-06-15 15:00:00', entDomain: 'council.busan.go.kr',     entDesc: '부산광역시의회 회의 자막 서비스',       regr: '정윤실', chgr: '정윤실' },
+  { entNo: 6, entNm: '서울중부교육지원청',  bssType: 'edu',    bssTypeNm: '교육기관', picTelNo: '02-1234-5006', useYn: 'Y', regDttm: '2026-06-25 09:00:00', chgDttm: null,                  entDomain: 'jungbu.sen.go.kr',         entDesc: '서울중부교육지원청 교육 행정 회의록 및 자막 서비스', regr: '정윤실', chgr: null },
+];
+
 /** 공지사항 행 */
 export function noticeRows(count = 8) {
   return Array.from({ length: count }, (_, i) => {
