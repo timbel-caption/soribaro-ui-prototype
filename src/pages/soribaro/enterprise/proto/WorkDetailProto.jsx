@@ -3178,9 +3178,17 @@ const SETTLE_HISTORY_SEED = [
 ];
 
 function SettlementTab({ s }) {
-  const [workers, setWorkers] = useState(() =>
-    (s.settlement?.workerRows) || SETTLE_WORKER_SEED.map(r => ({ ...r }))
-  );
+  const [workers, setWorkers] = useState(() => {
+    if (s.settlement?.workerRows) return s.settlement.workerRows;
+    // 프로젝트 관리 탭에서 저장된 최신 subjects(projects)를 읽어 작업시간 연동
+    const store = s.bssTypeName === '회의록' ? getMeetingSamples() : getVodSamples();
+    const cur = store.find((v) => v.id === s.id);
+    const subjects = cur?.subjects || [];
+    return SETTLE_WORKER_SEED.map((r) => {
+      const proj = subjects.find((p) => p.worker === r.worker);
+      return { ...r, workTime: proj?.workTime ?? r.workTime };
+    });
+  });
   const [reviewers, setReviewers] = useState(() =>
     (s.settlement?.reviewerRows) || SETTLE_REVIEWER_SEED.map(r => ({ ...r }))
   );
