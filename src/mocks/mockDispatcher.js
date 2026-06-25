@@ -171,10 +171,19 @@ const REGISTRY = [
     handler: ({ params }) => listData(projectRows(6), params),
   },
 
-  // ── 작업자/회원 목록 ─────────────────────────────────────────────────
+  // ── 작업자/회원 목록 (GET) / 회원 등록 (POST) ────────────────────────
   {
     test: /\/(workers?|members?)$/i,
-    handler: ({ params }) => listData(workerRows(8), params),
+    handler: ({ method, params, body }) => {
+      if (method === 'GET') return listData(workerRows(8), params);
+      if (method === 'POST') {
+        const entRow = _enterprises.find((e) => String(e.entNo) === String(body.entNo));
+        const newCust = { ...body, membNo: _custSeq++, entNm: entRow?.entNm || '', platform: '소리바로', status: '정상', regDttm: '2026-06-25 09:00:00', chgDttm: null };
+        _entCustomers = [..._entCustomers, newCust];
+        return newCust;
+      }
+      return null;
+    },
   },
 
   // ── 공지 ─────────────────────────────────────────────────────────────
