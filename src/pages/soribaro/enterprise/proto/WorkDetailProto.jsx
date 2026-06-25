@@ -1944,10 +1944,11 @@ function ProjectManageTab({ s }) {
                               style={{ fontSize: '11px', padding: '2px 8px', whiteSpace: 'nowrap' }}
                               title="의뢰자 요청 사항 내용을 관리자 메시지로 복사"
                               onClick={() => {
-                                const store = getMeetingSamples();
-                                const cur = store.find((v) => v.id === s.id);
-                                const entries = cur?.memoEntries ?? s.memoEntries ?? [];
-                                const text = entries.map((e) => e.content).join('\n');
+                                const text = (s.clientRequest || '').trim();
+                                if (!text) {
+                                  window.alert('복사할 의뢰자 요청사항이 없습니다.');
+                                  return;
+                                }
                                 setMsgDraft((prev) => ({ ...prev, [mk]: text }));
                                 setExpandedMsgs((prev) => ({ ...prev, [mk]: true }));
                               }}
