@@ -3736,8 +3736,8 @@ function histTypeBadge(type) {
 }
 
 function VodProjectHistoryTab() {
-  const [activeFilter, setActiveFilter] = React.useState('전체');
-  const [expandedKeys, setExpandedKeys] = React.useState(() => {
+  const [activeFilter, setActiveFilter] = useState('전체');
+  const [expandedKeys, setExpandedKeys] = useState(() => {
     // 기본 모두 펼침
     const keys = {};
     VOD_PROJECT_HISTORY.forEach((h) => {
