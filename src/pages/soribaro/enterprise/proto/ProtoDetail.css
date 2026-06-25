@@ -4766,3 +4766,33 @@
   font-family: inherit;
 }
 .attach-del-btn:hover { background: rgba(239,68,68,0.2); }
+
+/* ─── 프로젝트 관리 문서·알림 버튼 ─── */
+.pm-doc-btn {
+  padding: 5px 12px;
+  background: var(--surface-light);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.pm-doc-btn:hover { background: var(--surface-hover, rgba(255,255,255,0.08)); }
+
+.pm-doc-btn--disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.pm-doc-btn--disabled:hover { background: var(--surface-light); }
+
+.pm-doc-btn--notify {
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  border-color: var(--accent-color);
+  font-weight: 600;
+}
+.pm-doc-btn--notify:hover { opacity: 0.85; background: var(--accent-color); }
