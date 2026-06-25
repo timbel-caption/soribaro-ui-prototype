@@ -23,6 +23,7 @@ export const MEETING_SAMPLES = [
     managerNm: '김철수',
     deliveryFormats: 'HWP',
     specialNote: '(검) 4시 전 우선 발송',
+    clientRequest: '학생1 녹음이 안 돼서 서브파일로 작성 부탁드립니다.',
     internalMemo: '',
     statusHistory: [
       { date: '2026-06-16', label: '접수' },

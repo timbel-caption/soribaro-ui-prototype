@@ -61,7 +61,7 @@ function nowStamp() {
 }
 
 // ─── 특이사항 / 내부 메모: 작성자·시각 로그가 남는 추가·수정·삭제 카드 ───
-function EditableLogCard({ variant, icon, iconClass, title, entries, author, onChange, hideAdd }) {
+function EditableLogCard({ variant, icon, iconClass, title, entries, author, onChange, hideAdd, readOnly }) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -135,10 +135,12 @@ function EditableLogCard({ variant, icon, iconClass, title, entries, author, onC
                   <>
                     <div className="proto-log-item-head">
                       <span className="proto-log-meta">{entry.dttm} · {entry.author}</span>
-                      <span className="proto-log-actions">
-                        <button className="proto-log-action" onClick={() => startEdit(entry)}>수정</button>
-                        <button className="proto-log-action proto-log-action--del" onClick={() => removeEntry(entry.id)}>삭제</button>
-                      </span>
+                      {!readOnly && (
+                        <span className="proto-log-actions">
+                          <button className="proto-log-action" onClick={() => startEdit(entry)}>수정</button>
+                          <button className="proto-log-action proto-log-action--del" onClick={() => removeEntry(entry.id)}>삭제</button>
+                        </span>
+                      )}
                     </div>
                     <div className="proto-log-content">{entry.content}</div>
                   </>
@@ -168,7 +170,12 @@ function BasicInfoTab({ s }) {
     return seed ? [{ id: 'note-seed', author: '관리자', dttm: s.regDttm || '', content: seed }] : [];
   });
   const [memoEntries, setMemoEntries] = useState(() => {
-    const store = isVod ? getVodSamples() : getMeetingSamples();
+    if (!isVod) {
+      // 회의록: 의뢰자 요청사항은 조회 전용 — clientRequest 우선, 없으면 기본값
+      const text = s.clientRequest || '학생1 녹음이 안 돼서 서브파일로 작성 부탁드립니다.';
+      return [{ id: 'client-req-seed', author: '의뢰자', dttm: s.regDttm || '', content: text }];
+    }
+    const store = getVodSamples();
     const cur = store.find((v) => v.id === s.id);
     const entries = cur?.memoEntries ?? s.memoEntries;
     if (entries) return entries;
@@ -249,11 +256,12 @@ function BasicInfoTab({ s }) {
           variant="memo"
           icon="≡"
           iconClass="proto-basic-extra-icon--memo"
-          title="의뢰자 요청 사항"
+          title={isVod ? '내부 메모' : '의뢰자 요청 사항'}
           entries={memoEntries}
           author={authorName}
           onChange={syncMemos}
-          hideAdd={false}
+          hideAdd={!isVod}
+          readOnly={!isVod}
         />
       </div>
 
