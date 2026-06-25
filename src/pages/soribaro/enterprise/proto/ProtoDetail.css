@@ -785,9 +785,11 @@
   padding: 6px 0;
   border-bottom: 1px solid var(--border-color);
 }
+.settle-history-item  { display: flex; gap: 16px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; }
 .settle-history-dttm  { color: var(--text-secondary); min-width: 110px; }
 .settle-history-actor { color: #60a5fa; min-width: 110px; }
 .settle-history-event { font-weight: 500; }
+.settle-history-reason { color: var(--text-secondary); font-size: 12px; }
 .settle-history-detail { color: var(--text-secondary); font-size: 12px; }
 
 /* ─── 이력 타임라인 ─── */

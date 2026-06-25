@@ -262,14 +262,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 )}
               </td>
               <td style={{ maxWidth: '120px', fontSize: '13px' }}>
-                {s.assignWorker ? (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                    <span style={{ color: s.assignStatus === '배정취소' ? 'var(--text-muted)' : 'var(--text-secondary)', textDecoration: s.assignStatus === '배정취소' ? 'line-through' : 'none' }}>{s.assignWorker}</span>
-                    {s.assignStatus === '배정취소' && <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>}
-                  </span>
-                ) : (
-                  <span style={{ color: 'var(--text-secondary)' }}>{[...new Set((s.files || []).map((f) => f.worker).filter(Boolean))].join(', ') || '-'}</span>
-                )}
+                {s.assignStatus === '배정취소'
+                  ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
+                  : s.assignWorker && s.assignStatus === '배정완료'
+                  ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker}</span>
+                  : <span style={{ color: 'var(--text-muted)' }}>미배정</span>
+                }
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
