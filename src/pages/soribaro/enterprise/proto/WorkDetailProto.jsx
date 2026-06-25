@@ -249,11 +249,11 @@ function BasicInfoTab({ s }) {
           variant="memo"
           icon="≡"
           iconClass="proto-basic-extra-icon--memo"
-          title="내부 메모"
+          title="의뢰자 요청 사항"
           entries={memoEntries}
           author={authorName}
           onChange={syncMemos}
-          hideAdd={!isVod}
+          hideAdd={false}
         />
       </div>
 
