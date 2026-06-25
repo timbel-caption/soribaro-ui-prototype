@@ -158,6 +158,17 @@ function EditableLogCard({ variant, icon, iconClass, title, entries, author, onC
   );
 }
 
+// ─── 첨부파일 시드 (회의록 기본정보 탭용) ───
+const ATTACH_SEED = [
+  { id: 'at-1', name: '2026학년도 제105회 학교폭력대책심의위원회(서울시서울중부교육지원청)-260619(260619)_홍길동.hwp', type: '공유파일',     size: '110.5 KB', regDttm: '2026.06.22 21:41:00', shared: true },
+  { id: 'at-2', name: '(온라인)개인정보 피기 확인서_학폭위_홍길동.hwp',                                                   type: '공유파일',     size: '38.5 KB',  regDttm: '2026.06.22 21:41:00', shared: true },
+  { id: 'at-3', name: '(서울중부-2026-105)학교폭력대책심의위원회 회의록.hwp',                                             type: '고객첨부(의뢰)', size: '77.0 KB',  regDttm: '2026.06.19 11:27:00', shared: true },
+  { id: 'at-4', name: '20260619092352_서울중부-2026-105_3층 심의실.wav',                                                   type: '고객첨부(의뢰)', size: '182.2 MB', regDttm: '2026.06.19 11:26:00', shared: true },
+  { id: 'at-5', name: '서울중부-2026-105.txt',                                                                             type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:26:00', shared: true },
+  { id: 'at-6', name: '20260619092352_서울중부-2026-105_3층 심의실.hwp',                                                   type: '고객첨부(의뢰)', size: '65.5 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
+  { id: 'at-7', name: '20260619092352_서울중부-2026-105_3층 심의실.txt',                                                   type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
+];
+
 // ─── 탭 1: 기본정보 ───
 function BasicInfoTab({ s }) {
   // VOD 작업관리에서만 특이사항/내부 메모를 로그형(추가·수정·삭제) 카드로 제공
@@ -193,7 +204,34 @@ function BasicInfoTab({ s }) {
   };
   const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
 
-  const row1 = [
+  // 첨부파일 (회의록 전용)
+  const [attachments, setAttachments] = useState(() => ATTACH_SEED.map(r => ({ ...r })));
+  const [attachChecked, setAttachChecked] = useState(new Set());
+
+  const attachAllChecked = attachChecked.size === attachments.length && attachments.length > 0;
+  const toggleAttachAll = () => {
+    setAttachChecked(attachAllChecked ? new Set() : new Set(attachments.map(a => a.id)));
+  };
+  const toggleAttachOne = (id) => {
+    setAttachChecked(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const handleShareConvert = () => {
+    setAttachments(prev => prev.map(a => attachChecked.has(a.id) ? { ...a, shared: true } : a));
+    setAttachChecked(new Set());
+  };
+  const handleBulkDownload = () => {
+    window.alert(`[프로토타입 안내]\n${attachChecked.size}개 파일 일괄 다운로드는 정식 서비스 단계에서 구현 예정입니다.`);
+  };
+  const handleDeleteAttach = (id) => {
+    setAttachments(prev => prev.filter(a => a.id !== id));
+    setAttachChecked(prev => { const next = new Set(prev); next.delete(id); return next; });
+  };
+
+  const row1 = isVod ? [
     { label: '작업 유형', value: s.bssTypeName },
     { label: '입체명', value: s.entNm },
     { label: '프로젝트명', value: s.servTitle },
@@ -201,12 +239,27 @@ function BasicInfoTab({ s }) {
     { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
     { label: '납품예정일', value: s.dueDate || '-' },
     { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
+  ] : [
+    { label: '작업 유형', value: s.bssTypeName },
+    { label: '업체명', value: s.entNm || '-' },
+    { label: '프로젝트명', value: s.servTitle || '-' },
+    { label: '기관/학교명', value: s.orgNm || '-' },
+    { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
+    { label: '납품예정일', value: s.dueDate || '-' },
+    { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
   ];
-  const row2 = [
+  const row2 = isVod ? [
     { label: '담당 관리자', value: s.managerNm || s.membNm },
     { label: '총 파일 수', value: `${s.files.length}개` },
     { label: '총 분량', value: s.totalDuration || s.totalPlayTm },
     { label: '납품 형식', value: s.deliveryFormats || '-' },
+    { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
+    { label: '정산 상태', value: s.settlement?.status || '-' },
+  ] : [
+    { label: '담당 관리자', value: s.managerNm || s.membNm || '-' },
+    { label: '연락처', value: s.phone || '010-1234-5678' },
+    { label: '이메일', value: s.email || 'kim@go.kr' },
+    { label: '총 분량', value: s.totalPlayTm || '-' },
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ];
@@ -216,7 +269,7 @@ function BasicInfoTab({ s }) {
       <div className="proto-basic-card">
         <div className="proto-basic-card-header">
           <span>📋</span>
-          <span>프로젝트 기본정보</span>
+          <span>{isVod ? '프로젝트 기본정보' : '의뢰 기본 정보'}</span>
         </div>
         <div className="proto-basic-card-body">
           {row1.map(({ label, value }, i) => (
@@ -283,6 +336,73 @@ function BasicInfoTab({ s }) {
           ))}
         </div>
       </div>
+
+      {/* 첨부파일 (회의록 전용) */}
+      {!isVod && (
+        <div className="attach-section">
+          <div className="attach-section-header">
+            <span className="proto-section-title" style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>첨부파일</span>
+            <div className="attach-section-actions">
+              {attachChecked.size > 0 && (
+                <>
+                  <button className="attach-action-btn attach-action-btn--share" onClick={handleShareConvert}>
+                    공유 전환 ({attachChecked.size}건)
+                  </button>
+                  <button className="attach-action-btn attach-action-btn--dl" onClick={handleBulkDownload}>
+                    일괄 다운로드 ({attachChecked.size}건)
+                  </button>
+                </>
+              )}
+              <button className="proto-file-add-btn" onClick={() => window.alert('[프로토타입 안내]\n파일 업로드는 정식 서비스 단계에서 구현 예정입니다.')}>
+                + 파일 업로드
+              </button>
+            </div>
+          </div>
+          <div className="proto-table-wrap">
+            <table className="proto-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '36px' }}>
+                    <input type="checkbox" checked={attachAllChecked} onChange={toggleAttachAll} />
+                  </th>
+                  <th>파일명</th>
+                  <th style={{ width: '110px' }}>유형</th>
+                  <th style={{ width: '90px' }} className="text-center">파일크기</th>
+                  <th style={{ width: '140px' }} className="text-center">등록일</th>
+                  <th style={{ width: '50px' }} className="text-center">공유</th>
+                  <th style={{ width: '100px' }} className="text-center">액션</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attachments.map(a => (
+                  <tr key={a.id} className={attachChecked.has(a.id) ? 'attach-row--checked' : ''}>
+                    <td>
+                      <input type="checkbox" checked={attachChecked.has(a.id)} onChange={() => toggleAttachOne(a.id)} />
+                    </td>
+                    <td style={{ wordBreak: 'break-all' }}>{a.name}</td>
+                    <td>
+                      <span className={`attach-type-badge ${a.type === '공유파일' ? 'attach-type-badge--shared' : 'attach-type-badge--client'}`}>
+                        {a.type}
+                      </span>
+                    </td>
+                    <td className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{a.size}</td>
+                    <td className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{a.regDttm}</td>
+                    <td className="text-center" style={{ fontSize: '12px', color: a.shared ? 'var(--accent-color)' : 'var(--text-muted)' }}>
+                      {a.shared ? '공유' : '-'}
+                    </td>
+                    <td className="text-center">
+                      <button className="attach-dl-btn" onClick={() => window.alert('[프로토타입 안내]\n다운로드는 정식 서비스 단계에서 구현 예정입니다.')}>다운로드</button>
+                      {a.type === '공유파일' && (
+                        <button className="attach-del-btn" onClick={() => handleDeleteAttach(a.id)}>삭제</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1626,6 +1746,12 @@ function ProjectManageTab({ s }) {
   const [msgDraft, setMsgDraft] = useState({});
   const [workspyModal, setWorkspyModal] = useState(null);
   const [workTimeEdit, setWorkTimeEdit] = useState({});
+  const [quoteFile, setQuoteFile] = useState(null);       // 견적서 파일명
+  const [outputFile, setOutputFile] = useState(null);     // 최종산출물 파일명
+  const [notifyModal, setNotifyModal] = useState(false);  // 알림발송 팝업
+  const [notifyTarget, setNotifyTarget] = useState('all');
+  const quoteInputRef = useRef();
+  const outputInputRef = useRef();
 
   const syncStore = (updated) => {
     setProjects(updated);
@@ -1708,10 +1834,60 @@ function ProjectManageTab({ s }) {
 
   return (
     <div className="proto-tab-panel">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
-        <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
+      <div style={{ marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            {/* 견적서 */}
+            <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
+            <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
+            <button
+              className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
+              onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
+            >견적서 다운로드</button>
+            {/* 최종산출물 */}
+            <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
+            <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
+            <button
+              className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
+              onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
+            >최종산출물 다운로드</button>
+            {/* 알림발송 */}
+            <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
+          </div>
+        </div>
+        {/* 새 프로젝트 — 두 번째 줄 우측 */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+          <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
+        </div>
       </div>
+
+      {/* 알림발송 팝업 */}
+      {notifyModal && (
+        <div className="pm-overlay" onClick={() => setNotifyModal(false)}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">알림 발송</span>
+              <button className="preg-x-btn" onClick={() => setNotifyModal(false)}>✕</button>
+            </div>
+            <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
+              <label className="preg-label">발송 대상</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                {[{ value: 'all', label: '전체 (작업자 + 검수자)' }, { value: 'worker', label: '작업자만' }, { value: 'reviewer', label: '검수자만' }].map(opt => (
+                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                    <input type="radio" name="notify-target" value={opt.value} checked={notifyTarget === opt.value} onChange={() => setNotifyTarget(opt.value)} />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setNotifyModal(false)}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save pm-doc-btn--notify" style={{ border: 'none' }} onClick={() => { setNotifyModal(false); window.alert('[프로토타입 안내]\n알림이 발송되었습니다.'); }}>발송</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddForm && (
         <div className="pm-overlay" onClick={cancelAddForm}>
