@@ -101,6 +101,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const [pendingSearch, setPendingSearch] = useState('');
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [noteInput, setNoteInput] = useState('');
+  const [editingManagerId, setEditingManagerId] = useState(null);
+  const [managerInput, setManagerInput] = useState('');
+  const [managerOverrides, setManagerOverrides] = useState({});
 
   const handleSearch = () => setSearchText(pendingSearch);
 
@@ -139,6 +142,19 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const cancelNote = () => setEditingNoteId(null);
 
+  const startEditManager = (s, e) => {
+    e.stopPropagation();
+    setEditingManagerId(s.id);
+    setManagerInput(managerOverrides[s.id] ?? s.managerNm ?? '');
+  };
+
+  const commitManager = (s) => {
+    setManagerOverrides((prev) => ({ ...prev, [s.id]: managerInput }));
+    setEditingManagerId(null);
+  };
+
+  const cancelManager = () => setEditingManagerId(null);
+
   const toDetailPath = (protoPath) =>
     protoPath.replace('/soribaro/enterprise/meeting-proto/', '/soribaro/meeting/detail/');
 
@@ -167,8 +183,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <tr><td colSpan={12} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
       ) : (
         filtered.map((s) => {
-          const subStatus = s.subfileStatus || '미요청';
           const isEditingNote = editingNoteId === s.id;
+          const isEditingManager = editingManagerId === s.id;
+          const managerNm = managerOverrides[s.id] ?? s.managerNm ?? '';
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
@@ -177,14 +194,29 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <td className="text-center">{s.round || '-'}</td>
               <td className="text-center">{s.totalPlayTm || '-'}</td>
               <td className="text-center">{s.dueDate}</td>
-              <td className="text-center" onClick={(e) => e.stopPropagation()}>
-                <button
-                  className={`mtg-subfile-btn ${SUBFILE_CLS[subStatus]}`}
-                  onClick={() => cycleSubfile(s)}
-                  title={`현재: ${subStatus} (클릭하여 변경)`}
-                >
-                  {SUBFILE_ICON[subStatus]}{SUBFILE_TEXT[subStatus] ? ` ${SUBFILE_TEXT[subStatus]}` : ''}
-                </button>
+              <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '120px' }}>
+                {isEditingManager ? (
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <input
+                      className="proto-note-inline-input"
+                      value={managerInput}
+                      onChange={(e) => setManagerInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') commitManager(s); if (e.key === 'Escape') cancelManager(); }}
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button className="proto-note-save-btn" onClick={() => commitManager(s)}>✓</button>
+                    <button className="proto-note-cancel-btn" onClick={cancelManager}>✕</button>
+                  </div>
+                ) : (
+                  <div
+                    className="proto-note-cell"
+                    title={managerNm}
+                    onClick={(e) => startEditManager(s, e)}
+                  >
+                    {managerNm || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
+                  </div>
+                )}
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
@@ -237,7 +269,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th className="text-center">회차</th>
         <th className="text-center">의뢰시간</th>
         <th className="text-center">납품기한</th>
-        <th className="text-center">서브파일요청</th>
+        <th style={{ minWidth: '100px' }}>담당자</th>
         <th style={{ minWidth: '140px' }}>특이사항</th>
         <th className="text-center">상태</th>
         <th className="text-center">정산</th>
