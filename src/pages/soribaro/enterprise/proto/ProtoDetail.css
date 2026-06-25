@@ -4577,3 +4577,93 @@
 .vod-dlv-hist-status--done     { background: rgba(99,102,241,0.12);  color: #6366f1; }
 .vod-dlv-hist-status--revision { background: rgba(245,158,11,0.12);  color: #f59e0b; }
 .vod-dlv-hist-status--default  { background: var(--surface-light);   color: var(--text-secondary); }
+
+
+/* ── 납품 이력 그룹 아코디언 ── */
+.vod-dlv-hist-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vod-dlv-hist-proj-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.vod-dlv-hist-proj-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vod-dlv-hist-proj-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vod-dlv-hist-proj-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.vod-dlv-hist-batch-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.vod-dlv-hist-batch-item {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vod-dlv-hist-batch-item:last-child {
+  border-bottom: none;
+}
+
+.vod-dlv-hist-batch-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.vod-dlv-hist-batch-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.vod-dlv-hist-batch-label {
+  font-size: 12px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.vod-dlv-hist-batch-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 1px 7px;
+  background: var(--surface-light);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.vod-dlv-hist-empty {
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vod-dlv-hist-table-wrap {
+  border-top: 1px solid var(--border-color);
+}
