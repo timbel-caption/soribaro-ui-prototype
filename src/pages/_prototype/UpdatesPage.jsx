@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-25',
     author: '정윤실',
+    title: '현장속기·회의록 데이터 및 라우트 완전 분리',
+    description:
+      '현장속기 전용 샘플 데이터(stenographySampleData.js)와 스토어 함수(getStenographySamples 등)를 신설하고, StenographyWorkPage가 독립 스토어를 사용하도록 변경했습니다. 현장속기 상세보기용 라우트(/soribaro/stenography/detail/:id)와 StenographyMenuDetailProto를 추가하여 회의록 데이터와 상호 영향 없이 독립 운영됩니다.',
+  },
+  {
+    date: '2026-06-25',
+    author: '정윤실',
     title: '회의록 상세보기 기본정보 첨부파일 섹션 원복',
     description:
       '이전 작업에서 제거된 회의록 상세보기 기본정보의 첨부파일 섹션(공유 전환, 일괄 다운로드, 파일 업로드, 표 목록)을 원래대로 복원했습니다.',

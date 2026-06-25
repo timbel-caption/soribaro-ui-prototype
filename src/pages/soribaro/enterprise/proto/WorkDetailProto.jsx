@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { getVodSamples, getMeetingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
@@ -172,7 +172,7 @@ const ATTACH_SEED = [
 // ─── 탭 1: 기본정보 ───
 function BasicInfoTab({ s }) {
   // VOD 작업관리에서만 특이사항/내부 메모를 로그형(추가·수정·삭제) 카드로 제공
-  const isVod = s.bssTypeName !== '회의록';
+  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
   const authorName = useUserStore((st) => st.user?.membNm) || '관리자';
 
   // 견적서/최종산출물/알림발송 (회의록·현장속기 전용)
@@ -185,7 +185,7 @@ function BasicInfoTab({ s }) {
 
   // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const [noteEntries, setNoteEntries] = useState(() => {
-    const store = isVod ? getVodSamples() : getMeetingSamples();
+    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
     const cur = store.find((v) => v.id === s.id);
     const entries = cur?.noteEntries ?? s.noteEntries;
     if (entries) return entries;
@@ -346,7 +346,7 @@ function BasicInfoTab({ s }) {
       </div>
 
       {/* 첨부파일 (회의록 전용) */}
-      {!isVod && (
+      {s.bssTypeName === '회의록' && (
         <div className="attach-section">
           <div className="attach-section-header">
             <span className="proto-section-title" style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>첨부파일</span>
@@ -487,10 +487,10 @@ function secToDuration(sec) {
 }
 
 function FileManageTab({ s }) {
-  const isVod = s.bssTypeName !== '회의록';
+  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
   // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const [files, setFiles] = useState(() => {
-    const store = isVod ? getVodSamples() : getMeetingSamples();
+    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
     return store.find((v) => v.id === s.id)?.files ?? s.files;
   });
   const [dragOver, setDragOver] = useState(false);
@@ -1747,14 +1747,14 @@ function VodProjectManageView({ s }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ProjectManageTab({ s }) {
-  const isVodProj = s.bssTypeName !== '회의록';
+  const isVodProj = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
   const initProjects = () => {
     // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
-    const store = isVodProj ? getVodSamples() : getMeetingSamples();
+    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
     const cur = store.find((v) => v.id === s.id);
     const subjs = cur?.subjects || s.subjects || [];
     if (subjs.length > 0) return subjs;
-    if (s.bssTypeName === '회의록') {
+    if (s.bssTypeName === '회의록' || s.bssTypeName === '현장속기') {
       return [
         {
           id: 'proj-seed-001',
@@ -3829,7 +3829,7 @@ function HistoryMemoTab({ s }) {
   const handleAddMemo = () => {
     window.alert('[프로토타입 안내]\n메모 작성 기능은 정식 서비스 단계에서 구현 예정입니다.');
   };
-  const isVod = s.bssTypeName !== '회의록';
+  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
 
   if (isVod) return <VodProjectHistoryTab />;
 
@@ -3890,7 +3890,7 @@ export default function WorkDetailProto({ samples, backPath }) {
     );
   }
 
-  const isMtg = s.bssTypeName === '회의록';
+  const isMtg = s.bssTypeName === '회의록' || s.bssTypeName === '현장속기';
   const TAB_LABELS = isMtg ? TAB_LABELS_MTG : TAB_LABELS_VOD;
   const tabContent = isMtg
     ? [
