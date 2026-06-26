@@ -233,6 +233,11 @@ const menuData = [
             labelKey: "sidebar.noticeManagement",
             path: "/soribaro/manage/notice",
           },
+          {
+            id: "manage-glossary",
+            labelKey: "sidebar.glossaryManagement",
+            path: "/soribaro/manage/glossary",
+          },
         ],
       },
     ],
