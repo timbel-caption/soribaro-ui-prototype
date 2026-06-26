@@ -3570,16 +3570,39 @@ function StenographyAssignTab({ s }) {
       )}
 
       <p className="proto-section-title">배정 이력</p>
-      <div className="settle-history-list">
-        {assignHistory.map((h, i) => (
-          <div key={i} className="settle-history-item">
-            <span className="settle-history-dttm">{h.dttm}</span>
-            <span className="settle-history-actor">{h.actor}</span>
-            <span className="settle-history-event">
-              {h.event}{h.reason && <span className="settle-history-reason"> ({h.reason})</span>}
-            </span>
-          </div>
-        ))}
+      <div className="proto-table-wrap">
+        <table className="proto-table">
+          <thead>
+            <tr>
+              <th>배정 이력</th>
+              <th className="text-center" style={{ width: '100px' }}>상태</th>
+              <th style={{ width: '220px' }}>사유</th>
+              <th className="text-center" style={{ width: '130px' }}>등록일시</th>
+            </tr>
+          </thead>
+          <tbody>
+            {assignHistory.map((h, i) => {
+              const isCancelRow = h.event.includes('취소');
+              const isNotifyRow = h.event.includes('업체전달완료') || h.event.includes('업체 알림');
+              const statusBadgeEl = isCancelRow
+                ? <span className="proto-badge-cancel" style={{ fontSize: '11px' }}>배정취소</span>
+                : isNotifyRow
+                ? <span className="proto-badge-done" style={{ fontSize: '11px' }}>업체전달완료</span>
+                : <span className="proto-status-badge proto-status-done" style={{ fontSize: '11px' }}>배정완료</span>;
+              return (
+                <tr key={i}>
+                  <td style={{ fontSize: '13px' }}>
+                    <span style={{ color: '#60a5fa', marginRight: '8px' }}>{h.actor}</span>
+                    {h.event.replace(/\s*\([^)]*\)$/, '')}
+                  </td>
+                  <td className="text-center">{statusBadgeEl}</td>
+                  <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{h.reason || '-'}</td>
+                  <td className="text-center" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.dttm}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       {/* 배정하기 모달 */}
