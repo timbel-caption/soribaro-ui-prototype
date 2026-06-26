@@ -56,6 +56,7 @@ import ManageWorkerDetailPage from './pages/soribaro/manage/ManageWorkerDetailPa
 import ManageEvaluationPage from './pages/soribaro/manage/ManageEvaluationPage';
 import ManageNoticePage from './pages/soribaro/manage/notice/ManageNoticePage';
 import ManageGlossaryPage from './pages/soribaro/manage/glossary/ManageGlossaryPage';
+import ManageOperationsPage from './pages/soribaro/manage/operations/ManageOperationsPage';
 
 // 소리바로 - 연수(Training) 페이지
 import TrainingFilesPage from './pages/soribaro/training/TrainingFilesPage';
@@ -285,6 +286,7 @@ function AppRoutes() {
         <Route path="soribaro/manage/evaluation" element={<AdminRoute><ManageEvaluationPage /></AdminRoute>} />
         <Route path="soribaro/manage/notice" element={<AdminRoute><ManageNoticePage /></AdminRoute>} />
         <Route path="soribaro/manage/glossary" element={<AdminRoute><ManageGlossaryPage /></AdminRoute>} />
+        <Route path="soribaro/manage/operations" element={<AdminRoute><ManageOperationsPage /></AdminRoute>} />
 
         {/* 소리바로 - 번역 */}
         <Route path="soribaro/translation/work" element={<AdminRoute><TranslationWorkPage /></AdminRoute>} />
