@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
-import { getCompanyQuoteSettings } from './enterpriseProtoData';
+import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
@@ -4044,8 +4044,25 @@ function MtgSettlementTab({ s }) {
 }
 
 // ─── 업체정산 탭 ───────────────────────────────────────────────────────────
-function CompanySettlementTab({ s, isConfirmed, onConfirm }) {
-  const qs = getCompanyQuoteSettings(s.entNm);
+function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
+  // 견적 설정: 업체+의뢰유형+계약구분 복합키로 조회
+  const liveQs = getCompanyQuoteSettingsByType(s.entNm, s.bssTypeName, s.contractType);
+
+  // frozenQs: 확인 클릭 시 고정된 견적 (업체정산 완료 상태 유지용)
+  const [frozenQs, setFrozenQs] = useState(null);
+  // prevQs: '견적서 다시 적용' 클릭 직전의 frozenQs (이전 버튼용 스냅샷)
+  const [prevQs, setPrevQs] = useState(null);
+  // restoredQs: '이전' 버튼 클릭 시 복원할 견적 (prevQs에서 복원)
+  const [restoredQs, setRestoredQs] = useState(null);
+  // pendingReapply: '견적서 다시 적용' 이후 재확인 전 상태
+  const [pendingReapply, setPendingReapply] = useState(false);
+
+  // 실제 표시할 견적:
+  // - 확인 완료 & 재적용 대기 아님: frozenQs (고정)
+  // - 이전 버튼으로 복원한 경우: restoredQs
+  // - 그 외: liveQs (견적서 관리 최신값)
+  const qs = (isConfirmed && !pendingReapply) ? (frozenQs || liveQs)
+           : (restoredQs || liveQs);
 
   function parseMinutes(tm) {
     if (!tm || tm === '-') return 0;
@@ -4067,11 +4084,8 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm }) {
   const calcMin = totalMin === 0 ? 0 : Math.max(baseUnit, Math.ceil(totalMin / roundUnit) * roundUnit);
   const units = calcMin / baseUnit;
 
-  // 기본(기준시간 이내) 금액
   let baseSupply = 0, baseTax = 0, baseTimeMin = 0;
-  // 절가(초과) 금액
   let extraSupply = 0, extraTax = 0, extraMin = 0;
-  // 합계
   let totalSupply = 0, totalTax = 0;
 
   const isNTimeDiscount = invoiceType === 'n시간 절가';
@@ -4112,32 +4126,38 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm }) {
 
   const noData = totalMin === 0;
 
+  const handleConfirm = () => {
+    setFrozenQs({ ...qs });     // 현재 견적 고정
+    setRestoredQs(null);
+    setPendingReapply(false);
+    onConfirm();
+  };
+
+  const handleReapply = () => {
+    setPrevQs(frozenQs || qs);  // 직전 견적 스냅샷 저장
+    setRestoredQs(null);        // liveQs를 표시하도록 초기화
+    setPendingReapply(true);
+    onReapply();                // 부모: companySettled 해제
+  };
+
+  const handlePrev = () => {
+    setRestoredQs(prevQs);      // 직전 견적으로 복원 (확인 완료는 자동 복원 안 함)
+    setPrevQs(null);
+    setPendingReapply(false);
+  };
+
   const thStyle = {
-    padding: '8px 10px',
-    fontSize: '12px',
-    fontWeight: 600,
-    color: 'var(--text-secondary)',
-    background: 'var(--bg-hover)',
-    border: '1px solid var(--border-color)',
-    textAlign: 'center',
-    whiteSpace: 'nowrap',
+    padding: '8px 10px', fontSize: '12px', fontWeight: 600,
+    color: 'var(--text-secondary)', background: 'var(--bg-hover)',
+    border: '1px solid var(--border-color)', textAlign: 'center', whiteSpace: 'nowrap',
   };
-  const thStyleAlt = {
-    ...thStyle,
-    background: '#e8f0fe',
-    color: '#3b5bdb',
-  };
+  const thStyleAlt = { ...thStyle, background: '#e8f0fe', color: '#3b5bdb' };
   const tdStyle = {
-    padding: '8px 10px',
-    fontSize: '13px',
-    color: 'var(--text-primary)',
-    border: '1px solid var(--border-color)',
-    textAlign: 'center',
-    whiteSpace: 'nowrap',
+    padding: '8px 10px', fontSize: '13px', color: 'var(--text-primary)',
+    border: '1px solid var(--border-color)', textAlign: 'center', whiteSpace: 'nowrap',
   };
   const tdStyleAlt = { ...tdStyle, background: '#f0f4ff' };
   const tdBold = { ...tdStyle, fontWeight: 700 };
-  const tdAccent = { ...tdStyle, fontWeight: 700, color: 'var(--accent-color)' };
   const tdAccentAlt = { ...tdStyleAlt, fontWeight: 700, color: 'var(--accent-color)' };
 
   return (
@@ -4145,6 +4165,19 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm }) {
       <div className="proto-section-card">
         <div className="proto-section-card-header">
           <span className="proto-section-card-title">업체 견적 세부 내용</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>
+            {s.bssTypeName || '-'} / {s.contractType || '-'}
+          </span>
+          {pendingReapply && (
+            <span style={{ marginLeft: '8px', fontSize: '12px', color: '#f59e0b', fontWeight: 600 }}>
+              ⟳ 견적서 다시 적용됨 — 확인 후 업체정산 확인을 눌러주세요
+            </span>
+          )}
+          {restoredQs && !pendingReapply && !isConfirmed && (
+            <span style={{ marginLeft: '8px', fontSize: '12px', color: '#6366f1', fontWeight: 600 }}>
+              ↩ 이전 견적으로 복원됨 — 확인 후 업체정산 확인을 눌러주세요
+            </span>
+          )}
         </div>
         <div className="proto-section-card-body" style={{ padding: '16px 20px' }}>
           <div style={{ overflowX: 'auto' }}>
@@ -4194,21 +4227,37 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm }) {
               총 분량 정보가 없어 금액을 산출할 수 없습니다.
             </p>
           )}
-          {/* 업체정산 확인 버튼 */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
-            {isConfirmed && (
-              <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                ✓ 업체정산 완료 처리됨
-              </span>
-            )}
-            <button
-              className={`proto-log-btn${isConfirmed ? '' : ' proto-log-btn--save'}`}
-              disabled={isConfirmed || noData}
-              onClick={onConfirm}
-              style={{ opacity: isConfirmed || noData ? 0.5 : 1, cursor: isConfirmed || noData ? 'default' : 'pointer' }}
-            >
-              {isConfirmed ? '확인 완료' : '확인'}
-            </button>
+          {/* 하단 액션 버튼 영역 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
+            {/* 왼쪽: 견적서 다시 적용 / 이전 버튼 */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {isConfirmed && !pendingReapply && (
+                <button className="proto-log-btn" onClick={handleReapply}>
+                  견적서 다시 적용
+                </button>
+              )}
+              {pendingReapply && prevQs && (
+                <button className="proto-log-btn" onClick={handlePrev}>
+                  이전
+                </button>
+              )}
+            </div>
+            {/* 오른쪽: 완료 표시 + 확인 버튼 */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {isConfirmed && !pendingReapply && (
+                <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 600 }}>
+                  ✓ 업체정산 완료 처리됨
+                </span>
+              )}
+              <button
+                className={`proto-log-btn${(!isConfirmed || pendingReapply) ? ' proto-log-btn--save' : ''}`}
+                disabled={(isConfirmed && !pendingReapply) || noData}
+                onClick={handleConfirm}
+                style={{ opacity: (isConfirmed && !pendingReapply) || noData ? 0.5 : 1, cursor: (isConfirmed && !pendingReapply) || noData ? 'default' : 'pointer' }}
+              >
+                {isConfirmed && !pendingReapply ? '확인 완료' : '업체정산 확인'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -4505,6 +4554,11 @@ export default function WorkDetailProto({ samples, backPath }) {
     updateSampleSettlement(id, { companySettled: true, status: deriveSettleStatus(workerSettled, true) });
   };
 
+  const handleCompanyReapply = () => {
+    setCompanySettled(false);
+    updateSampleSettlement(id, { companySettled: false, status: deriveSettleStatus(workerSettled, false) });
+  };
+
   const isMtg = s.bssTypeName === '회의록';
   const isStenography = s.bssTypeName === '현장속기';
   const TAB_LABELS = isMtg ? TAB_LABELS_MTG : isStenography ? TAB_LABELS_STG : TAB_LABELS_VOD;
@@ -4516,7 +4570,7 @@ export default function WorkDetailProto({ samples, backPath }) {
         <ManualGlossaryTab s={sEff} />,
         <AiQcTab s={sEff} />,
         <MtgSettlementTab s={sEff} />,
-        <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} />,
+        <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} onReapply={handleCompanyReapply} />,
         <HistoryMemoTab s={sEff} />,
       ]
     : isStenography
@@ -4526,7 +4580,7 @@ export default function WorkDetailProto({ samples, backPath }) {
         <ManualGlossaryTab s={sEff} />,
         <AiQcTab s={sEff} />,
         <MtgSettlementTab s={sEff} />,
-        <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} />,
+        <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} onReapply={handleCompanyReapply} />,
         <HistoryMemoTab s={sEff} />,
       ]
     : [
