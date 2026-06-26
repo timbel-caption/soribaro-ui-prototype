@@ -6,7 +6,8 @@ import {
   updateEnterprise,
   deleteEnterprise,
 } from '../../../api/v9/enterprise';
-import { getCompanyStaff, addCompanyStaff, removeCompanyStaff, getCompanyQuoteSettings, setCompanyQuoteSettings } from '../enterprise/proto/enterpriseProtoData';
+import { getCompanyStaff, addCompanyStaff, removeCompanyStaff, getCompanyQuoteSettings, setCompanyQuoteSettings, getCompanyQuoteSettingsByType, setCompanyQuoteSettingsByType } from '../enterprise/proto/enterpriseProtoData';
+import { getRequestTypes } from './manageProtoStore';
 import { useTranslation } from 'react-i18next';
 import { toast } from '../../../stores/toastStore';
 import { useCommonCodeStore } from '../../../stores/commonCodeStore';
@@ -181,17 +182,40 @@ export default function ManageEnterpriseDetailPage() {
   // 견적서 관리 팝업
   const INVOICE_TYPES = ['계약업체', 'n시간 절가', '세금계산서', '일반계산서'];
   const [quoteModal, setQuoteModal] = useState(false);
+  const [quoteReqType, setQuoteReqType] = useState('');
+  const [quoteContractType, setQuoteContractType] = useState('');
   const [quoteForm, setQuoteForm] = useState({ invoiceType: '계약업체', unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 45000, baseRateHours: 2 });
+
+  const _requestTypes = getRequestTypes();
 
   const openQuoteModal = () => {
     const entNm = originalData?.entNm || '';
-    setQuoteForm(getCompanyQuoteSettings(entNm));
+    const firstReqType = _requestTypes[0]?.name || '';
+    const firstContract = _requestTypes[0]?.contractTypes[0] || '';
+    setQuoteReqType(firstReqType);
+    setQuoteContractType(firstContract);
+    setQuoteForm(getCompanyQuoteSettingsByType(entNm, firstReqType, firstContract));
     setQuoteModal(true);
+  };
+
+  const handleQuoteReqTypeChange = (reqTypeName) => {
+    const entNm = originalData?.entNm || '';
+    const rt = _requestTypes.find((r) => r.name === reqTypeName);
+    const firstContract = rt?.contractTypes[0] || '';
+    setQuoteReqType(reqTypeName);
+    setQuoteContractType(firstContract);
+    setQuoteForm(getCompanyQuoteSettingsByType(entNm, reqTypeName, firstContract));
+  };
+
+  const handleQuoteContractTypeChange = (contractType) => {
+    const entNm = originalData?.entNm || '';
+    setQuoteContractType(contractType);
+    setQuoteForm(getCompanyQuoteSettingsByType(entNm, quoteReqType, contractType));
   };
 
   const handleSaveQuote = () => {
     const entNm = originalData?.entNm || '';
-    setCompanyQuoteSettings(entNm, quoteForm);
+    setCompanyQuoteSettingsByType(entNm, quoteReqType, quoteContractType, quoteForm);
     setQuoteModal(false);
   };
 
@@ -419,6 +443,24 @@ export default function ManageEnterpriseDetailPage() {
               <button className="preg-x-btn" onClick={() => setQuoteModal(false)}>✕</button>
             </div>
             <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* 의뢰유형 + 계약구분 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">의뢰유형</label>
+                  <select className="preg-select" value={quoteReqType} onChange={e => handleQuoteReqTypeChange(e.target.value)}>
+                    {_requestTypes.map(rt => <option key={rt.id} value={rt.name}>{rt.name}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">계약구분</label>
+                  <select className="preg-select" value={quoteContractType} onChange={e => handleQuoteContractTypeChange(e.target.value)}>
+                    {(_requestTypes.find(r => r.name === quoteReqType)?.contractTypes || []).map(ct => (
+                      <option key={ct} value={ct}>{ct}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {/* 견적 정보 */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="preg-label">계산서 발행 형태</label>
                 <select className="preg-select" value={quoteForm.invoiceType} onChange={e => setQuoteForm(p => ({ ...p, invoiceType: e.target.value }))}>

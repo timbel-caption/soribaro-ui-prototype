@@ -102,3 +102,16 @@ export function getCompanyQuoteSettings(entNm) {
 export function setCompanyQuoteSettings(entNm, settings) {
   _companyQuoteSettings[entNm] = { ...settings };
 }
+
+// ─── 업체 + 의뢰유형 + 계약구분 복합키 견적 설정 스토어 (prototype용) ───
+const _quoteSettingsByType = {};
+
+export function getCompanyQuoteSettingsByType(entNm, requestType, contractType) {
+  const key = `${entNm}::${requestType}::${contractType}`;
+  return _quoteSettingsByType[key] ? { ..._quoteSettingsByType[key] } : { ...DEFAULT_QUOTE };
+}
+
+export function setCompanyQuoteSettingsByType(entNm, requestType, contractType, settings) {
+  const key = `${entNm}::${requestType}::${contractType}`;
+  _quoteSettingsByType[key] = { ...settings };
+}
