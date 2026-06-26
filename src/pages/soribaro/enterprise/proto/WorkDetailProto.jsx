@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
+import { getCompanyQuoteSettings } from './enterpriseProtoData';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
@@ -16,10 +17,10 @@ const TAB_LABELS_VOD = [
 ];
 const TAB_LABELS_MTG = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
-  'AI QC 결과 요약', '정산확인', '이력/메모',
+  'AI QC 결과 요약', '정산확인', '업체정산', '이력/메모',
 ];
 const TAB_LABELS_STG = [
-  '기본정보', '배정 관리', '매뉴얼·용어집 세팅', 'AI QC 결과 요약', '정산확인', '이력/메모',
+  '기본정보', '배정 관리', '매뉴얼·용어집 세팅', 'AI QC 결과 요약', '정산확인', '업체정산', '이력/메모',
 ];
 
 const STATUS_MAP = {
@@ -4042,6 +4043,152 @@ function MtgSettlementTab({ s }) {
   );
 }
 
+// ─── 업체정산 탭 ───────────────────────────────────────────────────────────
+function CompanySettlementTab({ s }) {
+  const qs = getCompanyQuoteSettings(s.entNm);
+
+  // totalPlayTm: "H:MM" or "HH:MM" → minutes
+  function parseMinutes(tm) {
+    if (!tm || tm === '-') return 0;
+    const parts = tm.split(':');
+    if (parts.length < 2) return 0;
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  }
+
+  const totalMin = parseMinutes(s.totalPlayTm);
+  const { invoiceType, unitPrice, baseUnit, roundUnit, overtimePrice, baseRateHours } = qs;
+
+  // 산정시간(분): max(baseUnit, ceil(totalMin / roundUnit) * roundUnit)
+  const calcMin = totalMin === 0 ? 0 : Math.max(baseUnit, Math.ceil(totalMin / roundUnit) * roundUnit);
+  const units = calcMin / baseUnit;
+
+  let supplyAmt = 0, taxAmt = 0, totalAmt = 0;
+  let splitRows = null;
+
+  if (invoiceType === '계약업체') {
+    totalAmt = units * unitPrice;
+    supplyAmt = Math.round(totalAmt / 1.1);
+    taxAmt = totalAmt - supplyAmt;
+  } else if (invoiceType === 'n시간 절가') {
+    const baseTimeMin = baseRateHours * 60;
+    const baseCalcMin = Math.max(baseUnit, Math.ceil(Math.min(calcMin, baseTimeMin) / roundUnit) * roundUnit);
+    const baseUnits = baseCalcMin / baseUnit;
+    const basePay = baseUnits * unitPrice;
+    if (calcMin <= baseTimeMin) {
+      totalAmt = basePay;
+      supplyAmt = Math.round(totalAmt / 1.1);
+      taxAmt = totalAmt - supplyAmt;
+    } else {
+      const extraMin = calcMin - baseTimeMin;
+      const extraUnits = extraMin / baseUnit;
+      const extraPay = extraUnits * overtimePrice;
+      totalAmt = basePay + extraPay;
+      supplyAmt = Math.round(totalAmt / 1.1);
+      taxAmt = totalAmt - supplyAmt;
+      splitRows = [
+        { label: `기본 ${baseRateHours}시간 (${baseCalcMin}분 / ${baseUnits}단위)`, amount: basePay },
+        { label: `초과 (${extraMin}분 / ${extraUnits}단위 × ${fmt(overtimePrice)}원)`, amount: extraPay },
+      ];
+    }
+  } else if (invoiceType === '세금계산서') {
+    supplyAmt = units * unitPrice;
+    taxAmt = Math.round(supplyAmt * 0.1);
+    totalAmt = supplyAmt + taxAmt;
+  } else if (invoiceType === '일반계산서') {
+    supplyAmt = units * unitPrice;
+    taxAmt = 0;
+    totalAmt = supplyAmt;
+  }
+
+  const fmtMin = (m) => {
+    const h = Math.floor(m / 60);
+    const min = m % 60;
+    return `${h}시간 ${min}분`;
+  };
+
+  return (
+    <div className="proto-tab-panel">
+      <div className="proto-section-card">
+        <div className="proto-section-card-header">
+          <span className="proto-section-card-title">업체정산 계산</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>
+            견적 기준: {invoiceType}
+          </span>
+        </div>
+        <div className="proto-section-card-body" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+          {/* 기준 정보 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px 16px' }}>
+            {[
+              { label: '총 분량', value: s.totalPlayTm || '-' },
+              { label: '총 분량(분)', value: totalMin ? fmtMin(totalMin) : '-' },
+              { label: '산정 시간', value: calcMin ? fmtMin(calcMin) : '-' },
+              { label: '단위 수', value: calcMin ? `${units}단위` : '-' },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ background: 'var(--bg-hover)', borderRadius: '6px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>{label}</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* 단가 정보 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px 16px' }}>
+            {[
+              { label: '기본 단가', value: `${fmt(unitPrice)}원` },
+              { label: '기본 단위', value: `${baseUnit}분` },
+              { label: '올림 단위', value: `${roundUnit}분` },
+              invoiceType === 'n시간 절가'
+                ? { label: '기본 단가 적용', value: `${baseRateHours}시간` }
+                : { label: 'n시간 이후 단가', value: `${fmt(overtimePrice)}원` },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ background: 'var(--bg-hover)', borderRadius: '6px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>{label}</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* n시간 절가 분할 내역 */}
+          {splitRows && (
+            <div style={{ background: 'var(--bg-hover)', borderRadius: '6px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '2px' }}>분할 내역</div>
+              {splitRows.map((r) => (
+                <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>{r.label}</span>
+                  <span style={{ fontWeight: 600 }}>{fmt(r.amount)}원</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 금액 합계 */}
+          <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { label: '공급가액', value: supplyAmt, highlight: false },
+              { label: '세액', value: taxAmt, highlight: false },
+              { label: '합계금액', value: totalAmt, highlight: true },
+            ].map(({ label, value, highlight }) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: highlight ? '10px 12px' : '4px 0', background: highlight ? 'var(--accent-bg, #eef2ff)' : 'transparent', borderRadius: highlight ? '6px' : 0 }}>
+                <span style={{ fontSize: highlight ? '14px' : '13px', fontWeight: highlight ? 700 : 500, color: 'var(--text-primary)' }}>{label}</span>
+                <span style={{ fontSize: highlight ? '16px' : '14px', fontWeight: highlight ? 700 : 500, color: highlight ? 'var(--accent-color)' : 'var(--text-primary)' }}>
+                  {totalMin === 0 ? '-' : `${fmt(value)}원`}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {totalMin === 0 && (
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', margin: 0 }}>
+              총 분량 정보가 없어 금액을 산출할 수 없습니다.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SettlementTab() {
   return (
     <div className="proto-tab-panel">
@@ -4323,6 +4470,7 @@ export default function WorkDetailProto({ samples, backPath }) {
         <ManualGlossaryTab s={s} />,
         <AiQcTab s={s} />,
         <MtgSettlementTab s={s} />,
+        <CompanySettlementTab s={s} />,
         <HistoryMemoTab s={s} />,
       ]
     : isStenography
@@ -4332,6 +4480,7 @@ export default function WorkDetailProto({ samples, backPath }) {
         <ManualGlossaryTab s={s} />,
         <AiQcTab s={s} />,
         <MtgSettlementTab s={s} />,
+        <CompanySettlementTab s={s} />,
         <HistoryMemoTab s={s} />,
       ]
     : [
