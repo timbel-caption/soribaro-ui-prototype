@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign } from './protoStore';
+import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
@@ -2412,6 +2413,11 @@ function ManualGlossaryTab({ s }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [draft, setDraft] = useState(null);
 
+  // 공통 용어집 (서비스 관리 > 용어집 관리 스토어와 연결)
+  const [commonGlossaries, setCommonGlossaries] = useState([]); // 적용된 공통 용어집 id 목록
+  const [glsPickerOpen, setGlsPickerOpen] = useState(false);
+  const allCommonGlossaries = getGlossaries();
+
   const openModal = () => { setDraft(manual ? { ...manual } : { ...EMPTY_MANUAL }); setModalOpen(true); };
   const closeModal = () => { setModalOpen(false); setDraft(null); };
 
@@ -2521,6 +2527,84 @@ function ManualGlossaryTab({ s }) {
       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
         {glossary ? `용어집 1개 적용됨 · 총 ${glossary.termCount}개 용어 (승인 ${glossary.approvedCount}개)` : '적용된 용어집 없음'}
       </p>
+
+      {/* ─── 공통 용어집 섹션 (서비스 관리 > 용어집 관리 연동) ─── */}
+      <div className="mset-section-header" style={{ marginTop: '24px' }}>
+        <p className="proto-section-title" style={{ margin: 0 }}>
+          공통 용어집 <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 400 }}>(서비스 관리에서 관리, 복수 적용 가능)</span>
+        </p>
+        <button className="proto-log-btn proto-log-btn--save mset-add-btn" onClick={() => setGlsPickerOpen(true)}>+ 공통 용어집 추가</button>
+      </div>
+      <div className="mset-list-wrap">
+        {commonGlossaries.length === 0 ? (
+          <div className="proto-log-empty">적용된 공통 용어집이 없습니다. "공통 용어집 추가"를 눌러 선택하세요.</div>
+        ) : (
+          commonGlossaries.map((gid) => {
+            const g = allCommonGlossaries.find((x) => x.id === gid);
+            if (!g) return null;
+            return (
+              <div key={gid} className="mset-list-row">
+                <span className="proto-manual-card-type glossary">공통</span>
+                <span className="mset-list-label">{g.name}</span>
+                <div className="mset-list-chips">
+                  <span className="mset-summary-chip">{g.type}</span>
+                  <span className="mset-summary-chip">{g.scope}</span>
+                </div>
+                <span className="mset-list-updated">수정: {g.updatedAt}</span>
+                <button
+                  className="proto-log-btn mset-list-del-btn"
+                  onClick={() => setCommonGlossaries((prev) => prev.filter((id) => id !== gid))}
+                >제거</button>
+              </div>
+            );
+          })
+        )}
+      </div>
+      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+        {commonGlossaries.length > 0 ? `공통 용어집 ${commonGlossaries.length}개 적용됨` : '적용된 공통 용어집 없음'}
+      </p>
+
+      {/* 공통 용어집 선택 피커 */}
+      {glsPickerOpen && (
+        <div className="pm-overlay" onClick={() => setGlsPickerOpen(false)}>
+          <div className="pm-modal" style={{ width: '480px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">공통 용어집 선택</span>
+              <button className="preg-x-btn" onClick={() => setGlsPickerOpen(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px', maxHeight: '360px', overflowY: 'auto' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                서비스 관리 &gt; 용어집 관리에서 등록된 공통 용어집 목록입니다. 선택하면 이 프로젝트에 적용됩니다.
+              </p>
+              {allCommonGlossaries.map((g) => {
+                const applied = commonGlossaries.includes(g.id);
+                return (
+                  <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
+                    <input
+                      type="checkbox"
+                      checked={applied}
+                      onChange={() => {
+                        setCommonGlossaries((prev) =>
+                          applied ? prev.filter((id) => id !== g.id) : [...prev, g.id]
+                        );
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{g.name}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px' }}>{g.type} · {g.scope}</span>
+                    </div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{g.updatedAt}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn proto-log-btn--save" onClick={() => setGlsPickerOpen(false)}>확인</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── 용어집 관리 모달 ─── */}
       {glsModalOpen && (
