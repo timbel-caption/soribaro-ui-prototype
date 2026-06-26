@@ -13,10 +13,21 @@ function statusBadge(s) {
   return <span className={`mtg-status-badge ${m.cls}`}>{m.label}</span>;
 }
 
+function deriveSettleStatus(settlement) {
+  const ws = settlement?.workerSettled || false;
+  const cs = settlement?.companySettled || false;
+  if (ws && cs)  return '완료';
+  if (ws && !cs) return '업체 정산대기';
+  if (!ws && cs) return '작업자 정산대기';
+  return '정산대기';
+}
+
 function settleBadge(s) {
-  if (s === '정산완료') return <span className="mtg-settle-badge mtg-settle-done">{s}</span>;
-  if (s === '정산대기' || s === '작업자 정산대기' || s === '업체 정산대기') return <span className="mtg-settle-badge mtg-settle-wait">정산대기</span>;
-  if (s === '부분정산') return <span className="mtg-settle-badge mtg-settle-partial">{s}</span>;
+  if (s === '완료')          return <span className="mtg-settle-badge mtg-settle-done">{s}</span>;
+  if (s === '업체 정산대기') return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
+  if (s === '작업자 정산대기') return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
+  if (s === '정산대기')      return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
+  if (s === '부분정산')      return <span className="mtg-settle-badge mtg-settle-partial">{s}</span>;
   return <span className="mtg-settle-badge mtg-settle-pre">{s}</span>;
 }
 
@@ -58,7 +69,7 @@ function computeStats(samples) {
   const working    = samples.filter((s) => s.overallStatus === 'WORKING').length;
   const checking   = samples.filter((s) => s.overallStatus === 'CHECKING').length;
   const checkDone  = samples.filter((s) => s.overallStatus === 'DONE').length;
-  const settleWait = samples.filter((s) => s.settlement.status !== '정산완료').length;
+  const settleWait = samples.filter((s) => deriveSettleStatus(s.settlement) !== '완료').length;
   return { inProgress, working, checking, checkDone, settleWait };
 }
 
@@ -69,10 +80,9 @@ function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlemen
   if (filterTo && date > filterTo) return false;
   if (filterStatus && s.overallStatus !== filterStatus) return false;
   if (filterSettlement) {
-    const st = s.settlement?.status || '';
-    const isSettleWait = st !== '정산완료';
-    if (filterSettlement === '정산대기' && !isSettleWait) return false;
-    if (filterSettlement === '정산완료' && st !== '정산완료') return false;
+    const st = deriveSettleStatus(s.settlement);
+    if (filterSettlement === '정산대기' && st === '완료') return false;
+    if (filterSettlement === '정산완료' && st !== '완료') return false;
     if (filterSettlement !== '정산대기' && filterSettlement !== '정산완료' && st !== filterSettlement) return false;
   }
   if (filterContractType && s.contractType !== filterContractType) return false;
@@ -281,7 +291,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 )}
               </td>
               <td className="text-center">{statusBadge(s.overallStatus)}</td>
-              <td className="text-center">{settleBadge(s.settlement.status)}</td>
+              <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
               <td className="text-center">{s.actualDeliveryDate || '-'}</td>
               <td className="text-center">
                 <button

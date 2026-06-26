@@ -50,10 +50,21 @@ function statusBadge(sample) {
   return <span className={`vod-status-badge ${m.cls}`}>{m.label}</span>;
 }
 
+function deriveSettleStatus(settlement) {
+  const ws = settlement?.workerSettled || false;
+  const cs = settlement?.companySettled || false;
+  if (ws && cs)  return '완료';
+  if (ws && !cs) return '업체 정산대기';
+  if (!ws && cs) return '작업자 정산대기';
+  return '정산대기';
+}
+
 function settleBadge(s) {
-  if (s === '정산완료') return <span className="proto-settle-badge-done"   style={{ fontSize: '11px' }}>{s}</span>;
-  if (s === '정산대기') return <span className="proto-settle-badge-wait"   style={{ fontSize: '11px' }}>{s}</span>;
-  if (s === '부분정산') return <span className="proto-settle-badge-partial" style={{ fontSize: '11px' }}>{s}</span>;
+  if (s === '완료')            return <span className="proto-settle-badge-done"    style={{ fontSize: '11px' }}>{s}</span>;
+  if (s === '업체 정산대기')   return <span className="proto-settle-badge-wait"    style={{ fontSize: '11px' }}>{s}</span>;
+  if (s === '작업자 정산대기') return <span className="proto-settle-badge-wait"    style={{ fontSize: '11px' }}>{s}</span>;
+  if (s === '정산대기')        return <span className="proto-settle-badge-wait"    style={{ fontSize: '11px' }}>{s}</span>;
+  if (s === '부분정산')        return <span className="proto-settle-badge-partial" style={{ fontSize: '11px' }}>{s}</span>;
   return <span className="proto-settle-badge-pre" style={{ fontSize: '11px' }}>{s}</span>;
 }
 
@@ -78,7 +89,7 @@ function computeStats(samples) {
   const delayed    = samples.filter((s) => resolvedStatus(s) === 'DELAYED').length;
   const checking   = samples.filter((s) => resolvedStatus(s) === 'CHECKING').length;
   const done       = samples.flatMap((s) => s.deliveries).filter((d) => d.status === '납품완료').length;
-  const settleWait = samples.filter((s) => ['정산대기', '부분정산'].includes(s.settlement.status)).length;
+  const settleWait = samples.filter((s) => deriveSettleStatus(s.settlement) !== '완료').length;
   return { total, working, caution, delayed, checking, done, settleWait };
 }
 
@@ -263,7 +274,7 @@ export default function ProtoListDashboard({ samples }) {
                         <span className="vod-progress-pct" style={{ color: barColor }}>{pct}%</span>
                       </div>
                     </td>
-                    <td className="text-center">{settleBadge(s.settlement.status)}</td>
+                    <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
                     <td className="text-center">
                       <button
                         className="proto-dash-detail-btn"
