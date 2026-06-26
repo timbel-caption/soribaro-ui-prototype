@@ -16,11 +16,12 @@ const TAB_LABELS_VOD = [
   'AI QC 결과 요약', '납품관리', '정산확인', '프로젝트 이력',
 ];
 const TAB_LABELS_MTG = [
-  '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
-  'AI QC 결과 요약', '정산확인', '업체정산', '이력/메모',
+  '기본정보', '파일관리', '프로젝트 관리', '정산확인', '업체정산', '이력/메모',
+  '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
 ];
 const TAB_LABELS_STG = [
-  '기본정보', '배정 관리', '매뉴얼·용어집 세팅', 'AI QC 결과 요약', '정산확인', '업체정산', '이력/메모',
+  '기본정보', '배정 관리', '정산확인', '업체정산', '이력/메모',
+  '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
 ];
 
 const STATUS_MAP = {
@@ -4567,21 +4568,21 @@ export default function WorkDetailProto({ samples, backPath }) {
         <BasicInfoTab s={sEff} />,
         <FileManageTab s={sEff} />,
         <ProjectManageTab s={sEff} />,
-        <ManualGlossaryTab s={sEff} />,
-        <AiQcTab s={sEff} />,
         <MtgSettlementTab s={sEff} />,
         <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} onReapply={handleCompanyReapply} />,
         <HistoryMemoTab s={sEff} />,
+        <ManualGlossaryTab s={sEff} />,
+        <AiQcTab s={sEff} />,
       ]
     : isStenography
     ? [
         <BasicInfoTab s={sEff} />,
         <StenographyAssignTab s={sEff} />,
-        <ManualGlossaryTab s={sEff} />,
-        <AiQcTab s={sEff} />,
         <MtgSettlementTab s={sEff} />,
         <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} onReapply={handleCompanyReapply} />,
         <HistoryMemoTab s={sEff} />,
+        <ManualGlossaryTab s={sEff} />,
+        <AiQcTab s={sEff} />,
       ]
     : [
         <BasicInfoTab s={s} />,

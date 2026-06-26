@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-26',
     author: '정윤실',
+    title: '회의록·현장속기 상세보기 — 매뉴얼·용어집 세팅·AI QC 결과 요약 탭 맨 뒤로 이동',
+    description:
+      '회의록·현장속기 작업 상세보기 탭 순서에서 "매뉴얼·용어집 세팅"과 "AI QC 결과 요약"을 맨 뒤로 이동했습니다. 탭 레이블 배열(TAB_LABELS_MTG·STG)과 tabContent 배열의 순서를 동일하게 맞췄습니다.',
+  },
+  {
+    date: '2026-06-26',
+    author: '정윤실',
     title: '회의록·현장속기 진행 의뢰 현황 — 정산 상태 파생 표시 적용',
     description:
       '회의록(MeetingListDashboard) 및 현장속기(ProtoListDashboard) 목록의 정산 상태 배지를 settlement.workerSettled·companySettled 조합에서 파생하도록 변경했습니다. 작업자·업체 모두 완료 시 "완료", 작업자만 완료 시 "업체 정산대기", 업체만 완료 시 "작업자 정산대기", 모두 미완료 시 "정산대기"로 표시됩니다.',
