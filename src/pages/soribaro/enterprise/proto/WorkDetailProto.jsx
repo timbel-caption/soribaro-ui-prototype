@@ -4122,6 +4122,11 @@ function CompanySettlementTab({ s }) {
     textAlign: 'center',
     whiteSpace: 'nowrap',
   };
+  const thStyleAlt = {
+    ...thStyle,
+    background: '#e8f0fe',
+    color: '#3b5bdb',
+  };
   const tdStyle = {
     padding: '8px 10px',
     fontSize: '13px',
@@ -4130,8 +4135,10 @@ function CompanySettlementTab({ s }) {
     textAlign: 'center',
     whiteSpace: 'nowrap',
   };
+  const tdStyleAlt = { ...tdStyle, background: '#f0f4ff' };
   const tdBold = { ...tdStyle, fontWeight: 700 };
   const tdAccent = { ...tdStyle, fontWeight: 700, color: 'var(--accent-color)' };
+  const tdAccentAlt = { ...tdStyleAlt, fontWeight: 700, color: 'var(--accent-color)' };
 
   return (
     <div className="proto-tab-panel">
@@ -4151,14 +4158,14 @@ function CompanySettlementTab({ s }) {
                   <th style={thStyle}>올림 단위(분)</th>
                   <th style={thStyle}>산정시간</th>
                   <th style={thStyle}>n시간 이후 단가</th>
-                  <th style={thStyle}>기본 단가 적용 시간</th>
-                  <th style={thStyle}>공급가액<br />(기본)</th>
-                  <th style={thStyle}>세액<br />(기본)</th>
-                  <th style={thStyle}>시간(절가)</th>
-                  <th style={thStyle}>공급가액<br />(절가)</th>
-                  <th style={thStyle}>세액<br />(절가)</th>
-                  <th style={thStyle}>공급가액 합계</th>
-                  <th style={thStyle}>세액합계</th>
+                  <th style={thStyleAlt}>기본 단가 적용 시간</th>
+                  <th style={thStyleAlt}>공급가액<br />(기본)</th>
+                  <th style={thStyleAlt}>세액<br />(기본)</th>
+                  <th style={thStyleAlt}>시간(절가)</th>
+                  <th style={thStyleAlt}>공급가액<br />(절가)</th>
+                  <th style={thStyleAlt}>세액<br />(절가)</th>
+                  <th style={thStyleAlt}>공급가액 합계</th>
+                  <th style={thStyleAlt}>세액합계</th>
                 </tr>
               </thead>
               <tbody>
@@ -4170,14 +4177,14 @@ function CompanySettlementTab({ s }) {
                   <td style={tdStyle}>{roundUnit}</td>
                   <td style={tdBold}>{noData ? '-' : fmtHM(calcMin)}</td>
                   <td style={tdStyle}>{isNTimeDiscount ? fmt(overtimePrice) : '-'}</td>
-                  <td style={tdStyle}>{isNTimeDiscount ? fmtHM(baseRateHours * 60) : '-'}</td>
-                  <td style={tdStyle}>{noData ? '-' : fmt(baseSupply)}</td>
-                  <td style={tdStyle}>{noData ? '-' : fmt(baseTax)}</td>
-                  <td style={tdStyle}>{isNTimeDiscount && !noData ? fmtHM(extraMin) : '-'}</td>
-                  <td style={tdStyle}>{isNTimeDiscount && !noData && extraMin > 0 ? fmt(extraSupply) : '-'}</td>
-                  <td style={tdStyle}>{isNTimeDiscount && !noData && extraMin > 0 ? fmt(extraTax) : '-'}</td>
-                  <td style={tdAccent}>{noData ? '-' : fmt(totalSupply)}</td>
-                  <td style={tdAccent}>{noData ? '-' : fmt(totalTax)}</td>
+                  <td style={tdStyleAlt}>{isNTimeDiscount ? fmtHM(baseRateHours * 60) : '-'}</td>
+                  <td style={tdStyleAlt}>{noData ? '-' : fmt(baseSupply)}</td>
+                  <td style={tdStyleAlt}>{noData ? '-' : fmt(baseTax)}</td>
+                  <td style={tdStyleAlt}>{isNTimeDiscount && !noData ? fmtHM(extraMin) : '-'}</td>
+                  <td style={tdStyleAlt}>{isNTimeDiscount && !noData && extraMin > 0 ? fmt(extraSupply) : '-'}</td>
+                  <td style={tdStyleAlt}>{isNTimeDiscount && !noData && extraMin > 0 ? fmt(extraTax) : '-'}</td>
+                  <td style={tdAccentAlt}>{noData ? '-' : fmt(totalSupply)}</td>
+                  <td style={tdAccentAlt}>{noData ? '-' : fmt(totalTax)}</td>
                 </tr>
               </tbody>
             </table>
