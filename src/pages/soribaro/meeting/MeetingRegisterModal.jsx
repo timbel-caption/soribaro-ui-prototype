@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { COMPANY_DATA, getCompanyStaff } from '../enterprise/proto/enterpriseProtoData';
+import { COMPANY_DATA, getCompanyStaff, getEnterpriseCustomersByEntNm } from '../enterprise/proto/enterpriseProtoData';
 import { getRequestTypes } from '../manage/manageProtoStore';
 
 function addBusinessDays(dateStr, days) {
@@ -48,8 +48,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
     c.entNm.includes(companySearch)
   );
 
-  const selectedCompany = COMPANY_DATA.find((c) => c.entNm === form.entNm);
-  const availableManagers = selectedCompany ? selectedCompany.managers : [];
+  const availableManagers = form.entNm ? getEnterpriseCustomersByEntNm(form.entNm) : [];
 
   useEffect(() => {
     const handler = (e) => {
@@ -172,13 +171,21 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
                   className="preg-select"
                   value={form.managerNm}
                   onChange={(e) => handleManagerChange(e.target.value)}
-                  disabled={availableManagers.length === 0}
+                  disabled={!form.entNm}
+                  title={!form.entNm ? '업체명을 먼저 선택하세요' : undefined}
                 >
-                  <option value="">프로젝트명을 입력하세요</option>
+                  <option value="">
+                    {!form.entNm ? '업체명을 먼저 선택하세요' : availableManagers.length === 0 ? '등록된 담당관리자 없음' : '담당관리자를 선택하세요'}
+                  </option>
                   {availableManagers.map((m) => (
-                    <option key={m.name} value={m.name}>{m.name}</option>
+                    <option key={m.membNo} value={m.membNm}>{m.membNm}</option>
                   ))}
                 </select>
+                {!form.entNm && (
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                    업체명 선택 후 담당관리자를 선택할 수 있습니다
+                  </span>
+                )}
               </div>
 
               {/* 계약구분 */}
