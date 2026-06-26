@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign } from './protoStore';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
@@ -36,6 +36,7 @@ function assignBadge(status) {
   if (status === '완료') return <span className="proto-badge-done">{status}</span>;
   if (status === '작업중') return <span className="proto-badge-working">{status}</span>;
   if (status === '검수중') return <span className="proto-badge-check">{status}</span>;
+  if (status === '배정취소') return <span className="proto-badge-cancel">{status}</span>;
   return <span className="proto-badge-wait">{status}</span>;
 }
 
@@ -276,9 +277,35 @@ function BasicInfoTab({ s }) {
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ];
+  const row3 = !isVod ? [
+    { label: '실무자(납품)', value: s.staffNm || '-' },
+    { label: '연락처', value: s.staffPhone || '-' },
+    { label: '이메일', value: s.staffEmail || '-' },
+    { label: '총 분량', value: s.totalPlayTm || '-' },
+    { span3: true },
+  ] : null;
 
   return (
     <div className="proto-tab-panel">
+      {/* 견적서/최종산출물/알림발송 (현장속기 전용 — 회의록은 프로젝트 관리 탭으로 이동) */}
+      {s.bssTypeName === '현장속기' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+          <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
+          <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
+          <button
+            className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
+            onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
+          >견적서 다운로드</button>
+          <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
+          <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
+          <button
+            className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
+            onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
+          >최종산출물 다운로드</button>
+          <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
+        </div>
+      )}
+
       <div className="proto-basic-card">
         <div className="proto-basic-card-header">
           <span>📋</span>
@@ -299,13 +326,27 @@ function BasicInfoTab({ s }) {
               key={label}
               className={[
                 'proto-basic-field',
-                'proto-basic-field--last-row',
+                !row3 ? 'proto-basic-field--last-row' : '',
                 span2 ? 'proto-basic-field--span2' : '',
                 i === row2.length - 1 ? 'proto-basic-field--no-right' : '',
               ].filter(Boolean).join(' ')}
             >
               <div className="proto-basic-field-label">{label}</div>
               <div className="proto-basic-field-value">{value}</div>
+            </div>
+          ))}
+          {row3 && row3.map(({ label, value, span3 }, i) => (
+            <div
+              key={label ?? `empty-${i}`}
+              className={[
+                'proto-basic-field',
+                'proto-basic-field--last-row',
+                i === row3.length - 1 ? 'proto-basic-field--no-right' : '',
+              ].filter(Boolean).join(' ')}
+              style={span3 ? { gridColumn: 'span 3' } : undefined}
+            >
+              {!span3 && <div className="proto-basic-field-label">{label}</div>}
+              {!span3 && <div className="proto-basic-field-value">{value}</div>}
             </div>
           ))}
         </div>
@@ -414,25 +455,6 @@ function BasicInfoTab({ s }) {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {/* 견적서/최종산출물/알림발송 (현장속기 전용 — 회의록은 프로젝트 관리 탭으로 이동) */}
-      {s.bssTypeName === '현장속기' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
-          <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
-          <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
-          <button
-            className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
-            onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
-          >견적서 다운로드</button>
-          <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
-          <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
-          <button
-            className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
-            onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
-          >최종산출물 다운로드</button>
-          <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
         </div>
       )}
 
@@ -3409,33 +3431,74 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
 // ─── 탭 (현장속기 전용): 배정 관리 ───
 const STG_ASSIGN_HISTORY_SEED = [
   { dttm: '26/06/25 10:00', actor: '정윤실_관리자', event: "작업자 '이선재' 배정" },
-  { dttm: '26/06/25 11:00', actor: '작업자_이선재', event: '배정 취소 (중복 배정)' },
+  { dttm: '26/06/25 11:00', actor: '작업자_이선재', event: '배정 취소', reason: '그날 다른 회의가 있습니다.' },
   { dttm: '26/06/25 11:30', actor: '정윤실_관리자', event: "작업자 '김혜리' 배정" },
+  { dttm: '26/06/25 12:00', actor: '김혜리_작업자', event: '배정 취소', reason: '개인 일정이 있습니다.' },
 ];
 
-function StenographyAssignTab() {
-  const [worker, setWorker] = useState('-');
+function stgNowStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${String(d.getFullYear()).slice(2)}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function StenographyAssignTab({ s }) {
+  const [worker, setWorker] = useState(() => s?.assignWorker || '-');
+  const [workerStatus, setWorkerStatus] = useState(() => s?.assignStatus || (s?.assignWorker ? '배정완료' : '미배정'));
   const [workTime, setWorkTime] = useState('');
   const [editingTime, setEditingTime] = useState(false);
   const [timeDraft, setTimeDraft] = useState('');
-  const [status] = useState('배정 중');
-  const [assignHistory] = useState(STG_ASSIGN_HISTORY_SEED.map(r => ({ ...r })));
+  const [assignHistory, setAssignHistory] = useState(() =>
+    s?.assignHistory ? s.assignHistory.map(r => ({ ...r })) : STG_ASSIGN_HISTORY_SEED.map(r => ({ ...r }))
+  );
   const [assignModal, setAssignModal] = useState(false);
   const [assignName, setAssignName] = useState('');
+  const [cancelModal, setCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
 
   const confirmAssign = () => {
     const name = assignName.trim();
     if (!name) return;
+    const dttm = stgNowStamp();
+    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `작업자 '${name}' 배정` }];
     setWorker(name);
+    setWorkerStatus('배정완료');
+    setAssignHistory(newHistory);
     setAssignModal(false);
     setAssignName('');
+    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: name, assignStatus: '배정완료', assignHistory: newHistory });
   };
+
+  const confirmCancel = () => {
+    const reason = cancelReason.trim();
+    const dttm = stgNowStamp();
+    const newHistory = [...assignHistory, { dttm, actor: `${worker}_작업자`, event: '배정 취소', reason: reason || undefined }];
+    setWorkerStatus('배정취소');
+    setAssignHistory(newHistory);
+    setCancelModal(false);
+    setCancelReason('');
+    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '배정취소', assignHistory: newHistory });
+  };
+
+  const handleNotify = () => {
+    const dttm = stgNowStamp();
+    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `업체 알림 발송 — '${worker}' 업체전달완료 처리` }];
+    setWorkerStatus('업체전달완료');
+    setAssignHistory(newHistory);
+    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '업체전달완료', assignHistory: newHistory });
+  };
+
+  const isCancelled = workerStatus === '배정취소';
+  const isNotified = workerStatus === '업체전달완료';
 
   return (
     <div className="proto-tab-panel">
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
         <p className="proto-section-title" style={{ margin: 0 }}>작업자 배정</p>
         <button className="proto-log-btn proto-log-btn--save" style={{ fontSize: '12px', padding: '4px 12px' }} onClick={() => { setAssignName(''); setAssignModal(true); }}>배정하기</button>
+        {worker && worker !== '-' && !isCancelled && (
+          <button className="proto-log-btn" style={{ fontSize: '12px', padding: '4px 12px', color: 'var(--error-color, #f87171)', borderColor: 'var(--error-color, #f87171)' }} onClick={() => { setCancelReason(''); setCancelModal(true); }}>배정 취소</button>
+        )}
       </div>
 
       <div className="proto-table-wrap" style={{ marginBottom: '28px' }}>
@@ -3445,11 +3508,12 @@ function StenographyAssignTab() {
               <th className="text-center">작업자</th>
               <th className="text-center">작업시간</th>
               <th className="text-center">상태</th>
+              <th className="text-center">업체알림</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td className="text-center" style={{ fontSize: '13px' }}>{worker}</td>
+              <td className="text-center" style={{ fontSize: '13px' }}>{isCancelled ? '-' : worker}</td>
               <td className="text-center" style={{ fontSize: '13px', minWidth: '120px' }}>
                 {editingTime ? (
                   <span style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
@@ -3477,12 +3541,33 @@ function StenographyAssignTab() {
                 )}
               </td>
               <td className="text-center">
-                <span className="proto-status-badge proto-status-working" style={{ fontSize: '12px' }}>{status}</span>
+                {workerStatus === '배정취소'
+                  ? <span className="proto-badge-cancel" style={{ fontSize: '12px' }}>배정취소</span>
+                  : workerStatus === '배정완료' || workerStatus === '업체전달완료'
+                  ? <span className="proto-status-badge proto-status-done" style={{ fontSize: '12px' }}>배정완료</span>
+                  : <span className="proto-status-badge proto-status-wait" style={{ fontSize: '12px' }}>미배정</span>
+                }
+              </td>
+              <td className="text-center">
+                {isNotified
+                  ? <span className="proto-badge-done" style={{ fontSize: '12px' }}>업체전달완료</span>
+                  : <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>-</span>
+                }
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      {worker && worker !== '-' && !isCancelled && !isNotified && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+          <button
+            className="proto-log-btn proto-log-btn--save"
+            style={{ fontSize: '12px', padding: '5px 16px' }}
+            onClick={handleNotify}
+          >알림</button>
+        </div>
+      )}
 
       <p className="proto-section-title">배정 이력</p>
       <div className="settle-history-list">
@@ -3490,7 +3575,9 @@ function StenographyAssignTab() {
           <div key={i} className="settle-history-item">
             <span className="settle-history-dttm">{h.dttm}</span>
             <span className="settle-history-actor">{h.actor}</span>
-            <span className="settle-history-event">{h.event}</span>
+            <span className="settle-history-event">
+              {h.event}{h.reason && <span className="settle-history-reason"> ({h.reason})</span>}
+            </span>
           </div>
         ))}
       </div>
@@ -3517,6 +3604,36 @@ function StenographyAssignTab() {
             <div className="pm-modal-ft">
               <button className="proto-log-btn" onClick={() => setAssignModal(false)}>취소</button>
               <button className="proto-log-btn proto-log-btn--save" onClick={confirmAssign}>배정</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 배정 취소 모달 */}
+      {cancelModal && (
+        <div className="pm-overlay" onClick={() => setCancelModal(false)}>
+          <div className="pm-modal pm-modal--sm" onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">배정 취소</span>
+              <button className="preg-x-btn" onClick={() => setCancelModal(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                작업자 <strong>{worker}</strong>의 배정을 취소합니다.
+              </p>
+              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>취소 사유</label>
+              <input
+                className="preg-input"
+                value={cancelReason}
+                onChange={e => setCancelReason(e.target.value)}
+                placeholder="취소 사유를 입력하세요 (예: 다른 일정이 있습니다.)"
+                autoFocus
+                onKeyDown={e => e.key === 'Enter' && confirmCancel()}
+              />
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setCancelModal(false)}>닫기</button>
+              <button className="proto-log-btn" style={{ color: 'var(--error-color, #f87171)', borderColor: 'var(--error-color, #f87171)' }} onClick={confirmCancel}>배정 취소 확인</button>
             </div>
           </div>
         </div>
@@ -4108,7 +4225,7 @@ export default function WorkDetailProto({ samples, backPath }) {
     : isStenography
     ? [
         <BasicInfoTab s={s} />,
-        <StenographyAssignTab />,
+        <StenographyAssignTab s={s} />,
         <ManualGlossaryTab s={s} />,
         <AiQcTab s={s} />,
         <MtgSettlementTab s={s} />,

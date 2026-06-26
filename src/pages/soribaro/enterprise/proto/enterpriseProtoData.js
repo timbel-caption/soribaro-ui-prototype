@@ -32,7 +32,28 @@ export const COMPANY_DATA = [
       { name: '이철호', contractTypes: ['단건계약', '긴급계약', '연간계약'] },
     ],
   },
+  {
+    entNm: '서울중부교육지원청',
+    managers: [],
+  },
 ];
+
+// ─── 엔터프라이즈 고객 관리 더미 사용자 데이터 (prototype용) ───
+// 소리바로 > 서비스 관리 > 엔터프라이즈 고객 관리에 등록된 사용자 목록
+const _enterpriseCustomers = [
+  { membNo: 1,  membId: 'kim.cs@seoul.go.kr',    membNm: '김철수', entNm: '서울시의회',        mblTelNo: '010-1111-0001', status: '정상' },
+  { membNo: 2,  membId: 'park.jy@seoul.go.kr',   membNm: '박지영', entNm: '서울시의회',        mblTelNo: '010-1111-0002', status: '정상' },
+  { membNo: 3,  membId: 'choi.sy@sen.go.kr',     membNm: '최서연', entNm: '서울특별시교육청',  mblTelNo: '010-2222-0001', status: '정상' },
+  { membNo: 4,  membId: 'lee.mh@sen.go.kr',      membNm: '이민호', entNm: '서울특별시교육청',  mblTelNo: '010-2222-0002', status: '정상' },
+  { membNo: 5,  membId: 'jung.yj@kbs.co.kr',     membNm: '정유진', entNm: '한국방송공사',      mblTelNo: '010-3333-0001', status: '정상' },
+  { membNo: 6,  membId: 'hong.gd@na.go.kr',      membNm: '홍길동', entNm: '국회사무처',        mblTelNo: '010-4444-0001', status: '정상' },
+  { membNo: 7,  membId: 'kim.yh@na.go.kr',       membNm: '김영희', entNm: '국회사무처',        mblTelNo: '010-4444-0002', status: '정상' },
+  { membNo: 8,  membId: 'lee.ch@busan.go.kr',    membNm: '이철호', entNm: '부산광역시의회',    mblTelNo: '010-5555-0001', status: '정상' },
+];
+
+export function getEnterpriseCustomersByEntNm(entNm) {
+  return _enterpriseCustomers.filter((c) => c.entNm === entNm && c.status === '정상');
+}
 
 // ─── 실무자 공유 스토어 (prototype용 module-level state) ───
 // 회사별 실무자 목록. ManageEnterpriseDetailPage와 새 의뢰 등록 모달이 공통 참조.
@@ -45,6 +66,7 @@ const _companyStaff = {
   '한국방송공사': [],
   '국회사무처': [],
   '부산광역시의회': [],
+  '서울중부교육지원청': [],
 };
 let _nextStaffId = 10;
 

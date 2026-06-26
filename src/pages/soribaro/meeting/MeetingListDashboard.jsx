@@ -212,29 +212,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <td style={{ fontWeight: 600 }}>{s.entNm}</td>
               <td className="text-center">{contractBadge(s.contractType)}</td>
               <td className="text-center">{s.round || '-'}</td>
-              <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '100px' }}>
-                {isEditingPlayTime ? (
-                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                    <input
-                      className="proto-note-inline-input"
-                      value={playTimeInput}
-                      onChange={(e) => setPlayTimeInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') commitPlayTime(s); if (e.key === 'Escape') cancelPlayTime(); }}
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <button className="proto-note-save-btn" onClick={() => commitPlayTime(s)}>✓</button>
-                    <button className="proto-note-cancel-btn" onClick={cancelPlayTime}>✕</button>
-                  </div>
-                ) : (
-                  <div
-                    className="proto-note-cell"
-                    style={{ textAlign: 'center' }}
-                    onClick={(e) => startEditPlayTime(s, e)}
-                  >
-                    {s.totalPlayTm || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
-                  </div>
-                )}
+              <td className="text-center" style={{ maxWidth: '100px', fontSize: '13px' }}>
+                {s.totalPlayTm || <span style={{ color: 'var(--text-muted)' }}>-</span>}
               </td>
               <td className="text-center">{s.dueDate}</td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '120px' }}>
@@ -261,8 +240,15 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                   </div>
                 )}
               </td>
-              <td style={{ maxWidth: '120px', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                {[...new Set((s.files || []).map((f) => f.worker).filter(Boolean))].join(', ') || '-'}
+              <td style={{ maxWidth: '120px', fontSize: '13px' }}>
+                {s.assignStatus === '배정취소'
+                  ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
+                  : s.assignWorker && s.assignStatus === '업체전달완료'
+                  ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker} <span style={{ color: '#4ade80', fontWeight: 700 }}>○</span></span>
+                  : s.assignWorker && s.assignStatus === '배정완료'
+                  ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker}</span>
+                  : <span style={{ color: 'var(--text-muted)' }}>미배정</span>
+                }
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
@@ -440,7 +426,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <div className="proto-alert-list">
           <div className="proto-alert-item proto-alert-urgent">
             <span className="proto-alert-icon">△</span>
-            <span className="proto-alert-text">오늘 마감</span>
+            <span className="proto-alert-text">금일 납품 건</span>
             <span className="proto-alert-count">{alerts.todayDue}건</span>
           </div>
           {alerts.todayDueItems.map((s) => (
@@ -453,7 +439,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           ))}
           <div className="proto-alert-item proto-alert-delay" style={{ marginTop: '8px' }}>
             <span className="proto-alert-icon">🔔</span>
-            <span className="proto-alert-text">납품 지연</span>
+            <span className="proto-alert-text">납품 일정 확인 건</span>
             <span className="proto-alert-count">{alerts.overdue}건</span>
           </div>
           {alerts.overdueItems.map((s) => (

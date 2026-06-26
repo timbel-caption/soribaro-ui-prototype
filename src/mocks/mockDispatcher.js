@@ -19,12 +19,29 @@
 import {
   MOCK_USER,
   COMMON_CODES,
+  ENTERPRISE_ROWS,
   recordRows,
   workerRows,
   settlementRows,
   projectRows,
   noticeRows,
 } from './fixtures/index.js';
+
+// ─── 엔터프라이즈 업체 인메모리 스토어 ───────────────────────────────────────
+let _enterprises = ENTERPRISE_ROWS.map((r) => ({ ...r }));
+let _entSeq = Math.max(...ENTERPRISE_ROWS.map((r) => r.entNo)) + 1;
+
+// ─── 엔터프라이즈 고객(사용자) 인메모리 스토어 ──────────────────────────────
+let _entCustomers = [
+  { membNo: 101, platform: '소리바로', membId: 'user_seoul_a@council.seoul.go.kr', membNm: '김유빈', entNo: 1, entNm: '서울시의회',       mblTelNo: '070-1234-5678', status: '정상', regDttm: '2026-03-01 09:00', chgDttm: null, recvEmail: 'user_seoul_a@council.seoul.go.kr', zipCd: '', baseAddr: '서울특별시 중구 태평로1가 60', dtlAddr: '' },
+  { membNo: 102, platform: '소리바로', membId: 'user_seoul_b@council.seoul.go.kr', membNm: '김유리', entNo: 1, entNm: '서울시의회',       mblTelNo: '070-6788-4728', status: '정상', regDttm: '2026-03-05 10:00', chgDttm: null, recvEmail: 'user_seoul_b@council.seoul.go.kr', zipCd: '', baseAddr: '서울특별시 중구 태평로1가 60', dtlAddr: '' },
+  { membNo: 103, platform: '소리바로', membId: 'user_edu_a@sen.go.kr',             membNm: '이민호', entNo: 2, entNm: '서울특별시교육청', mblTelNo: '02-2222-3001',   status: '정상', regDttm: '2026-03-10 09:00', chgDttm: null, recvEmail: 'user_edu_a@sen.go.kr',             zipCd: '', baseAddr: '서울특별시 종로구 송월길 48', dtlAddr: '' },
+  { membNo: 104, platform: '소리바로', membId: 'user_kbs_a@kbs.co.kr',             membNm: '정유진', entNo: 3, entNm: '한국방송공사',     mblTelNo: '02-3333-5001',   status: '정상', regDttm: '2026-04-01 09:00', chgDttm: null, recvEmail: 'user_kbs_a@kbs.co.kr',             zipCd: '', baseAddr: '서울특별시 영등포구 여의공원로 13', dtlAddr: '' },
+  { membNo: 105, platform: '소리바로', membId: 'user_na_a@na.go.kr',               membNm: '홍길동', entNo: 4, entNm: '국회사무처',       mblTelNo: '02-4444-5001',   status: '정상', regDttm: '2026-04-10 09:00', chgDttm: null, recvEmail: 'user_na_a@na.go.kr',               zipCd: '', baseAddr: '서울특별시 영등포구 의사당대로 1', dtlAddr: '' },
+  { membNo: 106, platform: '소리바로', membId: 'user_na_b@na.go.kr',               membNm: '김영희', entNo: 4, entNm: '국회사무처',       mblTelNo: '02-4444-5002',   status: '대기', regDttm: '2026-05-01 09:00', chgDttm: null, recvEmail: 'user_na_b@na.go.kr',               zipCd: '', baseAddr: '',                                dtlAddr: '' },
+  { membNo: 107, platform: '소리바로', membId: 'user_busan_a@council.busan.go.kr', membNm: '이철호', entNo: 5, entNm: '부산광역시의회',   mblTelNo: '051-5555-5001',  status: '정상', regDttm: '2026-05-15 09:00', chgDttm: null, recvEmail: 'user_busan_a@council.busan.go.kr', zipCd: '', baseAddr: '부산광역시 연제구 중앙대로 1001', dtlAddr: '' },
+];
+let _custSeq = 200;
 
 // 응답 지연(ms) — 로딩 스피너가 자연스럽게 보이도록 약간의 지연을 둔다.
 const MOCK_DELAY_MS = 120;
@@ -154,10 +171,19 @@ const REGISTRY = [
     handler: ({ params }) => listData(projectRows(6), params),
   },
 
-  // ── 작업자/회원 목록 ─────────────────────────────────────────────────
+  // ── 작업자/회원 목록 (GET) / 회원 등록 (POST) ────────────────────────
   {
     test: /\/(workers?|members?)$/i,
-    handler: ({ params }) => listData(workerRows(8), params),
+    handler: ({ method, params, body }) => {
+      if (method === 'GET') return listData(workerRows(8), params);
+      if (method === 'POST') {
+        const entRow = _enterprises.find((e) => String(e.entNo) === String(body.entNo));
+        const newCust = { ...body, membNo: _custSeq++, entNm: entRow?.entNm || '', platform: '소리바로', status: '정상', regDttm: '2026-06-25 09:00:00', chgDttm: null };
+        _entCustomers = [..._entCustomers, newCust];
+        return newCust;
+      }
+      return null;
+    },
   },
 
   // ── 공지 ─────────────────────────────────────────────────────────────
@@ -165,6 +191,94 @@ const REGISTRY = [
     test: /\/notices?$/i,
     handler: ({ params, method }) =>
       method === 'GET' ? listData(noticeRows(8), params) : null,
+  },
+
+  // ── 엔터프라이즈 업체 상세 (PUT/DELETE) ──────────────────────────────
+  {
+    test: /\/enterprise\/(\d+)$/i,
+    handler: ({ method, match, body }) => {
+      const entNo = Number(match[1]);
+      if (method === 'GET') {
+        return _enterprises.find((e) => e.entNo === entNo) || null;
+      }
+      if (method === 'PUT') {
+        _enterprises = _enterprises.map((e) =>
+          e.entNo === entNo ? { ...e, ...body, entNo, chgDttm: '2026-06-25 12:00:00' } : e
+        );
+        return _enterprises.find((e) => e.entNo === entNo);
+      }
+      if (method === 'DELETE') {
+        _enterprises = _enterprises.filter((e) => e.entNo !== entNo);
+        return { entNo };
+      }
+      return null;
+    },
+  },
+
+  // ── 엔터프라이즈 업체 목록/등록 ──────────────────────────────────────
+  {
+    test: /\/enterprise$/i,
+    handler: ({ method, params, body }) => {
+      if (method === 'GET') {
+        const txt = (params.searchTxt || '').toLowerCase();
+        const rows = txt
+          ? _enterprises.filter((e) => e.entNm.toLowerCase().includes(txt))
+          : _enterprises;
+        return listData(rows, params);
+      }
+      if (method === 'POST') {
+        const newEnt = { ...body, entNo: _entSeq++, useYn: body.useYn || 'Y', regDttm: '2026-06-25 09:00:00', chgDttm: null, regr: '정윤실', chgr: null };
+        _enterprises = [..._enterprises, newEnt];
+        return newEnt;
+      }
+      return null;
+    },
+  },
+
+  // ── 엔터프라이즈 고객 상세/수정 ───────────────────────────────────────
+  {
+    test: /\/enterprise-customer\/(\d+)$/i,
+    handler: ({ method, match, body }) => {
+      const membNo = Number(match[1]);
+      if (method === 'GET') {
+        return _entCustomers.find((c) => c.membNo === membNo) || null;
+      }
+      if (method === 'PUT') {
+        _entCustomers = _entCustomers.map((c) =>
+          c.membNo === membNo ? { ...c, ...body, membNo, chgDttm: '2026-06-25 12:00:00' } : c
+        );
+        return _entCustomers.find((c) => c.membNo === membNo);
+      }
+      return null;
+    },
+  },
+
+  // ── 엔터프라이즈 고객 목록/등록 ──────────────────────────────────────
+  {
+    test: /\/enterprise-customer$/i,
+    handler: ({ method, params, body }) => {
+      if (method === 'GET') {
+        const txt = (params.searchText || '').toLowerCase();
+        const st  = params.status || '';
+        let rows = _entCustomers;
+        if (txt) rows = rows.filter((c) => c.membNm.toLowerCase().includes(txt) || c.membId.toLowerCase().includes(txt) || (c.entNm || '').toLowerCase().includes(txt));
+        if (st)  rows = rows.filter((c) => c.status === st);
+        return listData(rows, params);
+      }
+      if (method === 'POST') {
+        const entRow = _enterprises.find((e) => String(e.entNo) === String(body.entNo));
+        const newCust = { ...body, membNo: _custSeq++, entNm: entRow?.entNm || '', platform: '소리바로', status: '정상', regDttm: '2026-06-25 09:00:00', chgDttm: null };
+        _entCustomers = [..._entCustomers, newCust];
+        return newCust;
+      }
+      return null;
+    },
+  },
+
+  // ── 기업 옵션(사용자 추가 모달 업체 드롭다운) ─────────────────────────
+  {
+    test: /\/member\/company-options$/i,
+    handler: () => _enterprises.map((e) => ({ entNo: e.entNo, entNm: e.entNm })),
   },
 ];
 
