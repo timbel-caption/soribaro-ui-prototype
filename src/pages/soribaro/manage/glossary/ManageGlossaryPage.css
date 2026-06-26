@@ -249,3 +249,155 @@
 .notion-page .btn-primary:hover {
   opacity: 0.85;
 }
+
+/* ── 중복 배지 색상 변형 ─────────────────────────────────────────────────── */
+.gloss-dup-new      { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+.gloss-dup-dup      { background: rgba(251, 191, 36, 0.15);  color: #fbbf24; }
+.gloss-dup-similar  { background: rgba(99, 102, 241, 0.15);  color: #a5b4fc; }
+
+/* ── 안내 배너 ───────────────────────────────────────────────────────────── */
+.gloss-guide-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(99, 102, 241, 0.07);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.gloss-guide-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── 오버레이 / 모달 ────────────────────────────────────────────────────── */
+.gloss-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+}
+
+.gloss-modal {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  width: 440px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+.gloss-modal-wide {
+  width: 680px;
+}
+
+.gloss-modal-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+.gloss-modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.gloss-modal-x {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.gloss-modal-x:hover { color: var(--text-primary); }
+
+.gloss-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.gloss-modal-ft {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ── 모달 폼 필드 ────────────────────────────────────────────────────────── */
+.gloss-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+.gloss-field-row {
+  display: flex;
+  gap: 10px;
+}
+.gloss-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.gloss-input,
+.gloss-select {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 7px 10px;
+  font-family: inherit;
+  outline: none;
+}
+.gloss-input:focus,
+.gloss-select:focus {
+  border-color: var(--accent-color);
+}
+
+/* ── 모달 버튼 ───────────────────────────────────────────────────────────── */
+.gloss-btn-primary {
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+}
+.gloss-btn-primary:hover { opacity: 0.85; }
+.gloss-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── 추출 용어 모달 전용 ────────────────────────────────────────────────── */
+.gloss-extracted-info {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.gloss-info-chip {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+.gloss-extracted-note {
+  font-size: 12px;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.07);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 5px;
+  padding: 8px 12px;
+}
