@@ -3574,10 +3574,10 @@ function StenographyAssignTab({ s }) {
         <table className="proto-table">
           <thead>
             <tr>
-              <th>배정 이력</th>
-              <th className="text-center" style={{ width: '100px' }}>상태</th>
-              <th style={{ width: '220px' }}>사유</th>
               <th className="text-center" style={{ width: '130px' }}>등록일시</th>
+              <th className="text-center" style={{ width: '100px' }}>상태</th>
+              <th>배정 이력</th>
+              <th style={{ width: '220px' }}>사유</th>
             </tr>
           </thead>
           <tbody>
@@ -3591,13 +3591,13 @@ function StenographyAssignTab({ s }) {
                 : <span className="proto-status-badge proto-status-done" style={{ fontSize: '11px' }}>배정완료</span>;
               return (
                 <tr key={i}>
+                  <td className="text-center" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.dttm}</td>
+                  <td className="text-center">{statusBadgeEl}</td>
                   <td style={{ fontSize: '13px' }}>
                     <span style={{ color: '#60a5fa', marginRight: '8px' }}>{h.actor}</span>
                     {h.event.replace(/\s*\([^)]*\)$/, '')}
                   </td>
-                  <td className="text-center">{statusBadgeEl}</td>
                   <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{h.reason || '-'}</td>
-                  <td className="text-center" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.dttm}</td>
                 </tr>
               );
             })}

@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-06-26',
+    author: '정윤실',
+    title: '현장속기 배정 이력 테이블 컬럼 순서 변경',
+    description:
+      '배정 이력 테이블의 컬럼 순서를 등록일시·상태·배정 이력·사유 순으로 변경했습니다.',
+  },
+  {
+    date: '2026-06-26',
     author: '정기태',
     title: '용어집 관리 메뉴 추가 — 업무 유형별 공통 용어집·추출 용어 검토',
     description:
