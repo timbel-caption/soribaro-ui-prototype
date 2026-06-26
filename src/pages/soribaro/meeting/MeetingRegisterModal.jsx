@@ -85,7 +85,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
 
   const handleSubmit = () => {
     if (!form.entNm) return;
-    onSubmit(form, files);
+    onSubmit({ ...form, staff: selectedStaff }, files);
     setSubmitted(true);
   };
 

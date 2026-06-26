@@ -277,6 +277,13 @@ function BasicInfoTab({ s }) {
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ];
+  const row3 = !isVod ? [
+    { label: '실무자(납품)', value: s.staffNm || '-' },
+    { label: '연락처', value: s.staffPhone || '-' },
+    { label: '이메일', value: s.staffEmail || '-' },
+    { label: '총 분량', value: s.totalPlayTm || '-' },
+    { span3: true },
+  ] : null;
 
   return (
     <div className="proto-tab-panel">
@@ -319,13 +326,27 @@ function BasicInfoTab({ s }) {
               key={label}
               className={[
                 'proto-basic-field',
-                'proto-basic-field--last-row',
+                !row3 ? 'proto-basic-field--last-row' : '',
                 span2 ? 'proto-basic-field--span2' : '',
                 i === row2.length - 1 ? 'proto-basic-field--no-right' : '',
               ].filter(Boolean).join(' ')}
             >
               <div className="proto-basic-field-label">{label}</div>
               <div className="proto-basic-field-value">{value}</div>
+            </div>
+          ))}
+          {row3 && row3.map(({ label, value, span3 }, i) => (
+            <div
+              key={label ?? `empty-${i}`}
+              className={[
+                'proto-basic-field',
+                'proto-basic-field--last-row',
+                i === row3.length - 1 ? 'proto-basic-field--no-right' : '',
+              ].filter(Boolean).join(' ')}
+              style={span3 ? { gridColumn: 'span 3' } : undefined}
+            >
+              {!span3 && <div className="proto-basic-field-label">{label}</div>}
+              {!span3 && <div className="proto-basic-field-value">{value}</div>}
             </div>
           ))}
         </div>
