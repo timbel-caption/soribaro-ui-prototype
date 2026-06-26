@@ -467,14 +467,12 @@ function BasicInfoTab({ s }) {
               <button className="preg-x-btn" onClick={() => setNotifyModal(false)}>✕</button>
             </div>
             <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
-              <label className="preg-label">발송 대상</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                {[{ value: 'all', label: '전체 (작업자 + 검수자)' }, { value: 'worker', label: '작업자만' }, { value: 'reviewer', label: '검수자만' }].map(opt => (
-                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                    <input type="radio" name="notify-target" value={opt.value} checked={notifyTarget === opt.value} onChange={() => setNotifyTarget(opt.value)} />
-                    {opt.label}
-                  </label>
-                ))}
+              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
+                초안 완성 알림을 발송하시겠습니까?
+              </p>
+              <div style={{ background: 'var(--bg-hover)', borderRadius: '6px', padding: '12px 14px', fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div><span style={{ color: 'var(--text-muted)', minWidth: '56px', display: 'inline-block' }}>실무자</span><span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.staffNm || '-'}</span></div>
+                <div><span style={{ color: 'var(--text-muted)', minWidth: '56px', display: 'inline-block' }}>이메일</span><span>{s.staffEmail || '-'}</span></div>
               </div>
             </div>
             <div className="pm-modal-ft">
@@ -1953,14 +1951,12 @@ function ProjectManageTab({ s }) {
               <button className="preg-x-btn" onClick={() => setNotifyModal(false)}>✕</button>
             </div>
             <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
-              <label className="preg-label">발송 대상</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                {[{ value: 'all', label: '전체 (작업자 + 검수자)' }, { value: 'worker', label: '작업자만' }, { value: 'reviewer', label: '검수자만' }].map(opt => (
-                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                    <input type="radio" name="notify-target" value={opt.value} checked={notifyTarget === opt.value} onChange={() => setNotifyTarget(opt.value)} />
-                    {opt.label}
-                  </label>
-                ))}
+              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
+                초안 완성 알림을 발송하시겠습니까?
+              </p>
+              <div style={{ background: 'var(--bg-hover)', borderRadius: '6px', padding: '12px 14px', fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div><span style={{ color: 'var(--text-muted)', minWidth: '56px', display: 'inline-block' }}>실무자</span><span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.staffNm || '-'}</span></div>
+                <div><span style={{ color: 'var(--text-muted)', minWidth: '56px', display: 'inline-block' }}>이메일</span><span>{s.staffEmail || '-'}</span></div>
               </div>
             </div>
             <div className="pm-modal-ft">
