@@ -1,5 +1,11 @@
 /* ManageOperationsPage.css — 운영 현황 페이지 전용 스타일 */
 
+/* ── 세로 스크롤 보장 ────────────────────────────────────────────────────── */
+.ops-page {
+  overflow-y: auto;
+  min-height: 0;
+}
+
 /* ── 업무 유형 탭 ────────────────────────────────────────────────────────── */
 .ops-tabs {
   display: flex;
@@ -106,14 +112,23 @@
 }
 
 .ops-summary-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
+}
+
+.ops-summary-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -2px;
 }
 
 .ops-summary-label {
   font-size: 12px;
   color: var(--text-muted);
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
 }
 
 /* ── 섹션 공통 ───────────────────────────────────────────────────────────── */
@@ -141,6 +156,35 @@
 .ops-org-name {
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.ops-title-cell {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+.ops-min-cell {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.ops-date-cell {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.ops-hours-cell {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.ops-type-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.14);
+  color: #a5b4fc;
+  font-weight: 500;
 }
 
 .text-right { text-align: right !important; }
