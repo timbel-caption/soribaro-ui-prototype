@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime } from '../enterprise/proto/protoStore';
+import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime, updateStenographyWorkerAssign } from '../enterprise/proto/protoStore';
 
 const STATUS_LABEL = {
   WORKING:  { label: '작업중',  cls: 'mtg-status-working' },
@@ -187,6 +187,32 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const cancelPlayTime = () => setEditingPlayTimeId(null);
 
+  const [assignModal, setAssignModal] = useState(null);
+  const [assignNameInput, setAssignNameInput] = useState('');
+  const [workerOverrides, setWorkerOverrides] = useState({});
+
+  const handleOpenAssign = (e, s) => {
+    e.stopPropagation();
+    setAssignNameInput('');
+    setAssignModal({ id: s.id });
+  };
+
+  const handleConfirmAssign = () => {
+    const name = assignNameInput.trim();
+    if (!name || !assignModal) return;
+    setWorkerOverrides((prev) => ({ ...prev, [assignModal.id]: { worker: name, status: '배정완료' } }));
+    updateStenographyWorkerAssign(assignModal.id, { assignWorker: name, assignStatus: '배정완료' });
+    setAssignModal(null);
+    setAssignNameInput('');
+  };
+
+  const handleCancelWorker = (e, s) => {
+    e.stopPropagation();
+    const effWorker = workerOverrides[s.id]?.worker ?? s.assignWorker;
+    setWorkerOverrides((prev) => ({ ...prev, [s.id]: { worker: effWorker, status: '배정취소' } }));
+    updateStenographyWorkerAssign(s.id, { assignWorker: effWorker, assignStatus: '배정취소' });
+  };
+
   const toDetailPath = (protoPath) => {
     if (protoPath.startsWith('/soribaro/enterprise/meeting-proto/'))
       return protoPath.replace('/soribaro/enterprise/meeting-proto/', '/soribaro/meeting/detail/');
@@ -194,6 +220,32 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   };
 
   const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
+
+  const assignModalJsx = assignModal && (
+    <div className="pm-overlay" onClick={() => setAssignModal(null)}>
+      <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">작업자 배정</span>
+          <button className="preg-x-btn" onClick={() => setAssignModal(null)}>✕</button>
+        </div>
+        <div style={{ padding: '16px 20px' }}>
+          <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>작업자 이름</label>
+          <input
+            className="preg-input"
+            value={assignNameInput}
+            onChange={(e) => setAssignNameInput(e.target.value)}
+            placeholder="이름을 입력하세요"
+            autoFocus
+            onKeyDown={(e) => e.key === 'Enter' && handleConfirmAssign()}
+          />
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={() => setAssignModal(null)}>취소</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={handleConfirmAssign}>배정</button>
+        </div>
+      </div>
+    </div>
+  );
 
   const pagination = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
@@ -222,6 +274,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           const isEditingManager = editingManagerId === s.id;
           const managerNm = managerOverrides[s.id] ?? s.managerNm ?? '';
           const isEditingPlayTime = editingPlayTimeId === s.id;
+          const isStenography = s.bssTypeName === '현장속기';
+          const effWorker = workerOverrides[s.id]?.worker ?? s.assignWorker;
+          const effStatus = workerOverrides[s.id]?.status ?? s.assignStatus;
+          const isAssigned = isStenography && effWorker && (effStatus === '배정완료' || effStatus === '업체전달완료');
+          const isCancelledWorker = isStenography && effStatus === '배정취소';
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
@@ -257,13 +314,19 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 )}
               </td>
               <td style={{ maxWidth: '120px', fontSize: '13px' }}>
-                {s.assignStatus === '배정취소'
-                  ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
-                  : s.assignWorker && s.assignStatus === '업체전달완료'
-                  ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker} <span style={{ color: '#4ade80', fontWeight: 700 }}>○</span></span>
-                  : s.assignWorker && s.assignStatus === '배정완료'
-                  ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker}</span>
-                  : <span style={{ color: 'var(--text-muted)' }}>미배정</span>
+                {isStenography
+                  ? (isCancelledWorker
+                      ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
+                      : isAssigned
+                      ? <span style={{ color: 'var(--text-secondary)' }}>{effWorker}</span>
+                      : <span style={{ color: 'var(--text-muted)' }}>-</span>)
+                  : (s.assignStatus === '배정취소'
+                      ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
+                      : s.assignWorker && s.assignStatus === '업체전달완료'
+                      ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker} <span style={{ color: '#4ade80', fontWeight: 700 }}>○</span></span>
+                      : s.assignWorker && s.assignStatus === '배정완료'
+                      ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker}</span>
+                      : <span style={{ color: 'var(--text-muted)' }}>미배정</span>)
                 }
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
@@ -293,7 +356,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <td className="text-center">{statusBadge(s.overallStatus)}</td>
               <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
               <td className="text-center">{s.actualDeliveryDate || '-'}</td>
-              <td className="text-center">
+              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                {isStenography && (
+                  isAssigned
+                    ? <button className="mtg-detail-btn" style={{ marginRight: '4px', color: '#f87171', borderColor: '#f87171' }} onClick={(e) => handleCancelWorker(e, s)}>배정취소</button>
+                    : <button className="mtg-detail-btn" style={{ marginRight: '4px' }} onClick={(e) => handleOpenAssign(e, s)}>배정하기</button>
+                )}
                 <button
                   className="mtg-detail-btn"
                   onClick={(e) => { e.stopPropagation(); navigate(toDetailPath(s.protoPath)); }}
@@ -323,7 +391,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th className="text-center">상태</th>
         <th className="text-center">정산</th>
         <th className="text-center">실제 납품일</th>
-        <th className="text-center" style={{ width: '72px' }}></th>
+        <th className="text-center" style={{ minWidth: '148px' }}></th>
       </tr>
     </thead>
   );
@@ -379,6 +447,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           {pagination}
         </div>
       </div>
+      {assignModalJsx}
+    </div>
     );
   }
 
@@ -468,6 +538,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           ))}
         </div>
       </div>
+      {assignModalJsx}
     </div>
   );
 }
