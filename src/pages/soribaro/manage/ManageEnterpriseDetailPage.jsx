@@ -6,7 +6,7 @@ import {
   updateEnterprise,
   deleteEnterprise,
 } from '../../../api/v9/enterprise';
-import { getCompanyStaff, addCompanyStaff, removeCompanyStaff } from '../enterprise/proto/enterpriseProtoData';
+import { getCompanyStaff, addCompanyStaff, removeCompanyStaff, getCompanyQuoteSettings, setCompanyQuoteSettings } from '../enterprise/proto/enterpriseProtoData';
 import { useTranslation } from 'react-i18next';
 import { toast } from '../../../stores/toastStore';
 import { useCommonCodeStore } from '../../../stores/commonCodeStore';
@@ -178,6 +178,23 @@ export default function ManageEnterpriseDetailPage() {
     setManagers(getCompanyStaff(entNm));
   };
 
+  // 견적서 관리 팝업
+  const INVOICE_TYPES = ['계약업체', 'n시간 절가', '세금계산서', '일반계산서'];
+  const [quoteModal, setQuoteModal] = useState(false);
+  const [quoteForm, setQuoteForm] = useState({ invoiceType: '계약업체', unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 45000, baseRateHours: 2 });
+
+  const openQuoteModal = () => {
+    const entNm = originalData?.entNm || '';
+    setQuoteForm(getCompanyQuoteSettings(entNm));
+    setQuoteModal(true);
+  };
+
+  const handleSaveQuote = () => {
+    const entNm = originalData?.entNm || '';
+    setCompanyQuoteSettings(entNm, quoteForm);
+    setQuoteModal(false);
+  };
+
   if (loading) {
     return (
       <div className="notion-page manage-enterprise-detail-page">
@@ -297,11 +314,14 @@ export default function ManageEnterpriseDetailPage() {
 
       {renderProps()}
 
-      {/* 실무자 관리 버튼 (하단) */}
+      {/* 실무자 관리 / 견적서 관리 버튼 (하단) */}
       {!isCreateMode && (
-        <div style={{ marginTop: '20px' }}>
+        <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
           <button className="btn-ghost" style={{ fontSize: '13px' }} onClick={() => setManagerModal(true)}>
             실무자 관리
+          </button>
+          <button className="btn-ghost" style={{ fontSize: '13px' }} onClick={openQuoteModal}>
+            견적서 관리
           </button>
         </div>
       )}
@@ -385,6 +405,52 @@ export default function ManageEnterpriseDetailPage() {
 
             <div className="pm-modal-ft">
               <button className="proto-log-btn" style={{ minWidth: '72px' }} onClick={() => setManagerModal(false)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 견적서 관리 팝업 */}
+      {quoteModal && (
+        <div className="pm-overlay" onClick={() => setQuoteModal(false)}>
+          <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '520px', width: '90%' }} onClick={e => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">견적서 관리{originalData?.entNm ? ` — ${originalData.entNm}` : ''}</span>
+              <button className="preg-x-btn" onClick={() => setQuoteModal(false)}>✕</button>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="preg-label">계산서 발행 형태</label>
+                <select className="preg-select" value={quoteForm.invoiceType} onChange={e => setQuoteForm(p => ({ ...p, invoiceType: e.target.value }))}>
+                  {INVOICE_TYPES.map(t => <option key={t}>{t}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">단가 (원)</label>
+                  <input className="preg-input" type="number" value={quoteForm.unitPrice} onChange={e => setQuoteForm(p => ({ ...p, unitPrice: +e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">기본 단위 (분)</label>
+                  <input className="preg-input" type="number" value={quoteForm.baseUnit} onChange={e => setQuoteForm(p => ({ ...p, baseUnit: +e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">올림 단위 (분)</label>
+                  <input className="preg-input" type="number" value={quoteForm.roundUnit} onChange={e => setQuoteForm(p => ({ ...p, roundUnit: +e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">n시간 이후 단가 (원)</label>
+                  <input className="preg-input" type="number" value={quoteForm.overtimePrice} onChange={e => setQuoteForm(p => ({ ...p, overtimePrice: +e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">기본 단가 적용 시간 (시간)</label>
+                  <input className="preg-input" type="number" value={quoteForm.baseRateHours} onChange={e => setQuoteForm(p => ({ ...p, baseRateHours: +e.target.value }))} />
+                </div>
+              </div>
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setQuoteModal(false)}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={handleSaveQuote}>저장</button>
             </div>
           </div>
         </div>

@@ -83,3 +83,22 @@ export function removeCompanyStaff(entNm, id) {
   if (!_companyStaff[entNm]) return;
   _companyStaff[entNm] = _companyStaff[entNm].filter((m) => m.id !== id);
 }
+
+// ─── 업체별 견적서(업체정산) 설정 스토어 (prototype용 module-level state) ───
+const DEFAULT_QUOTE = { invoiceType: '계약업체', unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 45000, baseRateHours: 2 };
+const _companyQuoteSettings = {
+  '서울시의회':        { invoiceType: '계약업체',   unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 45000, baseRateHours: 2 },
+  '서울특별시교육청':  { invoiceType: '세금계산서', unitPrice: 50000, baseUnit: 60, roundUnit: 30, overtimePrice: 35000, baseRateHours: 2 },
+  '한국방송공사':      { invoiceType: 'n시간 절가', unitPrice: 55000, baseUnit: 60, roundUnit: 30, overtimePrice: 40000, baseRateHours: 2 },
+  '국회사무처':        { invoiceType: '일반계산서', unitPrice: 65000, baseUnit: 60, roundUnit: 30, overtimePrice: 50000, baseRateHours: 3 },
+  '부산광역시의회':    { invoiceType: '계약업체',   unitPrice: 55000, baseUnit: 60, roundUnit: 30, overtimePrice: 40000, baseRateHours: 2 },
+  '서울중부교육지원청':{ invoiceType: '세금계산서', unitPrice: 48000, baseUnit: 60, roundUnit: 30, overtimePrice: 35000, baseRateHours: 2 },
+};
+
+export function getCompanyQuoteSettings(entNm) {
+  return _companyQuoteSettings[entNm] ? { ..._companyQuoteSettings[entNm] } : { ...DEFAULT_QUOTE };
+}
+
+export function setCompanyQuoteSettings(entNm, settings) {
+  _companyQuoteSettings[entNm] = { ...settings };
+}
