@@ -63,6 +63,8 @@ export const MEETING_SAMPLES = [
     ],
     settlement: {
       status: '정산대기',
+      workerSettled: false,
+      companySettled: false,
       items: [
         { worker: '홍길동', role: '전사', amount: 415800, taxRate: 3.3, netAmount: 374220 },
       ],
@@ -128,6 +130,8 @@ export const MEETING_SAMPLES = [
     ],
     settlement: {
       status: '정산대기',
+      workerSettled: false,
+      companySettled: false,
       items: [
         { worker: '김나리', role: '전사', amount: 90000, taxRate: 3.3, netAmount: 45000 },
         { worker: '김철수', role: '검수', amount: 415800, taxRate: 3.3, netAmount: 415800 },

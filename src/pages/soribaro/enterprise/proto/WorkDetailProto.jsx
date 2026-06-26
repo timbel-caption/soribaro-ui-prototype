@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings } from './enterpriseProtoData';
 import { useUserStore } from '../../../../stores/userStore';
@@ -4044,7 +4044,7 @@ function MtgSettlementTab({ s }) {
 }
 
 // ─── 업체정산 탭 ───────────────────────────────────────────────────────────
-function CompanySettlementTab({ s }) {
+function CompanySettlementTab({ s, isConfirmed, onConfirm }) {
   const qs = getCompanyQuoteSettings(s.entNm);
 
   function parseMinutes(tm) {
@@ -4194,6 +4194,22 @@ function CompanySettlementTab({ s }) {
               총 분량 정보가 없어 금액을 산출할 수 없습니다.
             </p>
           )}
+          {/* 업체정산 확인 버튼 */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
+            {isConfirmed && (
+              <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                ✓ 업체정산 완료 처리됨
+              </span>
+            )}
+            <button
+              className={`proto-log-btn${isConfirmed ? '' : ' proto-log-btn--save'}`}
+              disabled={isConfirmed || noData}
+              onClick={onConfirm}
+              style={{ opacity: isConfirmed || noData ? 0.5 : 1, cursor: isConfirmed || noData ? 'default' : 'pointer' }}
+            >
+              {isConfirmed ? '확인 완료' : '확인'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -4459,6 +4475,9 @@ export default function WorkDetailProto({ samples, backPath }) {
 
   const s = samples.find((v) => v.id === id);
 
+  // 업체정산 확인 상태 (탭 전환 후에도 유지)
+  const [companySettled, setCompanySettled] = useState(() => s?.settlement?.companySettled || false);
+
   if (!s) {
     return (
       <div className="notion-page" style={{ padding: '40px', textAlign: 'center' }}>
@@ -4470,29 +4489,45 @@ export default function WorkDetailProto({ samples, backPath }) {
     );
   }
 
+  // 작업자정산 + 업체정산 여부에 따른 정산 상태 파생
+  const workerSettled = s.settlement?.workerSettled || false;
+  function deriveSettleStatus(ws, cs) {
+    if (ws && cs) return '정산완료';
+    if (ws && !cs) return '업체 정산대기';
+    if (!ws && cs) return '작업자 정산대기';
+    return '정산대기';
+  }
+  const derivedSettleStatus = deriveSettleStatus(workerSettled, companySettled);
+  const sEff = { ...s, settlement: { ...s.settlement, status: derivedSettleStatus, companySettled } };
+
+  const handleCompanyConfirm = () => {
+    setCompanySettled(true);
+    updateSampleSettlement(id, { companySettled: true, status: deriveSettleStatus(workerSettled, true) });
+  };
+
   const isMtg = s.bssTypeName === '회의록';
   const isStenography = s.bssTypeName === '현장속기';
   const TAB_LABELS = isMtg ? TAB_LABELS_MTG : isStenography ? TAB_LABELS_STG : TAB_LABELS_VOD;
   const tabContent = isMtg
     ? [
-        <BasicInfoTab s={s} />,
-        <FileManageTab s={s} />,
-        <ProjectManageTab s={s} />,
-        <ManualGlossaryTab s={s} />,
-        <AiQcTab s={s} />,
-        <MtgSettlementTab s={s} />,
-        <CompanySettlementTab s={s} />,
-        <HistoryMemoTab s={s} />,
+        <BasicInfoTab s={sEff} />,
+        <FileManageTab s={sEff} />,
+        <ProjectManageTab s={sEff} />,
+        <ManualGlossaryTab s={sEff} />,
+        <AiQcTab s={sEff} />,
+        <MtgSettlementTab s={sEff} />,
+        <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} />,
+        <HistoryMemoTab s={sEff} />,
       ]
     : isStenography
     ? [
-        <BasicInfoTab s={s} />,
-        <StenographyAssignTab s={s} />,
-        <ManualGlossaryTab s={s} />,
-        <AiQcTab s={s} />,
-        <MtgSettlementTab s={s} />,
-        <CompanySettlementTab s={s} />,
-        <HistoryMemoTab s={s} />,
+        <BasicInfoTab s={sEff} />,
+        <StenographyAssignTab s={sEff} />,
+        <ManualGlossaryTab s={sEff} />,
+        <AiQcTab s={sEff} />,
+        <MtgSettlementTab s={sEff} />,
+        <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} />,
+        <HistoryMemoTab s={sEff} />,
       ]
     : [
         <BasicInfoTab s={s} />,

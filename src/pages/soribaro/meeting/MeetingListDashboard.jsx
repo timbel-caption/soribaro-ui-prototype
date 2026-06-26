@@ -15,7 +15,7 @@ function statusBadge(s) {
 
 function settleBadge(s) {
   if (s === '정산완료') return <span className="mtg-settle-badge mtg-settle-done">{s}</span>;
-  if (s === '정산대기') return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
+  if (s === '정산대기' || s === '작업자 정산대기' || s === '업체 정산대기') return <span className="mtg-settle-badge mtg-settle-wait">정산대기</span>;
   if (s === '부분정산') return <span className="mtg-settle-badge mtg-settle-partial">{s}</span>;
   return <span className="mtg-settle-badge mtg-settle-pre">{s}</span>;
 }
@@ -58,7 +58,7 @@ function computeStats(samples) {
   const working    = samples.filter((s) => s.overallStatus === 'WORKING').length;
   const checking   = samples.filter((s) => s.overallStatus === 'CHECKING').length;
   const checkDone  = samples.filter((s) => s.overallStatus === 'DONE').length;
-  const settleWait = samples.filter((s) => ['정산대기', '부분정산'].includes(s.settlement.status)).length;
+  const settleWait = samples.filter((s) => s.settlement.status !== '정산완료').length;
   return { inProgress, working, checking, checkDone, settleWait };
 }
 
@@ -68,7 +68,13 @@ function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlemen
   if (filterFrom && date < filterFrom) return false;
   if (filterTo && date > filterTo) return false;
   if (filterStatus && s.overallStatus !== filterStatus) return false;
-  if (filterSettlement && s.settlement?.status !== filterSettlement) return false;
+  if (filterSettlement) {
+    const st = s.settlement?.status || '';
+    const isSettleWait = st !== '정산완료';
+    if (filterSettlement === '정산대기' && !isSettleWait) return false;
+    if (filterSettlement === '정산완료' && st !== '정산완료') return false;
+    if (filterSettlement !== '정산대기' && filterSettlement !== '정산완료' && st !== filterSettlement) return false;
+  }
   if (filterContractType && s.contractType !== filterContractType) return false;
   if (searchText.trim()) {
     const q = searchText.trim().toLowerCase();

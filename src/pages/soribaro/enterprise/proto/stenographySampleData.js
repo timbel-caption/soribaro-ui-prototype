@@ -58,6 +58,8 @@ export const STENOGRAPHY_SAMPLES = [
     ],
     settlement: {
       status: '정산대기',
+      workerSettled: false,
+      companySettled: false,
       items: [
         { worker: '홍길동', role: '속기', amount: 520000, taxRate: 3.3, netAmount: 468000 },
         { worker: '이수진', role: '속기', amount: 420000, taxRate: 3.3, netAmount: 378000 },
@@ -127,6 +129,8 @@ export const STENOGRAPHY_SAMPLES = [
     ],
     settlement: {
       status: '정산대기',
+      workerSettled: false,
+      companySettled: false,
       items: [
         { worker: '김나리', role: '속기', amount: 480000, taxRate: 3.3, netAmount: 432000 },
         { worker: '박민준', role: '검수', amount: 150000, taxRate: 3.3, netAmount: 135000 },
