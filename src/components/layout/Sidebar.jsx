@@ -238,6 +238,11 @@ const menuData = [
             labelKey: "sidebar.glossaryManagement",
             path: "/soribaro/manage/glossary",
           },
+          {
+            id: "manage-operations",
+            labelKey: "sidebar.operationsStatus",
+            path: "/soribaro/manage/operations",
+          },
         ],
       },
     ],

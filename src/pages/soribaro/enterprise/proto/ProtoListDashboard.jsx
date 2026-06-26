@@ -163,16 +163,7 @@ function MiniCalendar() {
 export default function ProtoListDashboard({ samples }) {
   const navigate = useNavigate();
   const st     = computeStats(samples);
-  const sched  = computeScheduleSummary(samples);
   const upcoming = computeUpcomingList(samples);
-
-  const summaryChips = [
-    { label: '이번 주 납품', value: sched.thisWeek, cls: 'vod-chip-thisweek' },
-    { label: '다음 주 납품', value: sched.nextWeek, cls: 'vod-chip-nextweek' },
-    { label: '작업중',       value: st.working,     cls: 'vod-chip-working'  },
-    { label: '검수중',       value: st.checking,    cls: 'vod-chip-checking' },
-    { label: '일정 조율',    value: st.delayed,     cls: 'vod-chip-adjust'   },
-  ];
 
   const statCards = [
     { label: '전체 프로젝트', value: st.total,      color: 'var(--accent-color)' },
@@ -182,63 +173,35 @@ export default function ProtoListDashboard({ samples }) {
     { label: '정산 대기',     value: st.settleWait,  color: '#a78bfa'  },
   ];
 
-  const statusBars = [
-    { label: '작업중',   value: st.working,    color: '#f87171' },
-    { label: '주의',     value: st.caution,    color: '#fb923c' },
-    { label: '일정 조율', value: st.delayed,   color: '#a78bfa' },
-    { label: '검수중',   value: st.checking,   color: '#fbbf24' },
-    { label: '납품완료', value: st.done,       color: '#4ade80' },
-    { label: '정산대기', value: st.settleWait, color: '#a78bfa' },
-  ];
-  const maxBarVal = Math.max(...statusBars.map((b) => b.value), 1);
-
   return (
     <div className="proto-dashboard vod-dashboard">
 
-      {/* ① 전체 일정 요약 */}
-      <div className="vod-sched-summary-section">
-        <div className="vod-sched-summary-header">
-          <span className="vod-section-label">전체 일정 요약</span>
-          <span className="vod-tl-today-chip">오늘 {TODAY_STR}</span>
-        </div>
-
-        {/* 요약 칩 */}
-        <div className="vod-sched-chips">
-          {summaryChips.map((chip) => (
-            <div key={chip.label} className={`vod-sched-chip ${chip.cls}`}>
-              <span className="vod-sched-chip-count">{chip.value}</span>
-              <span className="vod-sched-chip-label">{chip.label}</span>
+      {/* ① 다가오는 납품 일정 */}
+      <div className="vod-upcoming-section">
+        <p className="vod-upcoming-title">다가오는 납품 일정</p>
+        <div className="vod-upcoming-list">
+          {upcoming.length === 0 && (
+            <div className="vod-upcoming-empty">예정된 납품 일정이 없습니다.</div>
+          )}
+          {upcoming.map((item, idx) => (
+            <div key={idx} className="vod-upcoming-row">
+              <span className={`vod-dd-badge ${item.ddCls}`}>{item.ddLabel}</span>
+              <span className="vod-upcoming-name">{item.name}</span>
+              <span className={`vod-status-badge ${STATUS_META[item.status]?.cls ?? ''}`}>
+                {STATUS_META[item.status]?.label ?? item.status}
+              </span>
+              <span className="vod-upcoming-due">{item.dueDate}</span>
+              <div className="vod-upcoming-progress">
+                <div className="vod-upcoming-pb-bg">
+                  <div
+                    className="vod-upcoming-pb-fill"
+                    style={{ width: `${item.pct}%`, background: progressBarColor(item.pct, item.status) }}
+                  />
+                </div>
+                <span className="vod-upcoming-pct">{item.pct}%</span>
+              </div>
             </div>
           ))}
-        </div>
-
-        {/* 다가오는 납품 일정 */}
-        <div className="vod-upcoming-section">
-          <p className="vod-upcoming-title">다가오는 납품 일정</p>
-          <div className="vod-upcoming-list">
-            {upcoming.length === 0 && (
-              <div className="vod-upcoming-empty">예정된 납품 일정이 없습니다.</div>
-            )}
-            {upcoming.map((item, idx) => (
-              <div key={idx} className="vod-upcoming-row">
-                <span className={`vod-dd-badge ${item.ddCls}`}>{item.ddLabel}</span>
-                <span className="vod-upcoming-name">{item.name}</span>
-                <span className={`vod-status-badge ${STATUS_META[item.status]?.cls ?? ''}`}>
-                  {STATUS_META[item.status]?.label ?? item.status}
-                </span>
-                <span className="vod-upcoming-due">{item.dueDate}</span>
-                <div className="vod-upcoming-progress">
-                  <div className="vod-upcoming-pb-bg">
-                    <div
-                      className="vod-upcoming-pb-fill"
-                      style={{ width: `${item.pct}%`, background: progressBarColor(item.pct, item.status) }}
-                    />
-                  </div>
-                  <span className="vod-upcoming-pct">{item.pct}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -317,58 +280,13 @@ export default function ProtoListDashboard({ samples }) {
         </div>
       </div>
 
-      {/* ④ 상태별 현황 */}
-      <div className="proto-dash-status-bottom">
-        <p className="proto-dash-section-title">상태별 현황</p>
-        <div className="vod-status-bars-grid">
-          {statusBars.map((b) => (
-            <div key={b.label} className="proto-dash-status-item">
-              <span className="proto-dash-status-label">{b.label}</span>
-              <div className="proto-dash-status-bar-bg">
-                <div
-                  className="proto-dash-status-bar-fill"
-                  style={{ width: `${(b.value / maxBarVal) * 100}%`, background: b.color }}
-                />
-              </div>
-              <span className="proto-dash-status-count" style={{ color: b.value > 0 ? b.color : 'var(--text-muted)' }}>
-                {b.value}건
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ⑤ 하단 보조 카드 (납품 캘린더 + 파일별 기한만 유지) */}
+      {/* ④ 하단 보조 카드 (납품 캘린더 + 파일별 기한) */}
       <div className="vod-helper-row">
 
         {/* 납품 일정 캘린더 */}
         <div className="vod-helper-card">
           <p className="vod-helper-card-title">납품 일정 캘린더</p>
           <MiniCalendar />
-        </div>
-
-        {/* 일정 편집 */}
-        <div className="vod-helper-card">
-          <p className="vod-helper-card-title">일정 편집</p>
-          <div className="vod-sched-edit-list">
-            {samples.map((s) => (
-              <div key={s.id} className="vod-sched-edit-row">
-                <div className="vod-sched-edit-info">
-                  <span className="vod-sched-edit-ent">{s.entNm}</span>
-                  <span className="vod-sched-edit-title" title={s.servTitle}>{s.servTitle}</span>
-                </div>
-                <div className="vod-sched-edit-right">
-                  <span className="vod-sched-edit-date">{s.dueDate}</span>
-                  <button
-                    className="vod-sched-edit-btn"
-                    onClick={(e) => { e.stopPropagation(); alert('일정 편집 (UI 프로토타입)'); }}
-                  >
-                    편집
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* 파일별 세부 기한 */}
