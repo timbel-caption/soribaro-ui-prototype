@@ -3480,7 +3480,16 @@ function StenographyAssignTab({ s }) {
     if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '배정취소', assignHistory: newHistory });
   };
 
+  const handleNotify = () => {
+    const dttm = stgNowStamp();
+    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `업체 알림 발송 — '${worker}' 업체전달완료 처리` }];
+    setWorkerStatus('업체전달완료');
+    setAssignHistory(newHistory);
+    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '업체전달완료', assignHistory: newHistory });
+  };
+
   const isCancelled = workerStatus === '배정취소';
+  const isNotified = workerStatus === '업체전달완료';
 
   return (
     <div className="proto-tab-panel">
@@ -3499,6 +3508,7 @@ function StenographyAssignTab({ s }) {
               <th className="text-center">작업자</th>
               <th className="text-center">작업시간</th>
               <th className="text-center">상태</th>
+              <th className="text-center">업체알림</th>
             </tr>
           </thead>
           <tbody>
@@ -3533,15 +3543,31 @@ function StenographyAssignTab({ s }) {
               <td className="text-center">
                 {workerStatus === '배정취소'
                   ? <span className="proto-badge-cancel" style={{ fontSize: '12px' }}>배정취소</span>
-                  : workerStatus === '배정완료'
+                  : workerStatus === '배정완료' || workerStatus === '업체전달완료'
                   ? <span className="proto-status-badge proto-status-done" style={{ fontSize: '12px' }}>배정완료</span>
                   : <span className="proto-status-badge proto-status-wait" style={{ fontSize: '12px' }}>미배정</span>
+                }
+              </td>
+              <td className="text-center">
+                {isNotified
+                  ? <span className="proto-badge-done" style={{ fontSize: '12px' }}>업체전달완료</span>
+                  : <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>-</span>
                 }
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      {worker && worker !== '-' && !isCancelled && !isNotified && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+          <button
+            className="proto-log-btn proto-log-btn--save"
+            style={{ fontSize: '12px', padding: '5px 16px' }}
+            onClick={handleNotify}
+          >알림</button>
+        </div>
+      )}
 
       <p className="proto-section-title">배정 이력</p>
       <div className="settle-history-list">
