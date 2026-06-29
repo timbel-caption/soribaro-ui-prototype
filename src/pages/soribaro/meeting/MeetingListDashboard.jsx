@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime, updateStenographyWorkerAssign } from '../enterprise/proto/protoStore';
+import StenographyWorkerAssignModal from '../enterprise/proto/StenographyWorkerAssignModal';
 
 const STATUS_LABEL = {
   WORKING:  { label: '작업중',  cls: 'mtg-status-working' },
@@ -188,22 +189,18 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const cancelPlayTime = () => setEditingPlayTimeId(null);
 
   const [assignModal, setAssignModal] = useState(null);
-  const [assignNameInput, setAssignNameInput] = useState('');
   const [workerOverrides, setWorkerOverrides] = useState({});
 
   const handleOpenAssign = (e, s) => {
     e.stopPropagation();
-    setAssignNameInput('');
     setAssignModal({ id: s.id });
   };
 
-  const handleConfirmAssign = () => {
-    const name = assignNameInput.trim();
-    if (!name || !assignModal) return;
-    setWorkerOverrides((prev) => ({ ...prev, [assignModal.id]: { worker: name, status: '배정완료' } }));
-    updateStenographyWorkerAssign(assignModal.id, { assignWorker: name, assignStatus: '배정완료' });
+  const handleConfirmAssign = (workerName) => {
+    if (!workerName || !assignModal) return;
+    setWorkerOverrides((prev) => ({ ...prev, [assignModal.id]: { worker: workerName, status: '배정완료' } }));
+    updateStenographyWorkerAssign(assignModal.id, { assignWorker: workerName, assignStatus: '배정완료' });
     setAssignModal(null);
-    setAssignNameInput('');
   };
 
   const handleCancelWorker = (e, s) => {
@@ -221,30 +218,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
 
-  const assignModalJsx = assignModal && (
-    <div className="pm-overlay" onClick={() => setAssignModal(null)}>
-      <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
-        <div className="pm-modal-hd">
-          <span className="pm-modal-title">작업자 배정</span>
-          <button className="preg-x-btn" onClick={() => setAssignModal(null)}>✕</button>
-        </div>
-        <div style={{ padding: '16px 20px' }}>
-          <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>작업자 이름</label>
-          <input
-            className="preg-input"
-            value={assignNameInput}
-            onChange={(e) => setAssignNameInput(e.target.value)}
-            placeholder="이름을 입력하세요"
-            autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && handleConfirmAssign()}
-          />
-        </div>
-        <div className="pm-modal-ft">
-          <button className="proto-log-btn" onClick={() => setAssignModal(null)}>취소</button>
-          <button className="proto-log-btn proto-log-btn--save" onClick={handleConfirmAssign}>배정</button>
-        </div>
-      </div>
-    </div>
+  const assignModalJsx = (
+    <StenographyWorkerAssignModal
+      open={!!assignModal}
+      onClose={() => setAssignModal(null)}
+      onConfirm={handleConfirmAssign}
+    />
   );
 
   const pagination = (

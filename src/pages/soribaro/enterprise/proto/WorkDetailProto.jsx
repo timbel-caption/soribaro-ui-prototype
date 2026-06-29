@@ -10,6 +10,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import '../../../../styles/notion-list.css';
 import './ProtoDetail.css';
+import StenographyWorkerAssignModal from './StenographyWorkerAssignModal';
 
 const TAB_LABELS_VOD = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
@@ -3532,12 +3533,10 @@ function StenographyAssignTab({ s }) {
     s?.assignHistory ? s.assignHistory.map(r => ({ ...r })) : STG_ASSIGN_HISTORY_SEED.map(r => ({ ...r }))
   );
   const [assignModal, setAssignModal] = useState(false);
-  const [assignName, setAssignName] = useState('');
   const [cancelModal, setCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
-  const confirmAssign = () => {
-    const name = assignName.trim();
+  const confirmAssign = (name) => {
     if (!name) return;
     const dttm = stgNowStamp();
     const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `작업자 '${name}' 배정` }];
@@ -3545,7 +3544,6 @@ function StenographyAssignTab({ s }) {
     setWorkerStatus('배정완료');
     setAssignHistory(newHistory);
     setAssignModal(false);
-    setAssignName('');
     if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: name, assignStatus: '배정완료', assignHistory: newHistory });
   };
 
@@ -3575,7 +3573,7 @@ function StenographyAssignTab({ s }) {
     <div className="proto-tab-panel">
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
         <p className="proto-section-title" style={{ margin: 0 }}>작업자 배정</p>
-        <button className="proto-log-btn proto-log-btn--save" style={{ fontSize: '12px', padding: '4px 12px' }} onClick={() => { setAssignName(''); setAssignModal(true); }}>배정하기</button>
+        <button className="proto-log-btn proto-log-btn--save" style={{ fontSize: '12px', padding: '4px 12px' }} onClick={() => setAssignModal(true)}>배정하기</button>
         {worker && worker !== '-' && !isCancelled && (
           <button className="proto-log-btn" style={{ fontSize: '12px', padding: '4px 12px', color: 'var(--error-color, #f87171)', borderColor: 'var(--error-color, #f87171)' }} onClick={() => { setCancelReason(''); setCancelModal(true); }}>배정 취소</button>
         )}
@@ -3686,31 +3684,11 @@ function StenographyAssignTab({ s }) {
       </div>
 
       {/* 배정하기 모달 */}
-      {assignModal && (
-        <div className="pm-overlay" onClick={() => setAssignModal(false)}>
-          <div className="pm-modal pm-modal--sm" onClick={e => e.stopPropagation()}>
-            <div className="pm-modal-hd">
-              <span className="pm-modal-title">작업자 배정</span>
-              <button className="preg-x-btn" onClick={() => setAssignModal(false)}>✕</button>
-            </div>
-            <div style={{ padding: '16px 20px' }}>
-              <label className="preg-label" style={{ display: 'block', marginBottom: '6px' }}>작업자 이름</label>
-              <input
-                className="preg-input"
-                value={assignName}
-                onChange={e => setAssignName(e.target.value)}
-                placeholder="이름을 입력하세요"
-                autoFocus
-                onKeyDown={e => e.key === 'Enter' && confirmAssign()}
-              />
-            </div>
-            <div className="pm-modal-ft">
-              <button className="proto-log-btn" onClick={() => setAssignModal(false)}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save" onClick={confirmAssign}>배정</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <StenographyWorkerAssignModal
+        open={assignModal}
+        onClose={() => setAssignModal(false)}
+        onConfirm={confirmAssign}
+      />
 
       {/* 배정 취소 모달 */}
       {cancelModal && (

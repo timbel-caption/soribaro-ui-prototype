@@ -10,6 +10,13 @@ const UPDATES = [
   {
     date: '2026-06-29',
     author: '정윤실',
+    title: '현장속기 작업관리 — 배정하기 팝업을 작업자 목록 선택 UI로 개편 및 공유 컴포넌트화',
+    description:
+      'StenographyWorkerAssignModal 컴포넌트를 신규 생성하여 이름·급수·연락처·거주지·배정 가능 여부 컬럼의 작업자 목록과 라디오 선택, 검색 기능을 제공합니다. 진행 의뢰 현황(MeetingListDashboard)과 상세보기 > 배정 관리(WorkDetailProto)가 동일 컴포넌트를 공유하며, 배정 결과는 protoStore를 통해 모든 화면에 즉시 반영됩니다.',
+  },
+  {
+    date: '2026-06-29',
+    author: '정윤실',
     title: '회의록·현장속기 작업관리 진행 의뢰 현황 — 담당자 컬럼을 검수자로 변경',
     description:
       'MeetingListDashboard의 진행 의뢰 현황 테이블 헤더 "담당자"를 "검수자"로 변경했습니다. 현장속기 작업관리도 동일 컴포넌트를 공유하므로 두 화면 모두 반영됩니다.',
