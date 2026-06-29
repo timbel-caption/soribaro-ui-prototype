@@ -446,9 +446,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           </div>
           {pagination}
         </div>
+        {assignModalJsx}
       </div>
-      {assignModalJsx}
-    </div>
     );
   }
 
