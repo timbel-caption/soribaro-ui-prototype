@@ -385,7 +385,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th className="text-center">회차</th>
         <th className="text-center">의뢰시간</th>
         <th className="text-center">납품기한</th>
-        <th style={{ minWidth: '100px' }}>담당자</th>
+        <th style={{ minWidth: '100px' }}>검수자</th>
         <th style={{ minWidth: '100px' }}>작업자</th>
         <th style={{ minWidth: '140px' }}>특이사항</th>
         <th className="text-center">상태</th>
