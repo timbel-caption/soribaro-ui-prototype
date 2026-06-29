@@ -259,8 +259,7 @@ function BasicInfoTab({ s }) {
   ] : [
     { label: '작업 유형', value: s.bssTypeName },
     { label: '업체명', value: s.entNm || '-' },
-    { label: '프로젝트명', value: s.servTitle || '-' },
-    { label: '기관/학교명', value: s.orgNm || '-' },
+    { label: '회차', value: s.round || '-' },
     { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
     { label: '납품예정일', value: s.dueDate || '-' },
     { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
@@ -273,18 +272,17 @@ function BasicInfoTab({ s }) {
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ] : [
-    { label: '담당 관리자', value: s.managerNm || s.membNm || '-' },
+    { label: '의뢰자', value: s.managerNm || s.membNm || '-' },
     { label: '연락처', value: s.phone || '010-1234-5678' },
     { label: '이메일', value: s.email || 'kim@go.kr' },
     { label: '총 분량', value: s.totalPlayTm || '-' },
-    { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
+    { label: '프로젝트 상태', value: statusBadge(s.overallStatus) },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ];
   const row3 = !isVod ? [
     { label: '실무자(납품)', value: s.staffNm || '-' },
     { label: '연락처', value: s.staffPhone || '-' },
     { label: '이메일', value: s.staffEmail || '-' },
-    { label: '총 분량', value: s.totalPlayTm || '-' },
     { span3: true },
   ] : null;
 
@@ -314,7 +312,7 @@ function BasicInfoTab({ s }) {
           <span>📋</span>
           <span>{isVod ? '프로젝트 기본정보' : '의뢰 기본 정보'}</span>
         </div>
-        <div className="proto-basic-card-body">
+        <div className={`proto-basic-card-body${!isVod ? ' proto-basic-card-body--6col' : ''}`}>
           {row1.map(({ label, value }, i) => (
             <div
               key={label}

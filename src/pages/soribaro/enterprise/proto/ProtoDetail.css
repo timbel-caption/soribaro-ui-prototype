@@ -249,6 +249,9 @@
   grid-template-columns: repeat(7, 1fr);
   background: var(--bg-primary);
 }
+.proto-basic-card-body--6col {
+  grid-template-columns: repeat(6, 1fr);
+}
 
 .proto-basic-field {
   padding: 12px 14px;
