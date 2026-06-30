@@ -14,7 +14,7 @@ import StenographyWorkerAssignModal from './StenographyWorkerAssignModal';
 
 const TAB_LABELS_VOD = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
-  'AI QC 결과 요약', '납품관리', '작업자 정산', '정산확인', '프로젝트 이력',
+  '납품관리', '작업자 정산', '정산확인', '프로젝트 이력',
 ];
 const TAB_LABELS_MTG = [
   '기본정보', '파일관리', '프로젝트 관리', '정산확인', '업체정산', '이력/메모',
@@ -4767,7 +4767,6 @@ export default function WorkDetailProto({ samples, backPath }) {
         <FileManageTab s={s} />,
         <ProjectManageTab s={s} />,
         <ManualGlossaryTab s={s} />,
-        <AiQcTab s={s} />,
         <DeliveryTab s={s} />,
         <WorkerSettlementTab s={s} />,
         <SettlementTab />,
