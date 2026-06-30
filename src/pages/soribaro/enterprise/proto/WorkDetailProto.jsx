@@ -4279,14 +4279,18 @@ function wsPayRate(acc) {
   return 0;
 }
 
-// 작업시간 "00:52:30" → 분 (52.5)
+// 작업시간 "00:52:30" → 분 (52.5) — 내부 정산 계산용
 function wsDurationToMinutes(dur) {
   if (!dur || dur === '-') return 0;
   const [h, m, sec] = dur.split(':').map(Number);
   return (h * 3600 + m * 60 + (sec || 0)) / 60;
 }
-function wsMinFmt(min) {
-  return Number.isInteger(min) ? `${min}분` : `${min.toFixed(1)}분`;
+// 작업시간 RT 표시 "00:52:30" → "0:52:30"
+function wsRtFmt(dur) {
+  if (!dur || dur === '-') return '-';
+  const [h, m, sec] = dur.split(':').map(Number);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${h}:${pad(m)}:${pad(sec || 0)}`;
 }
 
 // 프로젝트 단위 난이도 (id 기준 고정 — 상/하)
@@ -4329,8 +4333,8 @@ function buildWorkerSettleRows(s) {
       worker,
       grade,
       checker,
-      workType:   s.bssTypeName === 'VOD' ? '자막' : (tr?.role || '전사'),
       status:     WS_STATUS_CYCLE[idx % WS_STATUS_CYCLE.length],
+      rt:         wsRtFmt(f.duration),
       minutes,
       rate,
       accuracy,
@@ -4371,7 +4375,7 @@ function WorkerSettlementTab({ s }) {
         <span className="ws-list-note">총 {rows.length}건 · 현재 프로젝트 기준 · 검수 단가 {WS_REVIEW_RATE}원/분</span>
       </div>
 
-      <div className="proto-table-wrap proto-table-wrap--scroll">
+      <div className="proto-table-wrap ws-table-scroll">
         <table className="proto-table">
           <thead>
             <tr>
@@ -4381,7 +4385,6 @@ function WorkerSettlementTab({ s }) {
               <th className="text-center">작업자</th>
               <th className="text-center">작업자 등급</th>
               <th className="text-center">검수자</th>
-              <th className="text-center">작업유형</th>
               <th className="text-center">상태</th>
               <th className="text-center">작업시간</th>
               <th className="text-right">작업 단가</th>
@@ -4395,7 +4398,7 @@ function WorkerSettlementTab({ s }) {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={15} className="text-center" style={{ padding: '32px 0', color: 'var(--text-muted)' }}>
+                <td colSpan={14} className="text-center" style={{ padding: '32px 0', color: 'var(--text-muted)' }}>
                   현재 프로젝트에 연결된 정산 대상이 없습니다.
                 </td>
               </tr>
@@ -4403,14 +4406,13 @@ function WorkerSettlementTab({ s }) {
             {rows.map((r) => (
               <tr key={r.fileNo}>
                 <td className="text-center" style={{ fontSize: '12px' }}>{r.fileNo}</td>
-                <td style={{ fontSize: '12px' }}>{r.fileName}</td>
+                <td className="ws-filename-cell" title={r.fileName}>{r.fileName}</td>
                 <td className="text-center">{wsDifficultyBadge(r.difficulty)}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{r.worker}</td>
                 <td className="text-center">{wsGradeBadge(r.grade)}</td>
                 <td className="text-center" style={{ fontSize: '12px', color: r.checker === '미배정' ? 'var(--text-muted)' : 'inherit' }}>{r.checker}</td>
-                <td className="text-center"><span className="ws-type-chip">{r.workType}</span></td>
                 <td className="text-center">{wsStatusBadge(r.status)}</td>
-                <td className="text-center settle-worktime-cell">{wsMinFmt(r.minutes)}</td>
+                <td className="text-center settle-worktime-cell">{r.rt}</td>
                 <td className="text-right" style={{ fontSize: '12px' }}>{r.rate.toLocaleString()}원</td>
                 <td className="text-center settle-worktime-cell">{r.accuracy.toFixed(2)}%</td>
                 <td className="text-center" style={{ fontSize: '12px', color: r.payRate === 0 ? '#f87171' : 'inherit', fontWeight: 600 }}>
@@ -4430,7 +4432,7 @@ function WorkerSettlementTab({ s }) {
             ))}
             {rows.length > 0 && (
               <tr className="settle-total-row">
-                <td colSpan={13} className="text-right">정산금액 합계 (지급률 반영)</td>
+                <td colSpan={12} className="text-right">정산금액 합계 (지급률 반영)</td>
                 <td className="text-right" style={{ fontWeight: 700 }}>{totalAmount.toLocaleString()}원</td>
                 <td />
               </tr>
