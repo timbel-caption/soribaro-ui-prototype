@@ -4750,6 +4750,26 @@
   white-space: nowrap;
 }
 
+/* 정산 대상 목록 — 항목이 많을 때 세로/가로 스크롤 (헤더 sticky 고정) */
+.ws-table-scroll {
+  max-height: 460px;
+  overflow: auto;
+}
+.ws-table-scroll .proto-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* 파일명 — 줄바꿈 없이 한 줄 말줄임 처리 */
+.ws-filename-cell {
+  font-size: 12px;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 프로젝트 난이도 배지 */
 .ws-diff-badge {
   display: inline-block;
@@ -4807,6 +4827,7 @@
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
+  white-space: nowrap;
   background: var(--surface-light);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
