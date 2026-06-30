@@ -4744,54 +4744,35 @@
 }
 
 /* ─── 작업자 정산 탭 ─── */
-.ws-summary-cards {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-}
-@media (max-width: 1100px) {
-  .ws-summary-cards { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 680px) {
-  .ws-summary-cards { grid-template-columns: repeat(2, 1fr); }
-}
-
-.ws-summary-card {
-  background: var(--surface-light);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ws-summary-value {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--text-primary);
-}
-
-.ws-summary-label {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* 요약 카드 좌측 강조선 */
-.ws-sum-total    { border-left: 3px solid var(--accent-color); }
-.ws-sum-confirm  { border-left: 3px solid #fbbf24; }
-.ws-sum-reject   { border-left: 3px solid #f87171; }
-.ws-sum-pay-wait { border-left: 3px solid #60a5fa; }
-.ws-sum-paid     { border-left: 3px solid #4ade80; }
-.ws-sum-agg      { border-left: 3px solid #a78bfa; }
-
 .ws-list-note {
   font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;
 }
+
+/* 프로젝트 난이도 배지 */
+.ws-diff-badge {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ws-diff-high { background: rgba(248,113,113,0.18); color: #f87171; }
+.ws-diff-low  { background: rgba(96,165,250,0.18);  color: #60a5fa; }
+
+/* 작업자 등급 배지 */
+.ws-grade-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.ws-grade-rookie { background: var(--bg-hover);          color: var(--text-secondary); }
+.ws-grade-elite  { background: rgba(99,102,241,0.16);    color: #a5b4fc; }
+.ws-grade-pro    { background: rgba(234,179,8,0.18);     color: #facc15; }
 
 /* 상태 배지 */
 .ws-status-badge {

@@ -4261,50 +4261,97 @@ function wsStatusBadge(status) {
   return <span className={`ws-status-badge ${cls}`}>{status}</span>;
 }
 
-// 현재 프로젝트의 파일/작업자/검수자/정산 데이터를 결합해 정산 대상 행을 구성
+// VOD 작업자 등급별 분당 단가 (프로젝트 난이도에 따라 차등)
+const WS_WORKER_RATE = {
+  Rookie: { 상: 267, 하: 217 },
+  Elite:  { 상: 300, 하: 250 },
+  Pro:    { 상: 333, 하: 283 },
+};
+const WS_REVIEW_RATE = 160;          // 검수 단가 (난이도·등급 무관 고정)
+const WS_GRADES = ['Rookie', 'Elite', 'Pro'];
+
+// 정확도별 지급률 기준
+function wsPayRate(acc) {
+  if (acc >= 97) return 1.0;
+  if (acc >= 95) return 0.8;
+  if (acc >= 93) return 0.6;
+  if (acc >= 90) return 0.4;
+  return 0;
+}
+
+// 작업시간 "00:52:30" → 분 (52.5)
+function wsDurationToMinutes(dur) {
+  if (!dur || dur === '-') return 0;
+  const [h, m, sec] = dur.split(':').map(Number);
+  return (h * 3600 + m * 60 + (sec || 0)) / 60;
+}
+function wsMinFmt(min) {
+  return Number.isInteger(min) ? `${min}분` : `${min.toFixed(1)}분`;
+}
+
+// 프로젝트 단위 난이도 (id 기준 고정 — 상/하)
+function wsProjectDifficulty(s) {
+  const key = (s.servCd || s.id || '').slice(-1);
+  return /[13579]/.test(key) ? '상' : '하';
+}
+// 작업자명 기준 고정 등급 부여
+function wsWorkerGrade(name) {
+  let sum = 0;
+  for (const ch of name) sum += ch.charCodeAt(0);
+  return WS_GRADES[sum % WS_GRADES.length];
+}
+
+// 정확도 시드 (지급률 단계가 다양하게 보이도록 고정 순환)
+const WS_ACC_CYCLE = [99.10, 96.40, 94.20, 98.30, 91.50, 97.80];
+
+// 현재 프로젝트의 파일/작업자/검수자 데이터를 결합해 정산 대상 행을 구성
 function buildWorkerSettleRows(s) {
   const files       = s.files || [];
   const assignments = s.assignments || [];
-  const items       = s.settlement?.items || [];
   const findAssign  = (fileNo, role) => assignments.find((a) => a.fileNo === fileNo && a.role === role);
-  const findAmount  = (worker) => items.find((it) => it.worker === worker);
-  const baseAcc     = s.qcScore || 96;
+  const difficulty  = wsProjectDifficulty(s);
 
   return files.map((f, idx) => {
     const tr      = findAssign(f.fileNo, '전사');
     const rv      = findAssign(f.fileNo, '검수');
     const worker  = tr?.worker || '-';
     const checker = rv?.worker || '미배정';
-    const amt     = findAmount(worker);
-    const accuracy = Math.min(99.9, baseAcc + ((idx * 1.7) % 6)).toFixed(2);
+    const grade   = worker === '-' ? '-' : wsWorkerGrade(worker);
+    const rate    = grade === '-' ? 0 : WS_WORKER_RATE[grade][difficulty];
+    const minutes = wsDurationToMinutes(f.duration);
+    const accuracy = WS_ACC_CYCLE[idx % WS_ACC_CYCLE.length];
+    const payRate  = wsPayRate(accuracy);
+    const amount   = Math.round(minutes * rate * payRate);
     return {
-      fileNo:    f.fileNo,
-      fileName:  f.fileName,
+      fileNo:     f.fileNo,
+      fileName:   f.fileName,
+      difficulty,
       worker,
+      grade,
       checker,
-      workType:  s.bssTypeName === 'VOD' ? '자막' : (tr?.role || '전사'),
-      status:    WS_STATUS_CYCLE[idx % WS_STATUS_CYCLE.length],
-      accuracy:  `${accuracy}%`,
+      workType:   s.bssTypeName === 'VOD' ? '자막' : (tr?.role || '전사'),
+      status:     WS_STATUS_CYCLE[idx % WS_STATUS_CYCLE.length],
+      minutes,
+      rate,
+      accuracy,
+      payRate,
       errorCount: (idx * 3 + 2) % 7,
-      workTime:  f.duration || '-',
-      amount:    amt ? amt.amount : 0,
+      amount,
     };
   });
 }
 
+function wsDifficultyBadge(difficulty) {
+  const cls = difficulty === '상' ? 'ws-diff-high' : 'ws-diff-low';
+  return <span className={`ws-diff-badge ${cls}`}>{difficulty}</span>;
+}
+function wsGradeBadge(grade) {
+  if (grade === '-') return <span style={{ color: 'var(--text-muted)' }}>-</span>;
+  return <span className={`ws-grade-badge ws-grade-${grade.toLowerCase()}`}>{grade}</span>;
+}
+
 function WorkerSettlementTab({ s }) {
   const rows = buildWorkerSettleRows(s);
-
-  const countBy = (preds) => rows.filter((r) => preds.includes(r.status)).length;
-  const summaryCards = [
-    { label: '전체 정산 대상',   value: rows.length,                          cls: 'ws-sum-total' },
-    { label: '작업자 확인 대기', value: countBy(['대기', '작업자 확인']),       cls: 'ws-sum-confirm' },
-    { label: '작업자 반려',     value: countBy(['작업자 반려']),               cls: 'ws-sum-reject' },
-    { label: '입금 대기',       value: countBy(['입금 대기']),                 cls: 'ws-sum-pay-wait' },
-    { label: '입금 완료',       value: countBy(['입금 완료']),                 cls: 'ws-sum-paid' },
-    { label: '정산 집계',       value: countBy(['정산 집계']),                 cls: 'ws-sum-agg' },
-  ];
-
   const totalAmount = rows.reduce((acc, r) => acc + r.amount, 0);
 
   return (
@@ -4314,24 +4361,14 @@ function WorkerSettlementTab({ s }) {
       <div className="settle-info-banner">
         <span className="settle-info-label">기준</span>
         <span className="settle-info-text">
-          현재 프로젝트에 연결된 작업자·검수자 정산 건입니다. 입금 처리·전체 검색·상태별 일괄 처리는 서비스 관리 &gt; 정산 관리에서 진행합니다.
+          현재 프로젝트에 연결된 작업자·검수자 정산 건입니다. 작업 단가는 프로젝트 난이도와 작업자 등급에 따라, 정산금액은 정확도별 지급률을 반영해 산정됩니다. 입금 처리·전체 검색·상태별 일괄 처리는 서비스 관리 &gt; 정산 관리에서 진행합니다.
         </span>
       </div>
 
-      {/* ── 2. 정산 요약 ── */}
-      <div className="ws-summary-cards">
-        {summaryCards.map((c) => (
-          <div key={c.label} className={`ws-summary-card ${c.cls}`}>
-            <span className="ws-summary-value">{c.value}건</span>
-            <span className="ws-summary-label">{c.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* ── 3. 정산 대상 목록 ── */}
+      {/* ── 2. 정산 대상 목록 ── */}
       <div className="settle-sheet-hd">
         <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 정산 대상 목록</p>
-        <span className="ws-list-note">총 {rows.length}건 · 현재 프로젝트 기준</span>
+        <span className="ws-list-note">총 {rows.length}건 · 현재 프로젝트 기준 · 검수 단가 {WS_REVIEW_RATE}원/분</span>
       </div>
 
       <div className="proto-table-wrap proto-table-wrap--scroll">
@@ -4340,13 +4377,17 @@ function WorkerSettlementTab({ s }) {
             <tr>
               <th className="text-center">파일번호</th>
               <th>파일명</th>
+              <th className="text-center">프로젝트 난이도</th>
               <th className="text-center">작업자</th>
+              <th className="text-center">작업자 등급</th>
               <th className="text-center">검수자</th>
               <th className="text-center">작업유형</th>
               <th className="text-center">상태</th>
-              <th className="text-center">정확도</th>
-              <th className="text-center">오류 건수</th>
               <th className="text-center">작업시간</th>
+              <th className="text-right">작업 단가</th>
+              <th className="text-center">정확도</th>
+              <th className="text-center">지급률</th>
+              <th className="text-center">오류 건수</th>
               <th className="text-right">정산금액</th>
               <th className="text-center">관리</th>
             </tr>
@@ -4354,7 +4395,7 @@ function WorkerSettlementTab({ s }) {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="text-center" style={{ padding: '32px 0', color: 'var(--text-muted)' }}>
+                <td colSpan={15} className="text-center" style={{ padding: '32px 0', color: 'var(--text-muted)' }}>
                   현재 프로젝트에 연결된 정산 대상이 없습니다.
                 </td>
               </tr>
@@ -4363,13 +4404,19 @@ function WorkerSettlementTab({ s }) {
               <tr key={r.fileNo}>
                 <td className="text-center" style={{ fontSize: '12px' }}>{r.fileNo}</td>
                 <td style={{ fontSize: '12px' }}>{r.fileName}</td>
+                <td className="text-center">{wsDifficultyBadge(r.difficulty)}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{r.worker}</td>
+                <td className="text-center">{wsGradeBadge(r.grade)}</td>
                 <td className="text-center" style={{ fontSize: '12px', color: r.checker === '미배정' ? 'var(--text-muted)' : 'inherit' }}>{r.checker}</td>
                 <td className="text-center"><span className="ws-type-chip">{r.workType}</span></td>
                 <td className="text-center">{wsStatusBadge(r.status)}</td>
-                <td className="text-center settle-worktime-cell">{r.accuracy}</td>
+                <td className="text-center settle-worktime-cell">{wsMinFmt(r.minutes)}</td>
+                <td className="text-right" style={{ fontSize: '12px' }}>{r.rate.toLocaleString()}원</td>
+                <td className="text-center settle-worktime-cell">{r.accuracy.toFixed(2)}%</td>
+                <td className="text-center" style={{ fontSize: '12px', color: r.payRate === 0 ? '#f87171' : 'inherit', fontWeight: 600 }}>
+                  {r.payRate === 0 ? '미지급' : `${Math.round(r.payRate * 100)}%`}
+                </td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{r.errorCount}건</td>
-                <td className="text-center settle-worktime-cell">{r.workTime}</td>
                 <td className="text-right" style={{ fontSize: '12px', fontWeight: 600 }}>{r.amount.toLocaleString()}원</td>
                 <td className="text-center">
                   <button
@@ -4383,7 +4430,7 @@ function WorkerSettlementTab({ s }) {
             ))}
             {rows.length > 0 && (
               <tr className="settle-total-row">
-                <td colSpan={9} className="text-right">정산금액 합계</td>
+                <td colSpan={13} className="text-right">정산금액 합계 (지급률 반영)</td>
                 <td className="text-right" style={{ fontWeight: 700 }}>{totalAmount.toLocaleString()}원</td>
                 <td />
               </tr>
