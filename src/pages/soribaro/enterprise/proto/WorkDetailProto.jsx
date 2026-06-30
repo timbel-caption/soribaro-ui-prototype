@@ -14,7 +14,7 @@ import StenographyWorkerAssignModal from './StenographyWorkerAssignModal';
 
 const TAB_LABELS_VOD = [
   '기본정보', '파일관리', '프로젝트 관리', '매뉴얼·용어집 세팅',
-  'AI QC 결과 요약', '납품관리', '정산확인', '프로젝트 이력',
+  'AI QC 결과 요약', '납품관리', '작업자 정산', '정산확인', '프로젝트 이력',
 ];
 const TAB_LABELS_MTG = [
   '기본정보', '파일관리', '프로젝트 관리', '정산확인', '업체정산', '이력/메모',
@@ -4242,6 +4242,159 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   );
 }
 
+// ─── 탭: 작업자 정산 (VOD) ───
+// 현재 프로젝트에 연결된 작업자/검수자 정산 건 확인용 (서비스 관리 > 정산 관리의 프로젝트별 상세 보기)
+// 검색/필터·입금 처리·일괄 처리는 서비스 관리 > 정산 관리에서 담당한다.
+const WS_STATUS_CYCLE = ['입금 완료', '작업자 확인', '입금 대기', '대기', '작업자 반려', '정산 집계'];
+
+const WS_STATUS_META = {
+  '대기':        'ws-badge-wait',
+  '작업자 확인':  'ws-badge-confirm',
+  '작업자 반려':  'ws-badge-reject',
+  '입금 대기':    'ws-badge-pay-wait',
+  '입금 완료':    'ws-badge-paid',
+  '정산 집계':    'ws-badge-agg',
+};
+
+function wsStatusBadge(status) {
+  const cls = WS_STATUS_META[status] || 'ws-badge-wait';
+  return <span className={`ws-status-badge ${cls}`}>{status}</span>;
+}
+
+// 현재 프로젝트의 파일/작업자/검수자/정산 데이터를 결합해 정산 대상 행을 구성
+function buildWorkerSettleRows(s) {
+  const files       = s.files || [];
+  const assignments = s.assignments || [];
+  const items       = s.settlement?.items || [];
+  const findAssign  = (fileNo, role) => assignments.find((a) => a.fileNo === fileNo && a.role === role);
+  const findAmount  = (worker) => items.find((it) => it.worker === worker);
+  const baseAcc     = s.qcScore || 96;
+
+  return files.map((f, idx) => {
+    const tr      = findAssign(f.fileNo, '전사');
+    const rv      = findAssign(f.fileNo, '검수');
+    const worker  = tr?.worker || '-';
+    const checker = rv?.worker || '미배정';
+    const amt     = findAmount(worker);
+    const accuracy = Math.min(99.9, baseAcc + ((idx * 1.7) % 6)).toFixed(2);
+    return {
+      fileNo:    f.fileNo,
+      fileName:  f.fileName,
+      worker,
+      checker,
+      workType:  s.bssTypeName === 'VOD' ? '자막' : (tr?.role || '전사'),
+      status:    WS_STATUS_CYCLE[idx % WS_STATUS_CYCLE.length],
+      accuracy:  `${accuracy}%`,
+      errorCount: (idx * 3 + 2) % 7,
+      workTime:  f.duration || '-',
+      amount:    amt ? amt.amount : 0,
+    };
+  });
+}
+
+function WorkerSettlementTab({ s }) {
+  const rows = buildWorkerSettleRows(s);
+
+  const countBy = (preds) => rows.filter((r) => preds.includes(r.status)).length;
+  const summaryCards = [
+    { label: '전체 정산 대상',   value: rows.length,                          cls: 'ws-sum-total' },
+    { label: '작업자 확인 대기', value: countBy(['대기', '작업자 확인']),       cls: 'ws-sum-confirm' },
+    { label: '작업자 반려',     value: countBy(['작업자 반려']),               cls: 'ws-sum-reject' },
+    { label: '입금 대기',       value: countBy(['입금 대기']),                 cls: 'ws-sum-pay-wait' },
+    { label: '입금 완료',       value: countBy(['입금 완료']),                 cls: 'ws-sum-paid' },
+    { label: '정산 집계',       value: countBy(['정산 집계']),                 cls: 'ws-sum-agg' },
+  ];
+
+  const totalAmount = rows.reduce((acc, r) => acc + r.amount, 0);
+
+  return (
+    <div className="proto-tab-panel">
+
+      {/* ── 1. 상단 안내 ── */}
+      <div className="settle-info-banner">
+        <span className="settle-info-label">기준</span>
+        <span className="settle-info-text">
+          현재 프로젝트에 연결된 작업자·검수자 정산 건입니다. 입금 처리·전체 검색·상태별 일괄 처리는 서비스 관리 &gt; 정산 관리에서 진행합니다.
+        </span>
+      </div>
+
+      {/* ── 2. 정산 요약 ── */}
+      <div className="ws-summary-cards">
+        {summaryCards.map((c) => (
+          <div key={c.label} className={`ws-summary-card ${c.cls}`}>
+            <span className="ws-summary-value">{c.value}건</span>
+            <span className="ws-summary-label">{c.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── 3. 정산 대상 목록 ── */}
+      <div className="settle-sheet-hd">
+        <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 정산 대상 목록</p>
+        <span className="ws-list-note">총 {rows.length}건 · 현재 프로젝트 기준</span>
+      </div>
+
+      <div className="proto-table-wrap proto-table-wrap--scroll">
+        <table className="proto-table">
+          <thead>
+            <tr>
+              <th className="text-center">파일번호</th>
+              <th>파일명</th>
+              <th className="text-center">작업자</th>
+              <th className="text-center">검수자</th>
+              <th className="text-center">작업유형</th>
+              <th className="text-center">상태</th>
+              <th className="text-center">정확도</th>
+              <th className="text-center">오류 건수</th>
+              <th className="text-center">작업시간</th>
+              <th className="text-right">정산금액</th>
+              <th className="text-center">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={11} className="text-center" style={{ padding: '32px 0', color: 'var(--text-muted)' }}>
+                  현재 프로젝트에 연결된 정산 대상이 없습니다.
+                </td>
+              </tr>
+            )}
+            {rows.map((r) => (
+              <tr key={r.fileNo}>
+                <td className="text-center" style={{ fontSize: '12px' }}>{r.fileNo}</td>
+                <td style={{ fontSize: '12px' }}>{r.fileName}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{r.worker}</td>
+                <td className="text-center" style={{ fontSize: '12px', color: r.checker === '미배정' ? 'var(--text-muted)' : 'inherit' }}>{r.checker}</td>
+                <td className="text-center"><span className="ws-type-chip">{r.workType}</span></td>
+                <td className="text-center">{wsStatusBadge(r.status)}</td>
+                <td className="text-center settle-worktime-cell">{r.accuracy}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{r.errorCount}건</td>
+                <td className="text-center settle-worktime-cell">{r.workTime}</td>
+                <td className="text-right" style={{ fontSize: '12px', fontWeight: 600 }}>{r.amount.toLocaleString()}원</td>
+                <td className="text-center">
+                  <button
+                    className="ws-detail-btn"
+                    onClick={() => alert('[프로토타입 안내]\n정산 상세는 서비스 관리 > 정산 관리에서 확인·처리합니다.')}
+                  >
+                    상세
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {rows.length > 0 && (
+              <tr className="settle-total-row">
+                <td colSpan={9} className="text-right">정산금액 합계</td>
+                <td className="text-right" style={{ fontWeight: 700 }}>{totalAmount.toLocaleString()}원</td>
+                <td />
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function SettlementTab() {
   return (
     <div className="proto-tab-panel">
@@ -4567,6 +4720,7 @@ export default function WorkDetailProto({ samples, backPath }) {
         <ManualGlossaryTab s={s} />,
         <AiQcTab s={s} />,
         <DeliveryTab s={s} />,
+        <WorkerSettlementTab s={s} />,
         <SettlementTab />,
         <HistoryMemoTab s={s} />,
       ];

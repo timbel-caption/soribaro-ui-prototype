@@ -4743,6 +4743,99 @@
   border-top: 2px solid var(--border-color);
 }
 
+/* ─── 작업자 정산 탭 ─── */
+.ws-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1100px) {
+  .ws-summary-cards { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 680px) {
+  .ws-summary-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.ws-summary-card {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ws-summary-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.ws-summary-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 요약 카드 좌측 강조선 */
+.ws-sum-total    { border-left: 3px solid var(--accent-color); }
+.ws-sum-confirm  { border-left: 3px solid #fbbf24; }
+.ws-sum-reject   { border-left: 3px solid #f87171; }
+.ws-sum-pay-wait { border-left: 3px solid #60a5fa; }
+.ws-sum-paid     { border-left: 3px solid #4ade80; }
+.ws-sum-agg      { border-left: 3px solid #a78bfa; }
+
+.ws-list-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* 상태 배지 */
+.ws-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ws-badge-wait     { background: var(--bg-hover);            color: var(--text-muted); }
+.ws-badge-confirm  { background: rgba(251,191,36,0.18);      color: #fbbf24; }
+.ws-badge-reject   { background: rgba(248,113,113,0.18);     color: #f87171; }
+.ws-badge-pay-wait { background: rgba(96,165,250,0.18);      color: #60a5fa; }
+.ws-badge-paid     { background: rgba(34,197,94,0.18);       color: #4ade80; }
+.ws-badge-agg      { background: rgba(167,139,250,0.18);     color: #a78bfa; }
+
+/* 작업유형 칩 */
+.ws-type-chip {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(99,102,241,0.14);
+  color: #a5b4fc;
+  font-weight: 500;
+}
+
+/* 상세 버튼 */
+.ws-detail-btn {
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+}
+.ws-detail-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 /* ─── 첨부파일 섹션 (기본정보 탭) ─── */
 .attach-section {
   margin-top: 20px;
