@@ -3666,6 +3666,31 @@
   border-radius: 8px;
 }
 
+/* 차수/주차 난이도 드롭다운 */
+.vod-pm-batch-diff {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.vod-pm-batch-diff-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.vod-pm-batch-diff-select {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+.vod-pm-batch-diff-select:focus { border-color: var(--accent-color); }
+
 .vod-pm-wspy-chip {
   font-size: 11px;
   font-weight: 600;

@@ -928,6 +928,7 @@ const VOD_SUBJECT_SEED = [
       {
         id: 'vbatch-001-1',
         label: '1주차 / 1차 입고',
+        difficulty: '상',
         workspyRegistered: true,
         status: '작업중',
         filesExpanded: false,
@@ -942,6 +943,7 @@ const VOD_SUBJECT_SEED = [
       {
         id: 'vbatch-001-2',
         label: '2주차 / 2차 입고',
+        difficulty: '하',
         workspyRegistered: false,
         status: '배정대기',
         filesExpanded: false,
@@ -962,6 +964,7 @@ const VOD_SUBJECT_SEED = [
       {
         id: 'vbatch-002-1',
         label: '1주차 / 1차 입고',
+        difficulty: '상',
         workspyRegistered: true,
         status: '검수중',
         filesExpanded: false,
@@ -980,6 +983,24 @@ const VOD_SUBJECT_SEED = [
     batches: [],
   },
 ];
+
+// 차수/주차 난이도 — 프로젝트 관리 탭에서 설정한 값을 작업자 정산 탭과 공유 (프로토타입용 모듈 상태)
+const VOD_BATCH_DIFFICULTY = {};   // { [batchId]: '상' | '하' }
+function getBatchDifficulty(batchId, fallback = '하') {
+  return VOD_BATCH_DIFFICULTY[batchId] ?? fallback;
+}
+function setBatchDifficulty(batchId, value) {
+  VOD_BATCH_DIFFICULTY[batchId] = value;
+}
+// 파일번호로 소속 차수/주차를 찾아 난이도를 가져온다 (작업자 정산 탭 연동용)
+function findBatchByFileNo(fileNo) {
+  for (const subj of VOD_SUBJECT_SEED) {
+    for (const b of subj.batches) {
+      if (b.projFiles?.some((pf) => pf.fileNo === fileNo)) return b;
+    }
+  }
+  return null;
+}
 
 const BATCH_STATUS_META = {
   '작업중':  { cls: 'proto-status-working',  label: '작업중'  },
@@ -1288,6 +1309,12 @@ function VodProjectManageView({ s }) {
   const toggleFilesExpand = (subjId, batchId) =>
     setBatch(subjId, batchId, (b) => ({ ...b, filesExpanded: !b.filesExpanded }));
 
+  // 차수/주차 난이도 변경 — 로컬 상태 + 공유 모듈 상태(작업자 정산 탭 연동) 동시 갱신
+  const changeBatchDifficulty = (subjId, batchId, value) => {
+    setBatchDifficulty(batchId, value);
+    setBatch(subjId, batchId, (b) => ({ ...b, difficulty: value }));
+  };
+
   const addSubject = () => {
     if (!newSubjName.trim()) return;
     setSubjects((prev) => [...prev, { id: `vsubj-${Date.now()}`, name: newSubjName.trim(), expanded: true, batches: [] }]);
@@ -1537,6 +1564,18 @@ function VodProjectManageView({ s }) {
                       <div className="vod-pm-batch-info">
                         <span className="vod-pm-batch-label">{batch.label}</span>
                         <span className="vod-pm-batch-filecount">파일 {batch.projFiles.length}개</span>
+                        <span className="vod-pm-batch-diff" onClick={(e) => e.stopPropagation()}>
+                          <span className="vod-pm-batch-diff-label">난이도</span>
+                          <select
+                            className="vod-pm-batch-diff-select"
+                            value={getBatchDifficulty(batch.id, batch.difficulty)}
+                            onChange={(e) => changeBatchDifficulty(subj.id, batch.id, e.target.value)}
+                            title="이 차수/주차 전체 파일에 적용되는 기본 난이도"
+                          >
+                            <option value="상">상</option>
+                            <option value="하">하</option>
+                          </select>
+                        </span>
                         {batch.workspyRegistered
                           ? <span className="vod-pm-wspy-chip vod-pm-wspy-chip--done">웍스파이 등록 완료</span>
                           : <span className="vod-pm-wspy-chip vod-pm-wspy-chip--none">웍스파이 미등록</span>
@@ -4293,11 +4332,6 @@ function wsRtFmt(dur) {
   return `${h}:${pad(m)}:${pad(sec || 0)}`;
 }
 
-// 프로젝트 단위 난이도 (id 기준 고정 — 상/하)
-function wsProjectDifficulty(s) {
-  const key = (s.servCd || s.id || '').slice(-1);
-  return /[13579]/.test(key) ? '상' : '하';
-}
 // 작업자명 기준 고정 등급 부여
 function wsWorkerGrade(name) {
   let sum = 0;
@@ -4309,11 +4343,11 @@ function wsWorkerGrade(name) {
 const WS_ACC_CYCLE = [99.10, 96.40, 94.20, 98.30, 91.50, 97.80];
 
 // 현재 프로젝트의 파일/작업자/검수자 데이터를 결합해 정산 대상 행을 구성
+// 난이도는 프로젝트 관리 탭에서 설정한 차수/주차 난이도를 가져와 단가 계산에 사용한다.
 function buildWorkerSettleRows(s) {
   const files       = s.files || [];
   const assignments = s.assignments || [];
   const findAssign  = (fileNo, role) => assignments.find((a) => a.fileNo === fileNo && a.role === role);
-  const difficulty  = wsProjectDifficulty(s);
 
   return files.map((f, idx) => {
     const tr      = findAssign(f.fileNo, '전사');
@@ -4321,6 +4355,9 @@ function buildWorkerSettleRows(s) {
     const worker  = tr?.worker || '-';
     const checker = rv?.worker || '미배정';
     const grade   = worker === '-' ? '-' : wsWorkerGrade(worker);
+    const batch       = findBatchByFileNo(f.fileNo);
+    const difficulty  = batch ? getBatchDifficulty(batch.id, batch.difficulty) : '하';
+    const batchLabel  = batch?.label || '-';
     const rate    = grade === '-' ? 0 : WS_WORKER_RATE[grade][difficulty];
     const minutes = wsDurationToMinutes(f.duration);
     const accuracy = WS_ACC_CYCLE[idx % WS_ACC_CYCLE.length];
@@ -4330,6 +4367,7 @@ function buildWorkerSettleRows(s) {
       fileNo:     f.fileNo,
       fileName:   f.fileName,
       difficulty,
+      batchLabel,
       worker,
       grade,
       checker,
@@ -4345,9 +4383,9 @@ function buildWorkerSettleRows(s) {
   });
 }
 
-function wsDifficultyBadge(difficulty) {
+function wsDifficultyBadge(difficulty, title) {
   const cls = difficulty === '상' ? 'ws-diff-high' : 'ws-diff-low';
-  return <span className={`ws-diff-badge ${cls}`}>{difficulty}</span>;
+  return <span className={`ws-diff-badge ${cls}`} title={title}>{difficulty}</span>;
 }
 function wsGradeBadge(grade) {
   if (grade === '-') return <span style={{ color: 'var(--text-muted)' }}>-</span>;
@@ -4365,7 +4403,7 @@ function WorkerSettlementTab({ s }) {
       <div className="settle-info-banner">
         <span className="settle-info-label">기준</span>
         <span className="settle-info-text">
-          현재 프로젝트에 연결된 작업자·검수자 정산 건입니다. 작업 단가는 프로젝트 난이도와 작업자 등급에 따라, 정산금액은 정확도별 지급률을 반영해 산정됩니다. 입금 처리·전체 검색·상태별 일괄 처리는 서비스 관리 &gt; 정산 관리에서 진행합니다.
+          현재 프로젝트에 연결된 작업자·검수자 정산 건입니다. 작업 단가는 프로젝트 관리 탭에서 설정한 차수/주차 난이도와 작업자 등급에 따라, 정산금액은 정확도별 지급률을 반영해 산정됩니다. 입금 처리·전체 검색·상태별 일괄 처리는 서비스 관리 &gt; 정산 관리에서 진행합니다.
         </span>
       </div>
 
@@ -4407,7 +4445,7 @@ function WorkerSettlementTab({ s }) {
               <tr key={r.fileNo}>
                 <td className="text-center" style={{ fontSize: '12px' }}>{r.fileNo}</td>
                 <td className="ws-filename-cell" title={r.fileName}>{r.fileName}</td>
-                <td className="text-center">{wsDifficultyBadge(r.difficulty)}</td>
+                <td className="text-center">{wsDifficultyBadge(r.difficulty, r.batchLabel !== '-' ? `${r.batchLabel} 기준` : undefined)}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{r.worker}</td>
                 <td className="text-center">{wsGradeBadge(r.grade)}</td>
                 <td className="text-center" style={{ fontSize: '12px', color: r.checker === '미배정' ? 'var(--text-muted)' : 'inherit' }}>{r.checker}</td>
