@@ -132,12 +132,20 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     addFiles(e.dataTransfer.files);
   };
 
+  // 파일을 분할한 경우 분할 구간 재생시간 합계, 분할하지 않은 경우 파일 재생시간을 그대로 사용한다
+  const effectiveDurationSec = (idx) => {
+    const splits = fileSplitsList[idx];
+    if (splits && splits.length > 0) return splits.reduce((sum, seg) => sum + Math.max(0, seg.end - seg.start), 0);
+    return fileDurationsSec[idx] || 0;
+  };
+
   const handleSubmit = () => {
     if (!form.entNm) return;
-    // 회의록: 등록한 파일의 재생시간 합산으로 의뢰시간을 산정한다 (현장속기는 시작-종료/정회 시간 기준으로 별도 산정)
+    // 회의록: 의뢰시간은 분할 구간을 반영한 재생시간 합산으로 산정한다 (현장속기는 시작-종료/정회 시간 기준으로 별도 산정)
     const totalPlayTm = workType === 'meeting' && files.length > 0
-      ? formatDurationHM(fileDurationsSec.reduce((a, b) => a + b, 0))
+      ? formatDurationHM(files.reduce((sum, _, i) => sum + effectiveDurationSec(i), 0))
       : '-';
+    // 파일관리의 파일별 재생시간은 분할 여부와 무관하게 원본 파일의 실제 재생시간을 그대로 사용한다
     const fileDurations = workType === 'meeting' ? fileDurationsSec.map(formatDurationHM) : [];
     onSubmit({ ...form, staff: selectedStaff, totalPlayTm, fileDurations, fileSplits: fileSplitsList }, files);
     setSubmitted(true);
