@@ -82,7 +82,7 @@ export default function StenographyWorkPage() {
         </div>
       </div>
 
-      <MeetingListDashboard samples={samples} onSamplesChange={refreshSamples} showAll={showAll} />
+      <MeetingListDashboard samples={samples} onSamplesChange={refreshSamples} showAll={showAll} workType="stenography" />
 
       {showRegister && (
         <MeetingRegisterModal onClose={() => { setShowRegister(false); refreshSamples(); }} onSubmit={handleRegister} />

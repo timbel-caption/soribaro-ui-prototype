@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
+import { parseMinutes, fmtHM } from './companySettlementCalc';
 import { useUserStore } from '../../../../stores/userStore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
@@ -4079,20 +4080,6 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   // - 그 외: liveQs (견적서 관리 최신값)
   const qs = (isConfirmed && !pendingReapply) ? (frozenQs || liveQs)
            : (restoredQs || liveQs);
-
-  function parseMinutes(tm) {
-    if (!tm || tm === '-') return 0;
-    const parts = tm.split(':');
-    if (parts.length < 2) return 0;
-    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-  }
-
-  function fmtHM(m) {
-    if (!m && m !== 0) return '-';
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-    return `${String(h).padStart(1, '0')}:${String(min).padStart(2, '0')}`;
-  }
 
   const totalMin = parseMinutes(s.totalPlayTm);
   const { invoiceType, unitPrice, baseUnit, roundUnit, overtimePrice, baseRateHours } = qs;

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime, updateStenographyWorkerAssign } from '../enterprise/proto/protoStore';
 import StenographyWorkerAssignModal from '../enterprise/proto/StenographyWorkerAssignModal';
+import { downloadMeetingWorkExcel, downloadStenographyWorkExcel } from '../../../utils/workManagementExcel';
 
 const STATUS_LABEL = {
   WORKING:  { label: '작업중',  cls: 'mtg-status-working' },
@@ -106,7 +107,7 @@ function computeAlerts(samples) {
   return { todayDue: todayDueItems.length, overdue: overdueItems.length, todayDueItems, overdueItems };
 }
 
-export default function MeetingListDashboard({ samples, onSamplesChange, showAll }) {
+export default function MeetingListDashboard({ samples, onSamplesChange, showAll, workType = 'meeting' }) {
   const navigate = useNavigate();
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
@@ -125,6 +126,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const [playTimeInput, setPlayTimeInput] = useState('');
 
   const handleSearch = () => setSearchText(pendingSearch);
+
+  const handleExportExcel = () => {
+    if (workType === 'stenography') downloadStenographyWorkExcel(filtered);
+    else downloadMeetingWorkExcel(filtered);
+  };
 
   const filtered = samples.filter((s) =>
     matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterContractType, searchCondition, searchText, showAll })
@@ -385,7 +391,10 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         </div>
 
         <div className="proto-dash-projects">
-          <p className="proto-dash-section-title" style={{ marginBottom: '8px' }}>전체 현황</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <p className="proto-dash-section-title" style={{ marginBottom: 0 }}>전체 현황</p>
+            <button className="btn-ghost" style={{ fontSize: '13px' }} onClick={handleExportExcel}>엑셀 다운로드</button>
+          </div>
           <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div className="filter-bar" style={{ marginBottom: 0 }}>
               <input className="filter-date" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} title="의뢰일 시작" />
