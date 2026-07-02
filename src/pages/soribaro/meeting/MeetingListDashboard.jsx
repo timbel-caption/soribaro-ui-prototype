@@ -66,6 +66,23 @@ function formatRegDate(regDttm) {
   return regDttm.replace(/-/g, '').slice(2, 8);
 }
 
+const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+
+// 납품 모니터링용 의뢰일자 표시: "6.16(금)" 형식
+function formatMonitorDate(regDttm) {
+  if (!regDttm) return '-';
+  const d = new Date((regDttm || '').slice(0, 10));
+  if (Number.isNaN(d.getTime())) return '-';
+  return `${d.getMonth() + 1}.${d.getDate()}(${WEEKDAY_KO[d.getDay()]})`;
+}
+
+// 진행의뢰현황 > 상세보기 > 프로젝트 관리(workProgress)의 파일별 진행률을 전체 대비 100 기준으로 환산
+function computeOverallProgress(s) {
+  if (!s.workProgress || s.workProgress.length === 0) return 0;
+  const sum = s.workProgress.reduce((acc, w) => acc + w.progress, 0);
+  return Math.round(sum / s.workProgress.length);
+}
+
 function computeStats(samples) {
   const inProgress = samples.filter((s) => s.overallStatus !== 'DONE').length;
   const working    = samples.filter((s) => s.overallStatus === 'WORKING').length;
@@ -246,6 +263,43 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       <button className="proto-log-btn" style={{ padding: '3px 8px' }}>›</button>
       <button className="proto-log-btn" style={{ padding: '3px 8px' }}>»</button>
       <span style={{ marginLeft: '4px' }}>1/25</span>
+    </div>
+  );
+
+  const monitorTable = (items) => (
+    <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
+      <table className="proto-table">
+        <thead>
+          <tr>
+            <th className="text-center">의뢰일자</th>
+            <th>업체명</th>
+            <th className="text-center">계약구분</th>
+            <th className="text-center">회차</th>
+            <th style={{ minWidth: '100px' }}>검수자</th>
+            <th className="text-center">진행률</th>
+            <th className="text-center">상태</th>
+            <th style={{ minWidth: '140px' }}>특이사항</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.length === 0 ? (
+            <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>해당 건이 없습니다.</td></tr>
+          ) : (
+            items.map((s) => (
+              <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
+                <td className="text-center">{formatMonitorDate(s.regDttm)}</td>
+                <td style={{ fontWeight: 600 }}>{s.entNm}</td>
+                <td className="text-center">{contractBadge(s.contractType)}</td>
+                <td className="text-center">{s.round || '-'}</td>
+                <td>{managerOverrides[s.id] ?? s.managerNm ?? '-'}</td>
+                <td className="text-center">{computeOverallProgress(s)}%</td>
+                <td className="text-center">{statusBadge(s.overallStatus)}</td>
+                <td>{s.specialNote || '-'}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 
@@ -495,34 +549,20 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       </div>
 
       <div className="proto-dash-status-bottom">
-        <p className="proto-dash-section-title">긴급 알림</p>
+        <p className="proto-dash-section-title">납품 모니터링</p>
         <div className="proto-alert-list">
           <div className="proto-alert-item proto-alert-urgent">
             <span className="proto-alert-icon">△</span>
-            <span className="proto-alert-text">금일 납품 건</span>
+            <span className="proto-alert-text">금일 납품</span>
             <span className="proto-alert-count">{alerts.todayDue}건</span>
           </div>
-          {alerts.todayDueItems.map((s) => (
-            <div key={s.id} className="mtg-alert-row" onClick={() => navigate(toDetailPath(s.protoPath))} style={{ cursor: 'pointer' }}>
-              <span className="mtg-alert-date">{formatRegDate(s.regDttm)}</span>
-              <span className="mtg-alert-ent">{s.entNm}</span>
-              {contractBadge(s.contractType)}
-              <span className="mtg-alert-round">{s.round || '-'}</span>
-            </div>
-          ))}
-          <div className="proto-alert-item proto-alert-delay" style={{ marginTop: '8px' }}>
+          {monitorTable(alerts.todayDueItems)}
+          <div className="proto-alert-item proto-alert-delay" style={{ marginTop: '12px' }}>
             <span className="proto-alert-icon">🔔</span>
-            <span className="proto-alert-text">납품 일정 확인 건</span>
+            <span className="proto-alert-text">납품 일정 확인</span>
             <span className="proto-alert-count">{alerts.overdue}건</span>
           </div>
-          {alerts.overdueItems.map((s) => (
-            <div key={s.id} className="mtg-alert-row" onClick={() => navigate(toDetailPath(s.protoPath))} style={{ cursor: 'pointer' }}>
-              <span className="mtg-alert-date">{formatRegDate(s.regDttm)}</span>
-              <span className="mtg-alert-ent">{s.entNm}</span>
-              {contractBadge(s.contractType)}
-              <span className="mtg-alert-round">{s.round || '-'}</span>
-            </div>
-          ))}
+          {monitorTable(alerts.overdueItems)}
         </div>
       </div>
       {assignModalJsx}
