@@ -926,13 +926,12 @@ function FileManageTab({ s }) {
     updateSampleFiles(s.id, []);
   };
 
-  const totalSec = files.reduce((acc, f) => acc + durationToSec(f.duration), 0);
   const selectedSec = files
     .filter((f) => checked.has(f.fileNo))
     .reduce((acc, f) => acc + durationToSec(f.duration), 0);
-  // duration이 있는 파일이 하나라도 있으면 합산값 표시, 전부 '-'이면 s.totalPlayTm 폴백
-  const hasKnownDuration = files.some((f) => f.duration && f.duration !== '-');
-  const totalDuration = hasKnownDuration ? secToDuration(totalSec) : (s.totalPlayTm || '-');
+  // 전체 재생시간은 최초 의뢰 등록 시 산정된 의뢰시간을 그대로 유지한다.
+  // 이후 파일 추가/삭제/분할 등 파일 구성이 바뀌어도 여기서 다시 합산하지 않는다.
+  const totalDuration = s.totalPlayTm || '-';
 
   return (
     <div className="proto-tab-panel">
