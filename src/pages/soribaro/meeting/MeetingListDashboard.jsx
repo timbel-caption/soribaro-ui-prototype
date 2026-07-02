@@ -272,7 +272,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   // - showProgress=true(회의록 납품 일정 확인 탭)일 때만 납품기한 앞에 진행률(바) 컬럼을 표시한다.
   // - markOverdue=true(진행 전체 탭)일 때만 납품 일정 확인 대상 건의 의뢰일자 앞에 📝 메모 아이콘을 표시한다.
   const mergedTable = (items, showProgress, markOverdue = false) => {
-    const colCount = 12 + (isStenographyType ? 1 : 0) + (showProgress ? 1 : 0);
+    const colCount = 12 + (isStenographyType ? 2 : 0) + (showProgress ? 1 : 0);
     return (
       <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
         <table className="proto-table">
@@ -286,6 +286,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <th className="text-center">의뢰시간</th>
               {showProgress && <th className="text-center">진행률</th>}
               <th className="text-center">납품기한</th>
+              {isStenographyType && <th style={{ minWidth: '100px' }}>작업자</th>}
               <th style={{ minWidth: '100px' }}>검수자</th>
               <th style={{ minWidth: '140px' }}>특이사항</th>
               <th className="text-center">상태</th>
@@ -303,6 +304,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 const isEditingManager = editingManagerId === s.id;
                 const managerNm = managerOverrides[s.id] ?? '';
                 const progress = computeOverallProgress(s);
+                const isStenography = s.bssTypeName === '현장속기';
+                const effWorker = workerOverrides[s.id]?.worker ?? s.assignWorker;
+                const effStatus = workerOverrides[s.id]?.status ?? s.assignStatus;
+                const isAssigned = isStenography && effWorker && (effStatus === '배정완료' || effStatus === '업체전달완료');
+                const isCancelledWorker = isStenography && effStatus === '배정취소';
                 return (
                   <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
                     <td className="text-center">
@@ -326,6 +332,15 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                       </td>
                     )}
                     <td className="text-center">{s.dueDate}</td>
+                    {isStenographyType && (
+                      <td style={{ maxWidth: '120px', fontSize: '13px' }}>
+                        {isCancelledWorker
+                          ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
+                          : isAssigned
+                          ? <span style={{ color: 'var(--text-secondary)' }}>{effWorker}</span>
+                          : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                      </td>
+                    )}
                     <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '120px' }}>
                       {isEditingManager ? (
                         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -378,6 +393,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
                     <td className="text-center">{s.actualDeliveryDate || '-'}</td>
                     <td className="text-center" style={{ whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                      {isStenographyType && (
+                        isAssigned
+                          ? <button className="mtg-detail-btn" style={{ marginRight: '4px', color: '#f87171', borderColor: '#f87171' }} onClick={(e) => handleCancelWorker(e, s)}>배정취소</button>
+                          : <button className="mtg-detail-btn" style={{ marginRight: '4px' }} onClick={(e) => handleOpenAssign(e, s)}>배정하기</button>
+                      )}
                       <button className="mtg-detail-btn" onClick={(e) => { e.stopPropagation(); navigate(toDetailPath(s.protoPath)); }}>상세보기</button>
                     </td>
                   </tr>
@@ -415,6 +435,22 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 {s.totalPlayTm || <span style={{ color: 'var(--text-muted)' }}>-</span>}
               </td>
               <td className="text-center">{s.dueDate}</td>
+              <td style={{ maxWidth: '120px', fontSize: '13px' }}>
+                {isStenography
+                  ? (isCancelledWorker
+                      ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
+                      : isAssigned
+                      ? <span style={{ color: 'var(--text-secondary)' }}>{effWorker}</span>
+                      : <span style={{ color: 'var(--text-muted)' }}>-</span>)
+                  : (s.assignStatus === '배정취소'
+                      ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
+                      : s.assignWorker && s.assignStatus === '업체전달완료'
+                      ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker} <span style={{ color: '#4ade80', fontWeight: 700 }}>○</span></span>
+                      : s.assignWorker && s.assignStatus === '배정완료'
+                      ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker}</span>
+                      : <span style={{ color: 'var(--text-muted)' }}>미배정</span>)
+                }
+              </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '120px' }}>
                 {isEditingManager ? (
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -438,22 +474,6 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     {managerNm || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
                   </div>
                 )}
-              </td>
-              <td style={{ maxWidth: '120px', fontSize: '13px' }}>
-                {isStenography
-                  ? (isCancelledWorker
-                      ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
-                      : isAssigned
-                      ? <span style={{ color: 'var(--text-secondary)' }}>{effWorker}</span>
-                      : <span style={{ color: 'var(--text-muted)' }}>-</span>)
-                  : (s.assignStatus === '배정취소'
-                      ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
-                      : s.assignWorker && s.assignStatus === '업체전달완료'
-                      ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker} <span style={{ color: '#4ade80', fontWeight: 700 }}>○</span></span>
-                      : s.assignWorker && s.assignStatus === '배정완료'
-                      ? <span style={{ color: 'var(--text-secondary)' }}>{s.assignWorker}</span>
-                      : <span style={{ color: 'var(--text-muted)' }}>미배정</span>)
-                }
               </td>
               <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
                 {isEditingNote ? (
@@ -511,8 +531,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th className="text-center">회차</th>
         <th className="text-center">의뢰시간</th>
         <th className="text-center">납품기한</th>
-        <th style={{ minWidth: '100px' }}>검수자</th>
         <th style={{ minWidth: '100px' }}>작업자</th>
+        <th style={{ minWidth: '100px' }}>검수자</th>
         <th style={{ minWidth: '140px' }}>특이사항</th>
         <th className="text-center">상태</th>
         <th className="text-center">정산</th>
