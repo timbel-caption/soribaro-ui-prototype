@@ -44,6 +44,7 @@ export default function StenographyWorkPage() {
       deliveryFormats: '-',
       specialNote: form.specialNote || '',
       internalMemo: '',
+      clientRequest: form.internalMemo || '',
       statusHistory: [{ date: form.regDate || today, label: '접수' }],
       protoPath: `/soribaro/stenography/detail/${newId}`,
       files: files.map((f, i) => ({ fileNo: i + 1, fileName: f.name, duration: '-', size: f.size, uploadDttm: today })),

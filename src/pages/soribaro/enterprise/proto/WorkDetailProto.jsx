@@ -308,7 +308,7 @@ function BasicInfoTab({ s }) {
   });
   const [memoEntries, setMemoEntries] = useState(() => {
     if (!isVod) {
-      // 회의록: 의뢰자 요청사항은 조회 전용 — clientRequest 우선, 없으면 기본값
+      // 회의록/현장속기: 의뢰인 요청사항은 조회 전용 — 새 의뢰 등록 시 입력한 clientRequest 우선, 없으면 기본값
       const text = s.clientRequest || '학생1 녹음이 안 돼서 서브파일로 작성 부탁드립니다.';
       return [{ id: 'client-req-seed', author: '의뢰자', dttm: s.regDttm || '', content: text }];
     }
@@ -487,7 +487,7 @@ function BasicInfoTab({ s }) {
           variant="memo"
           icon="≡"
           iconClass="proto-basic-extra-icon--memo"
-          title={isVod ? '내부 메모' : '의뢰자 요청 사항'}
+          title={isVod ? '내부 메모' : '의뢰인 요청사항'}
           entries={memoEntries}
           author={authorName}
           onChange={syncMemos}
