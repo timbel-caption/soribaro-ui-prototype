@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, Fragment } from 'react';
 import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionTime } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
@@ -616,7 +616,7 @@ function segmentStatusBadge(status) {
   );
 }
 
-function FileSplitSettingModal({ file, disabled, getSegmentStatus, onClose, onSave }) {
+function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
   const maxSec = durationToSec(file.duration);
   const [segments, setSegments] = useState(file.splits || []);
   const [startSec, setStartSec] = useState(0);
@@ -723,7 +723,7 @@ function FileSplitSettingModal({ file, disabled, getSegmentStatus, onClose, onSa
             </>
           )}
 
-          {/* 분할 구간 목록: 구간 번호 / 시작~종료 시간 / 구간 상태(프로젝트 관리 등록 기준) */}
+          {/* 분할 구간 목록: 구간 번호 / 시작~종료 시간 / 길이만 표기 (구간 상태는 파일관리 목록에서 확인) */}
           {segments.length > 0 && (
             <div className="proto-table-wrap" style={{ marginBottom: '4px' }}>
               <table className="proto-table">
@@ -732,7 +732,6 @@ function FileSplitSettingModal({ file, disabled, getSegmentStatus, onClose, onSa
                     <th>#</th>
                     <th>시작 ~ 종료</th>
                     <th>길이</th>
-                    <th className="text-center">상태</th>
                     {!disabled && <th></th>}
                   </tr>
                 </thead>
@@ -742,7 +741,6 @@ function FileSplitSettingModal({ file, disabled, getSegmentStatus, onClose, onSa
                       <td className="text-center">{idx + 1}</td>
                       <td>{secToDuration(seg.start)} ~ {secToDuration(seg.end)}</td>
                       <td>{secToDuration(seg.end - seg.start)}</td>
-                      <td className="text-center">{segmentStatusBadge(getSegmentStatus(idx))}</td>
                       {!disabled && (
                         <td className="text-center">
                           <button className="proto-note-cancel-btn" onClick={() => handleRemoveSegment(idx)}>✕</button>
@@ -802,9 +800,9 @@ function FileManageTab({ s }) {
     return subjects.flatMap((p) => p.projFiles || []);
   };
 
-  // 이 파일(또는 분할 구간)이 프로젝트 관리에서 이미 작업자 배정되었는지 확인 — 배정된 경우 분할정보 수정 불가
-  const isFileWorkerAssigned = (fileNo) =>
-    getProjFiles().some((pf) => pf.worker && (pf.fileNo === fileNo || String(pf.fileNo).startsWith(`${fileNo}-`)));
+  // 이 파일(또는 분할 구간)이 프로젝트 관리에서 파일추가로 이미 등록되었는지 확인 — 등록된 경우 분할정보 수정 불가
+  const isFileInProject = (fileNo) =>
+    getProjFiles().some((pf) => pf.fileNo === fileNo || String(pf.fileNo).startsWith(`${fileNo}-`));
 
   // 분할 구간(원본 fileNo + 구간 순번)이 프로젝트 관리에 등록된 경우 그 작업 상태를 조회, 없으면 작업대기
   const getSegmentStatus = (segFileNo) => getProjFiles().find((pf) => pf.fileNo === segFileNo)?.status || '작업대기';
@@ -953,36 +951,51 @@ function FileManageTab({ s }) {
             ) : (
               files.map((f) => {
                 const splitCount = f.splits?.length || 0;
-                const assigned = isMeeting && isFileWorkerAssigned(f.fileNo);
+                const inProject = isMeeting && isFileInProject(f.fileNo);
                 return (
-                  <tr key={f.fileNo} className={checked.has(f.fileNo) ? 'proto-row-checked' : ''}>
-                    <td className="text-center">
-                      <input
-                        type="checkbox"
-                        checked={checked.has(f.fileNo)}
-                        onChange={() => toggleCheck(f.fileNo)}
-                      />
-                    </td>
-                    <td className="text-center">{f.fileNo}</td>
-                    <td>{f.fileName}</td>
-                    <td className="text-center">{f.duration}</td>
-                    {isMeeting && (
+                  <Fragment key={f.fileNo}>
+                    <tr className={checked.has(f.fileNo) ? 'proto-row-checked' : ''}>
                       <td className="text-center">
-                        <button
-                          className="proto-log-btn"
-                          style={{ fontSize: '12px', padding: '3px 10px' }}
-                          onClick={() => setSplitModalFile(f)}
-                        >
-                          {splitCount > 0 ? `${splitCount}개 구간` : '분할 설정'}
-                        </button>
-                        {assigned && (
-                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>배정됨(수정불가)</span>
-                        )}
+                        <input
+                          type="checkbox"
+                          checked={checked.has(f.fileNo)}
+                          onChange={() => toggleCheck(f.fileNo)}
+                        />
                       </td>
-                    )}
-                    <td className="text-center">{f.size}</td>
-                    <td className="text-center">{f.uploadDttm}</td>
-                  </tr>
+                      <td className="text-center">{f.fileNo}</td>
+                      <td>{f.fileName}</td>
+                      <td className="text-center">{f.duration}</td>
+                      {isMeeting && (
+                        <td className="text-center">
+                          <button
+                            className="proto-log-btn"
+                            style={{ fontSize: '12px', padding: '3px 10px' }}
+                            onClick={() => setSplitModalFile(f)}
+                          >
+                            {splitCount > 0 ? `${splitCount}개 구간` : '분할 설정'}
+                          </button>
+                          {inProject && (
+                            <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>프로젝트 등록됨(수정불가)</span>
+                          )}
+                        </td>
+                      )}
+                      <td className="text-center">{f.size}</td>
+                      <td className="text-center">{f.uploadDttm}</td>
+                    </tr>
+                    {isMeeting && (f.splits || []).map((seg, idx) => (
+                      <tr key={`${f.fileNo}-seg-${idx}`} className="proto-file-split-subrow">
+                        <td></td>
+                        <td></td>
+                        <td style={{ paddingLeft: '24px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                          ↳ 구간 {idx + 1}: {secToDuration(seg.start)} ~ {secToDuration(seg.end)}
+                        </td>
+                        <td className="text-center" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{secToDuration(seg.end - seg.start)}</td>
+                        <td className="text-center">{segmentStatusBadge(getSegmentStatus(`${f.fileNo}-${idx + 1}`))}</td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    ))}
+                  </Fragment>
                 );
               })
             )}
@@ -1004,8 +1017,7 @@ function FileManageTab({ s }) {
       {splitModalFile && (
         <FileSplitSettingModal
           file={splitModalFile}
-          disabled={isFileWorkerAssigned(splitModalFile.fileNo)}
-          getSegmentStatus={(idx) => getSegmentStatus(`${splitModalFile.fileNo}-${idx + 1}`)}
+          disabled={isFileInProject(splitModalFile.fileNo)}
           onClose={() => setSplitModalFile(null)}
           onSave={(segments) => handleSaveSplits(splitModalFile.fileNo, segments)}
         />
