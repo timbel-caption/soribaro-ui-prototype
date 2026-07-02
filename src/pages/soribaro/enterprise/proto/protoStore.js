@@ -58,6 +58,8 @@ const _updateSampleField = (id, patch) => {
 export const updateSampleNoteEntries = (id, noteEntries) => _updateSampleField(id, { noteEntries });
 export const updateSampleMemoEntries = (id, memoEntries) => _updateSampleField(id, { memoEntries });
 export const updateSamplePlayTime = (id, totalPlayTm) => _updateSampleField(id, { totalPlayTm });
+// 현장속기 시작-종료 시간 수정: 정산/배정 등에서 참조하는 sessionTime을 갱신
+export const updateSampleSessionTime = (id, sessionTime) => _updateSampleField(id, { sessionTime });
 
 // 현장속기 배정 관리 탭: 작업자 배정·취소 정보를 protoStore에 반영
 export const updateStenographyWorkerAssign = (id, patch) => {

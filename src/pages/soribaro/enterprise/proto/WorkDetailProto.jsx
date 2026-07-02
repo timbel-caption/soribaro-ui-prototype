@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionTime } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
@@ -178,6 +178,50 @@ const ATTACH_SEED = [
   { id: 'at-7', name: '20260619092352_서울중부-2026-105_3층 심의실.txt',                                                   type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
 ];
 
+// 현장속기 시작-종료 시간(sessionTime) 인라인 수정. 정산·배정 등에서 참조하는 실제 등록 데이터를 갱신한다.
+function SessionTimeField({ s }) {
+  const [sessionTime, setSessionTime] = useState(s.sessionTime || '-');
+  const [editing, setEditing] = useState(false);
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
+
+  const startEdit = () => {
+    const [st, ed] = sessionTime && sessionTime !== '-' ? sessionTime.split('-') : ['', ''];
+    setStart(st || '');
+    setEnd(ed || '');
+    setEditing(true);
+  };
+
+  const commit = () => {
+    if (!start || !end) return;
+    const next = `${start}-${end}`;
+    setSessionTime(next);
+    updateSampleSessionTime(s.id, next);
+    setEditing(false);
+  };
+
+  const cancel = () => setEditing(false);
+
+  if (!editing) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{sessionTime}</span>
+        <button className="proto-log-btn" style={{ fontSize: '11px', padding: '3px 10px' }} onClick={startEdit}>수정</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <input type="time" className="preg-input" style={{ width: '110px' }} value={start} onChange={(e) => setStart(e.target.value)} />
+      <span style={{ color: 'var(--text-muted)' }}>~</span>
+      <input type="time" className="preg-input" style={{ width: '110px' }} value={end} onChange={(e) => setEnd(e.target.value)} />
+      <button className="proto-note-save-btn" onClick={commit}>✓</button>
+      <button className="proto-note-cancel-btn" onClick={cancel}>✕</button>
+    </div>
+  );
+}
+
 // ─── 탭 1: 기본정보 ───
 function BasicInfoTab({ s }) {
   // VOD 작업관리에서만 특이사항/내부 메모를 로그형(추가·수정·삭제) 카드로 제공
@@ -354,6 +398,18 @@ function BasicInfoTab({ s }) {
           ))}
         </div>
       </div>
+
+      {s.bssTypeName === '현장속기' && (
+        <div className="proto-basic-card" style={{ marginTop: '12px' }}>
+          <div className="proto-basic-card-header">
+            <span>🕒</span>
+            <span>시작-종료 시간</span>
+          </div>
+          <div style={{ padding: '14px 20px' }}>
+            <SessionTimeField s={s} />
+          </div>
+        </div>
+      )}
 
       <div className="proto-basic-extra-row">
         <EditableLogCard
