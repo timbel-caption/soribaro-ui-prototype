@@ -185,7 +185,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const startEditManager = (s, e) => {
     e.stopPropagation();
     setEditingManagerId(s.id);
-    setManagerInput(managerOverrides[s.id] ?? s.managerNm ?? '');
+    setManagerInput(managerOverrides[s.id] ?? '');
   };
 
   const commitManager = (s) => {
@@ -301,7 +301,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               items.map((s) => {
                 const isEditingNote = editingNoteId === s.id;
                 const isEditingManager = editingManagerId === s.id;
-                const managerNm = managerOverrides[s.id] ?? s.managerNm ?? '';
+                const managerNm = managerOverrides[s.id] ?? '';
                 const progress = computeOverallProgress(s);
                 return (
                   <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
@@ -398,7 +398,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         filtered.map((s) => {
           const isEditingNote = editingNoteId === s.id;
           const isEditingManager = editingManagerId === s.id;
-          const managerNm = managerOverrides[s.id] ?? s.managerNm ?? '';
+          const managerNm = managerOverrides[s.id] ?? '';
           const isEditingPlayTime = editingPlayTimeId === s.id;
           const isStenography = s.bssTypeName === '현장속기';
           const effWorker = workerOverrides[s.id]?.worker ?? s.assignWorker;
