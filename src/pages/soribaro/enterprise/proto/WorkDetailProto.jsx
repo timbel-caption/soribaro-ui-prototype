@@ -194,41 +194,47 @@ function formatReqTime(min) {
 // 파생해 저장하므로, 최초 등록 상태(수정 이력 없음)에서는 의뢰시간이 그대로 공란('-')으로 유지된다.
 function SessionTimeField({ s }) {
   const [sessionTime, setSessionTime] = useState(s.sessionTime || '-');
-  const [recessTime, setRecessTime] = useState(s.recessTime || '-');
+  const [recessTimes, setRecessTimes] = useState(s.recessTimes || []);
   const [editing, setEditing] = useState(false);
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
-  const [recessStart, setRecessStart] = useState('');
-  const [recessEnd, setRecessEnd] = useState('');
+  const [recessRows, setRecessRows] = useState([{ start: '', end: '' }]);
 
   const startEdit = () => {
     const [st, ed] = sessionTime && sessionTime !== '-' ? sessionTime.split('-') : ['', ''];
-    const [rst, red] = recessTime && recessTime !== '-' ? recessTime.split('-') : ['', ''];
     setStart(st || '');
     setEnd(ed || '');
-    setRecessStart(rst || '');
-    setRecessEnd(red || '');
+    setRecessRows(
+      recessTimes.length > 0
+        ? recessTimes.map((rt) => { const [rst, red] = rt.split('-'); return { start: rst || '', end: red || '' }; })
+        : [{ start: '', end: '' }]
+    );
     setEditing(true);
   };
+
+  const addRecessRow = () => setRecessRows((prev) => [...prev, { start: '', end: '' }]);
+  const removeRecessRow = (idx) => setRecessRows((prev) => prev.filter((_, i) => i !== idx));
+  const updateRecessRow = (idx, field, value) =>
+    setRecessRows((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
 
   const commit = () => {
     const startMin = parseHM(start);
     const endMin = parseHM(end);
     if (startMin == null || endMin == null || endMin <= startMin) return;
 
-    // 정회시간은 입력된 경우에만 의뢰시간 계산에서 제외한다
-    const recessStartMin = parseHM(recessStart);
-    const recessEndMin = parseHM(recessEnd);
-    const hasRecess = recessStartMin != null && recessEndMin != null && recessEndMin > recessStartMin;
-    const recessMin = hasRecess ? recessEndMin - recessStartMin : 0;
+    // 정회시간은 입력된 구간만(여러 개 가능) 의뢰시간 계산에서 제외한다
+    const validRecess = recessRows
+      .map((r) => ({ start: r.start.trim(), end: r.end.trim(), startMin: parseHM(r.start), endMin: parseHM(r.end) }))
+      .filter((r) => r.startMin != null && r.endMin != null && r.endMin > r.startMin);
+    const recessMin = validRecess.reduce((sum, r) => sum + (r.endMin - r.startMin), 0);
 
     const nextSessionTime = `${start.trim()}-${end.trim()}`;
-    const nextRecessTime = hasRecess ? `${recessStart.trim()}-${recessEnd.trim()}` : '-';
+    const nextRecessTimes = validRecess.map((r) => `${r.start}-${r.end}`);
     const nextReqTime = formatReqTime(Math.max(0, (endMin - startMin) - recessMin));
 
     setSessionTime(nextSessionTime);
-    setRecessTime(nextRecessTime);
-    updateSampleSessionDetails(s.id, { sessionTime: nextSessionTime, recessTime: nextRecessTime, totalPlayTm: nextReqTime });
+    setRecessTimes(nextRecessTimes);
+    updateSampleSessionDetails(s.id, { sessionTime: nextSessionTime, recessTimes: nextRecessTimes, totalPlayTm: nextReqTime });
     setEditing(false);
   };
 
@@ -241,7 +247,7 @@ function SessionTimeField({ s }) {
           {sessionTime && sessionTime !== '-' ? sessionTime.replace('-', ' ~ ') : '-'}
         </span>
         <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-          정회 {recessTime && recessTime !== '-' ? recessTime.replace('-', ' ~ ') : '-'}
+          정회 {recessTimes.length > 0 ? recessTimes.map((rt) => rt.replace('-', ' ~ ')).join(', ') : '-'}
         </span>
         <button className="proto-log-btn" style={{ fontSize: '11px', padding: '3px 10px' }} onClick={startEdit}>수정</button>
       </div>
@@ -249,21 +255,30 @@ function SessionTimeField({ s }) {
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>시작-종료</label>
+        <label style={{ fontSize: '12px', color: 'var(--text-secondary)', minWidth: '48px' }}>시작-종료</label>
         <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="13:00" value={start} onChange={(e) => setStart(e.target.value)} />
         <span style={{ color: 'var(--text-muted)' }}>~</span>
         <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="15:00" value={end} onChange={(e) => setEnd(e.target.value)} />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>정회</label>
-        <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="13:30" value={recessStart} onChange={(e) => setRecessStart(e.target.value)} />
-        <span style={{ color: 'var(--text-muted)' }}>~</span>
-        <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="14:00" value={recessEnd} onChange={(e) => setRecessEnd(e.target.value)} />
+
+      {recessRows.map((r, idx) => (
+        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <label style={{ fontSize: '12px', color: 'var(--text-secondary)', minWidth: '48px' }}>{idx === 0 ? '정회' : ''}</label>
+          <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="13:30" value={r.start} onChange={(e) => updateRecessRow(idx, 'start', e.target.value)} />
+          <span style={{ color: 'var(--text-muted)' }}>~</span>
+          <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="14:00" value={r.end} onChange={(e) => updateRecessRow(idx, 'end', e.target.value)} />
+          {recessRows.length > 1 && (
+            <button className="proto-note-cancel-btn" onClick={() => removeRecessRow(idx)}>✕</button>
+          )}
+        </div>
+      ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button className="proto-log-btn" style={{ fontSize: '11px', padding: '3px 10px', marginLeft: '54px' }} onClick={addRecessRow}>+ 정회 추가</button>
+        <button className="proto-note-save-btn" onClick={commit}>✓</button>
+        <button className="proto-note-cancel-btn" onClick={cancel}>✕</button>
       </div>
-      <button className="proto-note-save-btn" onClick={commit}>✓</button>
-      <button className="proto-note-cancel-btn" onClick={cancel}>✕</button>
     </div>
   );
 }
