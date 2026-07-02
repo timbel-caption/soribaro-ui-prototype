@@ -265,11 +265,13 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   );
 
   const isStenographyType = workType === 'stenography';
+  const overdueIdSet = new Set(alerts.overdueItems.map((s) => s.id));
 
   // 진행 의뢰 현황 탭 공용 테이블 (진행 전체 / 금일 납품 / 납품 일정 확인 공통).
   // - 현장속기는 회차 뒤에 "시작-종료" 컬럼을 추가로 표시한다.
   // - showProgress=true(회의록 납품 일정 확인 탭)일 때만 납품기한 앞에 진행률(바) 컬럼을 표시한다.
-  const mergedTable = (items, showProgress) => {
+  // - markOverdue=true(진행 전체 탭)일 때만 납품 일정 확인 대상 건의 의뢰일자 앞에 📝 메모 아이콘을 표시한다.
+  const mergedTable = (items, showProgress, markOverdue = false) => {
     const colCount = 12 + (isStenographyType ? 1 : 0) + (showProgress ? 1 : 0);
     return (
       <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
@@ -303,7 +305,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 const progress = computeOverallProgress(s);
                 return (
                   <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
-                    <td className="text-center">{formatRegDate(s.regDttm)}</td>
+                    <td className="text-center">
+                      {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
+                    </td>
                     <td style={{ fontWeight: 600 }}>{s.entNm}</td>
                     <td className="text-center">{contractBadge(s.contractType)}</td>
                     <td className="text-center">{s.round || '-'}</td>
@@ -639,7 +643,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 14px' }} onClick={handleSearch}>검색</button>
           </div>
         )}
-        {activeTab === 'all' && mergedTable(filtered, false)}
+        {activeTab === 'all' && mergedTable(filtered, false, true)}
         {activeTab === 'today' && mergedTable(alerts.todayDueItems, false)}
         {activeTab === 'overdue' && mergedTable(alerts.overdueItems, workType === 'meeting')}
         {activeTab === 'all' && pagination}
