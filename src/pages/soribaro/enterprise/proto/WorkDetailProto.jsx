@@ -514,8 +514,185 @@ function secToDuration(sec) {
   return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
 }
 
+// 시/분/초 3칸 입력 (파일 분할 설정 모달용)
+function TimeHmsInput({ seconds, onChange, min = 0, max = 359999 }) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const commit = (nh, nm, ns) => onChange(Math.max(min, Math.min(max, nh * 3600 + nm * 60 + ns)));
+  const unitStyle = { width: '32px', textAlign: 'center', padding: '4px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '13px' };
+  const numInput = (val, onCommit) => (
+    <input
+      type="text"
+      inputMode="numeric"
+      maxLength={2}
+      value={String(val).padStart(2, '0')}
+      onChange={(e) => onCommit(Math.min(59, Math.max(0, Number(e.target.value.replace(/\D/g, '')) || 0)))}
+      style={unitStyle}
+    />
+  );
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+      {numInput(h, (v) => commit(v, m, s))}
+      <span style={{ color: 'var(--text-muted)' }}>:</span>
+      {numInput(m, (v) => commit(h, v, s))}
+      <span style={{ color: 'var(--text-muted)' }}>:</span>
+      {numInput(s, (v) => commit(h, m, v))}
+    </div>
+  );
+}
+
+// 회의록 파일관리: 파일 분할 설정 모달. 작업자 배정 시(disabled) 조회만 가능하다.
+function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
+  const maxSec = durationToSec(file.duration);
+  const [segments, setSegments] = useState(file.splits || []);
+  const [startSec, setStartSec] = useState(0);
+  const [endSec, setEndSec] = useState(maxSec);
+
+  const handleAddSegment = () => {
+    if (startSec >= endSec) return;
+    const updated = [...segments, { start: startSec, end: endSec }].sort((a, b) => a.start - b.start);
+    setSegments(updated);
+    const lastEnd = Math.max(...updated.map((seg) => seg.end));
+    setStartSec(lastEnd < maxSec ? lastEnd : 0);
+    setEndSec(maxSec);
+  };
+
+  const handleRemoveSegment = (idx) => setSegments((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleSave = () => {
+    onSave(segments);
+    onClose();
+  };
+
+  return (
+    <div className="pm-overlay" onClick={onClose}>
+      <div className="pm-modal" style={{ width: '480px', maxWidth: '92vw' }} onClick={(e) => e.stopPropagation()}>
+        <div className="pm-modal-hd">
+          <span className="pm-modal-title">파일 분할 설정</span>
+          <button className="preg-x-btn" onClick={onClose}>✕</button>
+        </div>
+        <div style={{ padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', border: '1px solid var(--border-color)', borderRadius: '6px', marginBottom: '16px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{file.fileName}</span>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent-color)' }}>{file.duration}</span>
+          </div>
+
+          {disabled ? (
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', padding: '20px 0' }}>
+              작업자가 배정되어 분할 정보를 수정할 수 없습니다.
+            </p>
+          ) : (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                <span>{secToDuration(0)}</span>
+                <span>{secToDuration(maxSec)}</span>
+              </div>
+              <div style={{ position: 'relative', height: '6px', background: 'var(--bg-hover)', borderRadius: '3px', marginBottom: '16px' }}>
+                <div style={{
+                  position: 'absolute', top: 0, bottom: 0,
+                  left: `${maxSec ? (startSec / maxSec) * 100 : 0}%`,
+                  width: `${maxSec ? ((endSec - startSec) / maxSec) * 100 : 0}%`,
+                  background: 'var(--accent-color)', borderRadius: '3px',
+                }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block' }}>시작 - {secToDuration(startSec)}</label>
+                  <input
+                    type="range" min={0} max={maxSec} step={1} value={startSec}
+                    onChange={(e) => { const v = Number(e.target.value); setStartSec(v < endSec ? v : Math.max(0, endSec - 1)); }}
+                    style={{ width: '100%' }}
+                  />
+                  <TimeHmsInput seconds={startSec} max={Math.max(0, endSec - 1)} onChange={setStartSec} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block' }}>종료 - {secToDuration(endSec)}</label>
+                  <input
+                    type="range" min={Math.min(startSec + 1, maxSec)} max={maxSec} step={1} value={endSec}
+                    onChange={(e) => setEndSec(Number(e.target.value))}
+                    style={{ width: '100%' }}
+                  />
+                  <TimeHmsInput seconds={endSec} min={startSec + 1} max={maxSec} onChange={setEndSec} />
+                </div>
+              </div>
+
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
+                선택 구간: <strong style={{ color: 'var(--text-primary)' }}>{secToDuration(startSec)} ~ {secToDuration(endSec)}</strong>
+                {' '}({secToDuration(endSec - startSec)})
+              </p>
+
+              <button
+                type="button"
+                className="proto-log-btn"
+                style={{ width: '100%', marginBottom: '16px' }}
+                onClick={handleAddSegment}
+                disabled={startSec >= endSec}
+              >+ 구간 추가</button>
+
+              {segments.length > 0 && (
+                <div className="proto-table-wrap" style={{ marginBottom: '4px' }}>
+                  <table className="proto-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>시작</th>
+                        <th>종료</th>
+                        <th>길이</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {segments.map((seg, idx) => (
+                        <tr key={idx}>
+                          <td className="text-center">{idx + 1}</td>
+                          <td>{secToDuration(seg.start)}</td>
+                          <td>{secToDuration(seg.end)}</td>
+                          <td>{secToDuration(seg.end - seg.start)}</td>
+                          <td className="text-center">
+                            <button className="proto-note-cancel-btn" onClick={() => handleRemoveSegment(idx)}>✕</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className="pm-modal-ft">
+          <button className="proto-log-btn" onClick={onClose}>취소</button>
+          <button
+            className="proto-log-btn proto-log-btn--save"
+            onClick={handleSave}
+            disabled={disabled}
+            style={disabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+          >저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 원본 파일이 분할된 경우, 분할 구간별로 별도 선택 항목을 만들어 프로젝트 관리에 개별 추가할 수 있게 한다.
+function expandFilesWithSplits(files) {
+  return (files || []).flatMap((f) => {
+    if (!f.splits || f.splits.length === 0) return [f];
+    return f.splits.map((seg, i) => ({
+      fileNo: `${f.fileNo}-${i + 1}`,
+      fileName: `${f.fileName} (구간${i + 1})`,
+      duration: secToDuration(seg.end - seg.start),
+      size: f.size,
+      range: `${secToDuration(seg.start)} ~ ${secToDuration(seg.end)}`,
+    }));
+  });
+}
+
 function FileManageTab({ s }) {
   const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
+  const isMeeting = s.bssTypeName === '회의록';
   // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const [files, setFiles] = useState(() => {
     const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
@@ -523,7 +700,22 @@ function FileManageTab({ s }) {
   });
   const [dragOver, setDragOver] = useState(false);
   const [checked, setChecked] = useState(new Set());
+  const [splitModalFile, setSplitModalFile] = useState(null);
   const fileInputRef = useRef();
+
+  // 이 파일(또는 분할 구간)이 프로젝트 관리에서 이미 작업자 배정되었는지 확인 — 배정된 경우 분할정보 수정 불가
+  const isFileWorkerAssigned = (fileNo) => {
+    const subjects = getMeetingSamples().find((v) => v.id === s.id)?.subjects || [];
+    return subjects
+      .flatMap((p) => p.projFiles || [])
+      .some((pf) => pf.worker && (pf.fileNo === fileNo || String(pf.fileNo).startsWith(`${fileNo}-`)));
+  };
+
+  const handleSaveSplits = (fileNo, segments) => {
+    const updated = files.map((f) => (f.fileNo === fileNo ? { ...f, splits: segments } : f));
+    setFiles(updated);
+    updateSampleFiles(s.id, updated);
+  };
 
   // 파일 한 개의 미디어 재생시간을 브라우저 API로 추출 ('HH:MM:SS')
   const extractDuration = (file) => new Promise((resolve) => {
@@ -652,30 +844,49 @@ function FileManageTab({ s }) {
               <th>파일번호</th>
               <th>파일명</th>
               <th className="text-center">재생시간</th>
+              {isMeeting && <th className="text-center">파일분할</th>}
               <th className="text-center">파일크기</th>
               <th className="text-center">업로드일</th>
             </tr>
           </thead>
           <tbody>
             {files.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>등록된 파일이 없습니다.</td></tr>
+              <tr><td colSpan={isMeeting ? 7 : 6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>등록된 파일이 없습니다.</td></tr>
             ) : (
-              files.map((f) => (
-                <tr key={f.fileNo} className={checked.has(f.fileNo) ? 'proto-row-checked' : ''}>
-                  <td className="text-center">
-                    <input
-                      type="checkbox"
-                      checked={checked.has(f.fileNo)}
-                      onChange={() => toggleCheck(f.fileNo)}
-                    />
-                  </td>
-                  <td className="text-center">{f.fileNo}</td>
-                  <td>{f.fileName}</td>
-                  <td className="text-center">{f.duration}</td>
-                  <td className="text-center">{f.size}</td>
-                  <td className="text-center">{f.uploadDttm}</td>
-                </tr>
-              ))
+              files.map((f) => {
+                const splitCount = f.splits?.length || 0;
+                const assigned = isMeeting && isFileWorkerAssigned(f.fileNo);
+                return (
+                  <tr key={f.fileNo} className={checked.has(f.fileNo) ? 'proto-row-checked' : ''}>
+                    <td className="text-center">
+                      <input
+                        type="checkbox"
+                        checked={checked.has(f.fileNo)}
+                        onChange={() => toggleCheck(f.fileNo)}
+                      />
+                    </td>
+                    <td className="text-center">{f.fileNo}</td>
+                    <td>{f.fileName}</td>
+                    <td className="text-center">{f.duration}</td>
+                    {isMeeting && (
+                      <td className="text-center">
+                        <button
+                          className="proto-log-btn"
+                          style={{ fontSize: '12px', padding: '3px 10px' }}
+                          onClick={() => setSplitModalFile(f)}
+                        >
+                          {splitCount > 0 ? `${splitCount}개 구간` : '분할 설정'}
+                        </button>
+                        {assigned && (
+                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>배정됨(수정불가)</span>
+                        )}
+                      </td>
+                    )}
+                    <td className="text-center">{f.size}</td>
+                    <td className="text-center">{f.uploadDttm}</td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -691,6 +902,15 @@ function FileManageTab({ s }) {
           </>
         )}
       </div>
+
+      {splitModalFile && (
+        <FileSplitSettingModal
+          file={splitModalFile}
+          disabled={isFileWorkerAssigned(splitModalFile.fileNo)}
+          onClose={() => setSplitModalFile(null)}
+          onSave={(segments) => handleSaveSplits(splitModalFile.fileNo, segments)}
+        />
+      )}
     </div>
   );
 }
@@ -1816,6 +2036,12 @@ function VodProjectManageView({ s }) {
 function ProjectManageTab({ s }) {
   const isVodProj = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
 
+  // 파일관리 탭에서 저장한 분할 정보(splits)를 반영하기 위해 store 최신값으로 복원 (stale prop 스냅샷 방지)
+  const currentFiles = (() => {
+    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    return store.find((v) => v.id === s.id)?.files ?? s.files;
+  })();
+
   // 견적서/최종산출물/알림발송 — 회의록 전용
   const [quoteFile, setQuoteFile] = useState(null);
   const [outputFile, setOutputFile] = useState(null);
@@ -1908,9 +2134,9 @@ function ProjectManageTab({ s }) {
 
 
   const addProjectFiles = (projId, fileNos) => {
-    const newFiles = s.files
+    const newFiles = expandFilesWithSplits(currentFiles)
       .filter(f => fileNos.has(f.fileNo))
-      .map(f => ({ fileNo: f.fileNo, fileName: f.fileName, split: '-', range: '', workTime: '-', status: '작업중', progress: 0, lastWork: '-', worker: '', reviewer: '' }));
+      .map(f => ({ fileNo: f.fileNo, fileName: f.fileName, split: f.range ? '분할' : '-', range: f.range || '', workTime: '-', status: '작업중', progress: 0, lastWork: '-', worker: '', reviewer: '' }));
     syncStore(projects.map(p =>
       p.id === projId ? { ...p, projFiles: [...(p.projFiles || []), ...newFiles] } : p
     ));
@@ -2349,7 +2575,7 @@ function ProjectManageTab({ s }) {
 
       {fileModalFor && (
         <FileSelectModal
-          files={s.files}
+          files={expandFilesWithSplits(currentFiles)}
           usedFileNos={fileSelectUsedNos}
           onConfirm={(selected) => addProjectFiles(fileModalFor, selected)}
           onClose={() => setFileModalFor(null)}
