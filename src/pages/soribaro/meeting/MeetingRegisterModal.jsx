@@ -23,12 +23,14 @@ const todayStr = new Date().toISOString().split('T')[0];
 
 const meetingContractTypes = getRequestTypes().find((rt) => rt.name === '회의록')?.contractTypes ?? [];
 
-export default function MeetingRegisterModal({ onClose, onSubmit }) {
+export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'meeting' }) {
   const [form, setForm] = useState({
     entNm: '',
     managerNm: '',
     contractType: '',
     round: '',
+    sessionStart: '',
+    sessionEnd: '',
     regDate: todayStr,
     dueDate: addBusinessDays(todayStr, 2),
     specialNote: '',
@@ -235,6 +237,28 @@ export default function MeetingRegisterModal({ onClose, onSubmit }) {
                   onChange={(e) => setForm((f) => ({ ...f, round: e.target.value }))}
                   placeholder="제OO회"
                 />
+                {workType === 'stenography' && (
+                  <>
+                    <label className="preg-label" style={{ marginTop: '8px' }}>시작-종료 시간</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <input
+                        className="preg-input"
+                        type="time"
+                        value={form.sessionStart}
+                        onChange={(e) => setForm((f) => ({ ...f, sessionStart: e.target.value }))}
+                        style={{ flex: 1 }}
+                      />
+                      <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
+                      <input
+                        className="preg-input"
+                        type="time"
+                        value={form.sessionEnd}
+                        onChange={(e) => setForm((f) => ({ ...f, sessionEnd: e.target.value }))}
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
               <div className="preg-field">
                 <label className="preg-label">의뢰일 <span className="preg-required">*</span></label>
