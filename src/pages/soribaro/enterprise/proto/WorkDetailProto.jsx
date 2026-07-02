@@ -4194,7 +4194,20 @@ function sumWorkTime(rows) {
   return `${hh}:${mm}:${ss}`;
 }
 
+// 현장속기 작업자/검수자 정산 시간 단가
+const STG_WORKER_RATE_PER_HOUR = 80000;
+const STG_REVIEWER_RATE_PER_HOUR = 24000;
+
+// "H:MM" 또는 "H:MM:SS" 형식의 작업시간 문자열 → 시간(number)
+function parseWorkTimeHours(workTime) {
+  const parts = (workTime || '').split(':').map(Number);
+  if (parts.length < 2 || parts.some((n) => Number.isNaN(n))) return 0;
+  const [h, m, sec = 0] = parts;
+  return h + m / 60 + sec / 3600;
+}
+
 function MtgSettlementTab({ s }) {
+  const isStenography = s.bssTypeName === '현장속기';
   const [workers, setWorkers] = useState(() => {
     if (s.settlement?.workerRows) return s.settlement.workerRows;
     const store = getMeetingSamples();
@@ -4263,6 +4276,30 @@ function MtgSettlementTab({ s }) {
     setRejectModal(null);
   };
 
+  // 현장속기: 작업시간 수기 입력 시 시간 단가(8만원)를 반영해 정산금액·실지급액(정산금액+출장비)을 다시 계산
+  const updateWorkerWorkTime = (index, value) => {
+    setWorkers((prev) => prev.map((r, i) => {
+      if (i !== index) return r;
+      const amount = Math.round(parseWorkTimeHours(value) * STG_WORKER_RATE_PER_HOUR);
+      return { ...r, workTime: value, amount, netAmount: amount + (r.travelFee || 0) };
+    }));
+  };
+
+  // 출장비 수기 입력 시 실지급액(정산금액+출장비)을 다시 계산
+  const updateWorkerTravelFee = (index, value) => {
+    const travelFee = Number(value) || 0;
+    setWorkers((prev) => prev.map((r, i) => (i === index ? { ...r, travelFee, netAmount: r.amount + travelFee } : r)));
+  };
+
+  // 현장속기: 검수시간 수기 입력 시 시간 단가(2만 4천원)를 반영해 실지급액을 다시 계산
+  const updateReviewerWorkTime = (index, value) => {
+    setReviewers((prev) => prev.map((r, i) => {
+      if (i !== index) return r;
+      const netAmount = Math.round(parseWorkTimeHours(value) * STG_REVIEWER_RATE_PER_HOUR);
+      return { ...r, workTime: value, netAmount };
+    }));
+  };
+
   // 집행자 열: 정산대기이면 "확인" 버튼(재요청 포함), 작업자 확인 중이면 대기 텍스트, 완료이면 이름
   const executorCell = (row, index, table) => {
     if (row.status === '완료') return <span>{row.executor}</span>;
@@ -4291,60 +4328,107 @@ function MtgSettlementTab({ s }) {
     return <span className="settle-status-badge settle-status-badge--pre">{row.status || '정산대기'}</span>;
   };
 
+  // 비고 셀: 클릭하여 인라인 편집 (작업자 정산 내역 공용)
+  const remarkCell = (row, i) => (
+    <td style={{ fontSize: '12px', minWidth: '120px' }}>
+      {remarkEdit[i] !== undefined ? (
+        <span style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <textarea
+            className="proto-log-input"
+            style={{ minHeight: '52px', fontSize: '12px', resize: 'vertical' }}
+            value={remarkEdit[i]}
+            onChange={e => setRemarkEdit(prev => ({ ...prev, [i]: e.target.value }))}
+            autoFocus
+          />
+          <span style={{ display: 'flex', gap: '4px' }}>
+            <button className="proto-note-save-btn" onClick={() => {
+              setWorkers(prev => prev.map((r2, idx) => idx === i ? { ...r2, remark: remarkEdit[i] } : r2));
+              setRemarkEdit(prev => { const n = { ...prev }; delete n[i]; return n; });
+            }}>저장</button>
+            <button className="proto-note-cancel-btn" onClick={() => setRemarkEdit(prev => { const n = { ...prev }; delete n[i]; return n; })}>취소</button>
+          </span>
+        </span>
+      ) : (
+        <span
+          style={{ whiteSpace: 'pre-wrap', cursor: 'pointer', display: 'block', minHeight: '20px' }}
+          title="클릭하여 수정"
+          onClick={() => setRemarkEdit(prev => ({ ...prev, [i]: row.remark || '' }))}
+        >{row.remark || <span style={{ color: 'var(--text-muted)' }}>-</span>}</span>
+      )}
+    </td>
+  );
+
   return (
     <div className="proto-tab-panel">
       <p className="proto-section-title">작업자 정산 내역</p>
       <div className="proto-table-wrap proto-table-wrap--scroll" style={{ marginBottom: '24px' }}>
         <table className="proto-table">
           <thead>
-            <tr>
-              <th>작업자</th>
-              <th className="text-center">등급</th>
-              <th className="text-center">작업시간</th>
-              <th className="text-center">정확도</th>
-              <th className="text-center">오류 수</th>
-              <th>비고</th>
-              <th className="text-center">정산금액</th>
-              <th className="text-center">지급률</th>
-              <th>집행자</th>
-              <th className="text-center">실지급액</th>
-              <th className="text-center">상태</th>
-            </tr>
+            {isStenography ? (
+              <tr>
+                <th>작업자</th>
+                <th className="text-center">등급</th>
+                <th className="text-center">작업시간</th>
+                <th className="text-center">정산금액</th>
+                <th className="text-center">출장비</th>
+                <th>집행자</th>
+                <th className="text-center">실지급액</th>
+                <th className="text-center">상태</th>
+                <th>비고</th>
+              </tr>
+            ) : (
+              <tr>
+                <th>작업자</th>
+                <th className="text-center">등급</th>
+                <th className="text-center">작업시간</th>
+                <th className="text-center">정확도</th>
+                <th className="text-center">오류 수</th>
+                <th>비고</th>
+                <th className="text-center">정산금액</th>
+                <th className="text-center">지급률</th>
+                <th>집행자</th>
+                <th className="text-center">실지급액</th>
+                <th className="text-center">상태</th>
+              </tr>
+            )}
           </thead>
           <tbody>
-            {workers.map((row, i) => (
+            {isStenography ? workers.map((row, i) => (
+              <tr key={i}>
+                <td style={{ fontWeight: 600 }}>{row.worker}</td>
+                <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
+                <td className="text-center">
+                  <input
+                    className="proto-log-input"
+                    style={{ width: '80px', fontFamily: 'monospace', fontSize: '12px', textAlign: 'center' }}
+                    value={row.workTime}
+                    onChange={(e) => updateWorkerWorkTime(i, e.target.value)}
+                    placeholder="1:30"
+                  />
+                </td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{row.amount.toLocaleString()}원</td>
+                <td className="text-center">
+                  <input
+                    type="number"
+                    className="proto-log-input"
+                    style={{ width: '90px', fontSize: '12px', textAlign: 'center' }}
+                    value={row.travelFee || 0}
+                    onChange={(e) => updateWorkerTravelFee(i, e.target.value)}
+                  />
+                </td>
+                <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'worker')}</td>
+                <td className="text-center" style={{ fontSize: '12px', fontWeight: 600 }}>{row.netAmount.toLocaleString()}원</td>
+                <td className="text-center">{statusCell(row, i, 'worker')}</td>
+                {remarkCell(row, i)}
+              </tr>
+            )) : workers.map((row, i) => (
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{row.worker}</td>
                 <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
                 <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
-                <td style={{ fontSize: '12px', minWidth: '120px' }}>
-                  {remarkEdit[i] !== undefined ? (
-                    <span style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <textarea
-                        className="proto-log-input"
-                        style={{ minHeight: '52px', fontSize: '12px', resize: 'vertical' }}
-                        value={remarkEdit[i]}
-                        onChange={e => setRemarkEdit(prev => ({ ...prev, [i]: e.target.value }))}
-                        autoFocus
-                      />
-                      <span style={{ display: 'flex', gap: '4px' }}>
-                        <button className="proto-note-save-btn" onClick={() => {
-                          setWorkers(prev => prev.map((r2, idx) => idx === i ? { ...r2, remark: remarkEdit[i] } : r2));
-                          setRemarkEdit(prev => { const n = { ...prev }; delete n[i]; return n; });
-                        }}>저장</button>
-                        <button className="proto-note-cancel-btn" onClick={() => setRemarkEdit(prev => { const n = { ...prev }; delete n[i]; return n; })}>취소</button>
-                      </span>
-                    </span>
-                  ) : (
-                    <span
-                      style={{ whiteSpace: 'pre-wrap', cursor: 'pointer', display: 'block', minHeight: '20px' }}
-                      title="클릭하여 수정"
-                      onClick={() => setRemarkEdit(prev => ({ ...prev, [i]: row.remark || '' }))}
-                    >{row.remark || <span style={{ color: 'var(--text-muted)' }}>-</span>}</span>
-                  )}
-                </td>
+                {remarkCell(row, i)}
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.amount.toLocaleString()}원</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.payRate}</td>
                 <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'worker')}</td>
@@ -4374,7 +4458,19 @@ function MtgSettlementTab({ s }) {
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{row.worker}</td>
                 <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
-                <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
+                <td className="text-center">
+                  {isStenography ? (
+                    <input
+                      className="proto-log-input"
+                      style={{ width: '80px', fontFamily: 'monospace', fontSize: '12px', textAlign: 'center' }}
+                      value={row.workTime}
+                      onChange={(e) => updateReviewerWorkTime(i, e.target.value)}
+                      placeholder="1:30"
+                    />
+                  ) : (
+                    <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</span>
+                  )}
+                </td>
                 <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'reviewer')}</td>
                 <td className="text-center" style={{ fontSize: '12px', fontWeight: 600 }}>{row.netAmount.toLocaleString()}원</td>
                 <td className="text-center">{statusCell(row, i, 'reviewer')}</td>
