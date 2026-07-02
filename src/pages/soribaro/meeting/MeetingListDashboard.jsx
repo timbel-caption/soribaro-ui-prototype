@@ -239,11 +239,26 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
 
+  const currentAssignSample = assignModal ? samples.find((sm) => sm.id === assignModal.id) : null;
+
+  // 일정 충돌 판정용: 같은 화면의 다른 현장속기 배정 건들(작업자 + 시작-종료 시간)
+  const assignedSchedules = samples
+    .filter((sm) => sm.bssTypeName === '현장속기' && sm.id !== assignModal?.id)
+    .map((sm) => {
+      const worker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
+      const status = workerOverrides[sm.id]?.status ?? sm.assignStatus;
+      const isAssigned = worker && (status === '배정완료' || status === '업체전달완료');
+      return isAssigned ? { worker, sessionTime: sm.sessionTime } : null;
+    })
+    .filter(Boolean);
+
   const assignModalJsx = (
     <StenographyWorkerAssignModal
       open={!!assignModal}
       onClose={() => setAssignModal(null)}
       onConfirm={handleConfirmAssign}
+      currentSessionTime={currentAssignSample?.sessionTime}
+      assignedSchedules={assignedSchedules}
     />
   );
 
