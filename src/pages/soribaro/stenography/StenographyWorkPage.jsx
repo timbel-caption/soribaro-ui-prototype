@@ -30,6 +30,7 @@ export default function StenographyWorkPage() {
       subfileStatus: '미요청',
       contractType: form.contractType || '',
       round: form.round ? parseInt(form.round, 10) || form.round : '-',
+      sessionTime: form.sessionStart && form.sessionEnd ? `${form.sessionStart}-${form.sessionEnd}` : '-',
       regDttm: (form.regDate || today) + ' 09:00',
       dueDate: form.dueDate || today,
       actualDeliveryDate: '-',
@@ -85,7 +86,7 @@ export default function StenographyWorkPage() {
       <MeetingListDashboard samples={samples} onSamplesChange={refreshSamples} showAll={showAll} workType="stenography" />
 
       {showRegister && (
-        <MeetingRegisterModal onClose={() => { setShowRegister(false); refreshSamples(); }} onSubmit={handleRegister} />
+        <MeetingRegisterModal workType="stenography" onClose={() => { setShowRegister(false); refreshSamples(); }} onSubmit={handleRegister} />
       )}
     </div>
   );
