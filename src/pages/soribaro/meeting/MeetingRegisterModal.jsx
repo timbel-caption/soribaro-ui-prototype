@@ -303,7 +303,8 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <input
                         className="preg-input"
-                        type="time"
+                        type="text"
+                        placeholder="13:00"
                         value={form.sessionStart}
                         onChange={(e) => setForm((f) => ({ ...f, sessionStart: e.target.value }))}
                         style={{ flex: 1 }}
@@ -311,7 +312,8 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                       <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
                       <input
                         className="preg-input"
-                        type="time"
+                        type="text"
+                        placeholder="15:00"
                         value={form.sessionEnd}
                         onChange={(e) => setForm((f) => ({ ...f, sessionEnd: e.target.value }))}
                         style={{ flex: 1 }}
@@ -369,37 +371,37 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
             </div>
           </div>
 
-          {/* 음성 파일 등록 섹션 */}
-          <div className="preg-section">
-            <div className="preg-section-header">🎙 음성 파일 등록</div>
-            <div
-              className={`preg-drop-zone${dragOver ? ' preg-drop-zone--active' : ''}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <div className="preg-drop-icon">🎙</div>
-              <p className="preg-drop-text">파일을 드래그하거나 클릭하여 추가</p>
-              <p className="preg-drop-hint">WAV, MP3, MA4 등</p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".wav,.mp3,.mp4,.m4a,.aac,.flac"
-                style={{ display: 'none' }}
-                onChange={(e) => addFiles(e.target.files)}
-              />
-            </div>
-            {files.length > 0 && (
-              <div className="preg-file-list">
-                {files.map((f, i) => (
-                  <div key={i} className="preg-file-item">
-                    <span className="preg-file-num">{i + 1}</span>
-                    <span className="preg-file-icon">🎵</span>
-                    <span className="preg-file-name">{f.name}</span>
-                    <span className="preg-file-size">{formatSize(f.size)}</span>
-                    {workType === 'meeting' && (
+          {/* 음성 파일 등록 섹션 (현장속기는 등록 단계에서 음성파일을 받지 않는다) */}
+          {workType === 'meeting' && (
+            <div className="preg-section">
+              <div className="preg-section-header">🎙 음성 파일 등록</div>
+              <div
+                className={`preg-drop-zone${dragOver ? ' preg-drop-zone--active' : ''}`}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="preg-drop-icon">🎙</div>
+                <p className="preg-drop-text">파일을 드래그하거나 클릭하여 추가</p>
+                <p className="preg-drop-hint">WAV, MP3, MA4 등</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".wav,.mp3,.mp4,.m4a,.aac,.flac"
+                  style={{ display: 'none' }}
+                  onChange={(e) => addFiles(e.target.files)}
+                />
+              </div>
+              {files.length > 0 && (
+                <div className="preg-file-list">
+                  {files.map((f, i) => (
+                    <div key={i} className="preg-file-item">
+                      <span className="preg-file-num">{i + 1}</span>
+                      <span className="preg-file-icon">🎵</span>
+                      <span className="preg-file-name">{f.name}</span>
+                      <span className="preg-file-size">{formatSize(f.size)}</span>
                       <button
                         className="proto-log-btn"
                         style={{ fontSize: '11px', padding: '2px 8px', marginRight: '6px' }}
@@ -407,13 +409,13 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                       >
                         {fileSplitsList[i]?.length > 0 ? `${fileSplitsList[i].length}개 구간` : '분할 설정'}
                       </button>
-                    )}
-                    <button className="preg-file-remove" onClick={() => removeFile(i)}>✕</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                      <button className="preg-file-remove" onClick={() => removeFile(i)}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 파일 분할 설정 팝업 (상세보기 > 파일관리 > 파일분할과 동일한 컴포넌트) */}
