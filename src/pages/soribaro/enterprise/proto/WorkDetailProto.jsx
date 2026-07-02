@@ -4202,6 +4202,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
                   <th style={thStyleAlt}>세액<br />(절가)</th>
                   <th style={thStyleAlt}>공급가액 합계</th>
                   <th style={thStyleAlt}>세액합계</th>
+                  <th style={thStyleAlt}>총합</th>
                 </tr>
               </thead>
               <tbody>
@@ -4221,6 +4222,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
                   <td style={tdStyleAlt}>{isNTimeDiscount && !noData && extraMin > 0 ? fmt(extraTax) : '-'}</td>
                   <td style={tdAccentAlt}>{noData ? '-' : fmt(totalSupply)}</td>
                   <td style={tdAccentAlt}>{noData ? '-' : fmt(totalTax)}</td>
+                  <td style={tdAccentAlt}>{noData ? '-' : fmt(totalSupply + totalTax)}</td>
                 </tr>
               </tbody>
             </table>
