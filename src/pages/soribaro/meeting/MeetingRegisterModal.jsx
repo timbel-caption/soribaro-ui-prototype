@@ -19,6 +19,24 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
+// 등록 파일의 재생시간을 브라우저 API로 추출(초) — 파일관리 탭과 동일한 방식
+function extractDurationSec(file) {
+  return new Promise((resolve) => {
+    const el = document.createElement('audio');
+    const url = URL.createObjectURL(file);
+    el.preload = 'metadata';
+    el.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(Math.round(el.duration) || 0); };
+    el.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+    el.src = url;
+  });
+}
+
+// 초(number) → "H:MM" (의뢰시간 등 기존 데이터와 동일한 표기)
+function formatDurationHM(sec) {
+  const total = Math.max(0, Math.round(sec));
+  return `${Math.floor(total / 3600)}:${String(Math.floor((total % 3600) / 60)).padStart(2, '0')}`;
+}
+
 const todayStr = new Date().toISOString().split('T')[0];
 
 const meetingContractTypes = getRequestTypes().find((rt) => rt.name === '회의록')?.contractTypes ?? [];
@@ -85,9 +103,17 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     addFiles(e.dataTransfer.files);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.entNm) return;
-    onSubmit({ ...form, staff: selectedStaff }, files);
+    // 회의록: 등록한 파일의 재생시간 합산으로 의뢰시간을 산정한다 (현장속기는 시작-종료/정회 시간 기준으로 별도 산정)
+    let totalPlayTm = '-';
+    let fileDurations = [];
+    if (workType === 'meeting' && files.length > 0) {
+      const durationsSec = await Promise.all(files.map(extractDurationSec));
+      fileDurations = durationsSec.map(formatDurationHM);
+      totalPlayTm = formatDurationHM(durationsSec.reduce((a, b) => a + b, 0));
+    }
+    onSubmit({ ...form, staff: selectedStaff, totalPlayTm, fileDurations }, files);
     setSubmitted(true);
   };
 
