@@ -1,5 +1,5 @@
 import { useState, useRef, Fragment } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionTime } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
@@ -178,25 +178,57 @@ const ATTACH_SEED = [
   { id: 'at-7', name: '20260619092352_서울중부-2026-105_3층 심의실.txt',                                                   type: '고객첨부(의뢰)', size: '59.0 KB',  regDttm: '2026.06.19 11:25:00', shared: true },
 ];
 
-// 현장속기 시작-종료 시간(sessionTime) 인라인 수정. 정산·배정 등에서 참조하는 실제 등록 데이터를 갱신한다.
+// "HH:MM" 수기 입력 문자열 → 분(number). 형식이 올바르지 않으면 null
+function parseHM(str) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec((str || '').trim());
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+// 분(number) → "H:MM" (의뢰시간 등 기존 데이터와 동일한 표기)
+function formatReqTime(min) {
+  return `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+}
+
+// 현장속기 시작-종료/정회 시간 인라인 수정. 정회시간을 제외한 순수 작업시간을 의뢰시간(totalPlayTm)으로
+// 파생해 저장하므로, 최초 등록 상태(수정 이력 없음)에서는 의뢰시간이 그대로 공란('-')으로 유지된다.
 function SessionTimeField({ s }) {
   const [sessionTime, setSessionTime] = useState(s.sessionTime || '-');
+  const [recessTime, setRecessTime] = useState(s.recessTime || '-');
   const [editing, setEditing] = useState(false);
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
+  const [recessStart, setRecessStart] = useState('');
+  const [recessEnd, setRecessEnd] = useState('');
 
   const startEdit = () => {
     const [st, ed] = sessionTime && sessionTime !== '-' ? sessionTime.split('-') : ['', ''];
+    const [rst, red] = recessTime && recessTime !== '-' ? recessTime.split('-') : ['', ''];
     setStart(st || '');
     setEnd(ed || '');
+    setRecessStart(rst || '');
+    setRecessEnd(red || '');
     setEditing(true);
   };
 
   const commit = () => {
-    if (!start || !end) return;
-    const next = `${start}-${end}`;
-    setSessionTime(next);
-    updateSampleSessionTime(s.id, next);
+    const startMin = parseHM(start);
+    const endMin = parseHM(end);
+    if (startMin == null || endMin == null || endMin <= startMin) return;
+
+    // 정회시간은 입력된 경우에만 의뢰시간 계산에서 제외한다
+    const recessStartMin = parseHM(recessStart);
+    const recessEndMin = parseHM(recessEnd);
+    const hasRecess = recessStartMin != null && recessEndMin != null && recessEndMin > recessStartMin;
+    const recessMin = hasRecess ? recessEndMin - recessStartMin : 0;
+
+    const nextSessionTime = `${start.trim()}-${end.trim()}`;
+    const nextRecessTime = hasRecess ? `${recessStart.trim()}-${recessEnd.trim()}` : '-';
+    const nextReqTime = formatReqTime(Math.max(0, (endMin - startMin) - recessMin));
+
+    setSessionTime(nextSessionTime);
+    setRecessTime(nextRecessTime);
+    updateSampleSessionDetails(s.id, { sessionTime: nextSessionTime, recessTime: nextRecessTime, totalPlayTm: nextReqTime });
     setEditing(false);
   };
 
@@ -204,18 +236,32 @@ function SessionTimeField({ s }) {
 
   if (!editing) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{sessionTime}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
+          {sessionTime && sessionTime !== '-' ? sessionTime.replace('-', ' ~ ') : '-'}
+        </span>
+        <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+          정회 {recessTime && recessTime !== '-' ? recessTime.replace('-', ' ~ ') : '-'}
+        </span>
         <button className="proto-log-btn" style={{ fontSize: '11px', padding: '3px 10px' }} onClick={startEdit}>수정</button>
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <input type="time" className="preg-input" style={{ width: '110px' }} value={start} onChange={(e) => setStart(e.target.value)} />
-      <span style={{ color: 'var(--text-muted)' }}>~</span>
-      <input type="time" className="preg-input" style={{ width: '110px' }} value={end} onChange={(e) => setEnd(e.target.value)} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>시작-종료</label>
+        <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="13:00" value={start} onChange={(e) => setStart(e.target.value)} />
+        <span style={{ color: 'var(--text-muted)' }}>~</span>
+        <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="15:00" value={end} onChange={(e) => setEnd(e.target.value)} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>정회</label>
+        <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="13:30" value={recessStart} onChange={(e) => setRecessStart(e.target.value)} />
+        <span style={{ color: 'var(--text-muted)' }}>~</span>
+        <input type="text" className="preg-input" style={{ width: '70px' }} placeholder="14:00" value={recessEnd} onChange={(e) => setRecessEnd(e.target.value)} />
+      </div>
       <button className="proto-note-save-btn" onClick={commit}>✓</button>
       <button className="proto-note-cancel-btn" onClick={cancel}>✕</button>
     </div>
@@ -403,7 +449,7 @@ function BasicInfoTab({ s }) {
         <div className="proto-basic-card" style={{ marginTop: '12px' }}>
           <div className="proto-basic-card-header">
             <span>🕒</span>
-            <span>시작-종료 시간</span>
+            <span>시작-종료 / 정회 시간</span>
           </div>
           <div style={{ padding: '14px 20px' }}>
             <SessionTimeField s={s} />
