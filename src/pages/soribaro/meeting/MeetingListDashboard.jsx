@@ -274,7 +274,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     </div>
   );
 
-  // 진행 의뢰 현황 탭 공용 테이블. showProgress=true(납품 일정 확인 탭)일 때만 상태 앞에 진행률 컬럼 표시
+  // 진행 의뢰 현황 탭 공용 테이블. showProgress=true(회의록 납품 일정 확인 탭)일 때만 상태 앞에 진행률 컬럼 표시.
+  // 현장속기는 진행률 항목 없이 기본 7개 컬럼만 사용.
   const mergedTable = (items, showProgress) => (
     <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
       <table className="proto-table">
@@ -567,7 +568,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         )}
         {activeTab === 'all' && mergedTable(filtered, false)}
         {activeTab === 'today' && mergedTable(alerts.todayDueItems, false)}
-        {activeTab === 'overdue' && mergedTable(alerts.overdueItems, true)}
+        {activeTab === 'overdue' && mergedTable(alerts.overdueItems, workType === 'meeting')}
         {activeTab === 'all' && pagination}
       </div>
       {assignModalJsx}
