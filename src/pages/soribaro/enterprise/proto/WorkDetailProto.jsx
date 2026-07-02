@@ -543,7 +543,24 @@ function TimeHmsInput({ seconds, onChange, min = 0, max = 359999 }) {
 }
 
 // 회의록 파일관리: 파일 분할 설정 모달. 작업자 배정 시(disabled) 조회만 가능하다.
-function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
+// 구간 작업 상태별 배지 색상 (파일분할 목록에서 상태를 직관적으로 구분)
+const SEGMENT_STATUS_COLOR = {
+  작업대기: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
+  작업중:   { bg: 'rgba(96,165,250,0.15)',  color: '#60a5fa' },
+  검수중:   { bg: 'rgba(251,191,36,0.15)',  color: '#fbbf24' },
+  검수완료: { bg: 'rgba(74,222,128,0.15)',  color: '#4ade80' },
+};
+
+function segmentStatusBadge(status) {
+  const c = SEGMENT_STATUS_COLOR[status] || SEGMENT_STATUS_COLOR['작업대기'];
+  return (
+    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 600, background: c.bg, color: c.color }}>
+      {status}
+    </span>
+  );
+}
+
+function FileSplitSettingModal({ file, disabled, getSegmentStatus, onClose, onSave }) {
   const maxSec = durationToSec(file.duration);
   const [segments, setSegments] = useState(file.splits || []);
   const [startSec, setStartSec] = useState(0);
@@ -578,25 +595,42 @@ function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
             <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent-color)' }}>{file.duration}</span>
           </div>
 
-          {disabled ? (
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', padding: '20px 0' }}>
-              작업자가 배정되어 분할 정보를 수정할 수 없습니다.
+          {disabled && (
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', margin: '0 0 14px' }}>
+              작업자가 배정되어 분할 구간을 조회만 할 수 있습니다.
             </p>
-          ) : (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                <span>{secToDuration(0)}</span>
-                <span>{secToDuration(maxSec)}</span>
-              </div>
-              <div style={{ position: 'relative', height: '6px', background: 'var(--bg-hover)', borderRadius: '3px', marginBottom: '16px' }}>
-                <div style={{
-                  position: 'absolute', top: 0, bottom: 0,
-                  left: `${maxSec ? (startSec / maxSec) * 100 : 0}%`,
-                  width: `${maxSec ? ((endSec - startSec) / maxSec) * 100 : 0}%`,
-                  background: 'var(--accent-color)', borderRadius: '3px',
-                }} />
-              </div>
+          )}
 
+          {/* 분할 구간 시각화: 전체 재생시간 바 위에 저장된 모든 구간 + (수정 가능 시) 현재 선택 중인 구간을 함께 표시 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+            <span>{secToDuration(0)}</span>
+            <span>{secToDuration(maxSec)}</span>
+          </div>
+          <div style={{ position: 'relative', height: '10px', background: 'var(--bg-hover)', borderRadius: '3px', marginBottom: '16px' }}>
+            {segments.map((seg, idx) => (
+              <div
+                key={idx}
+                title={`구간 ${idx + 1} · ${secToDuration(seg.start)} ~ ${secToDuration(seg.end)}`}
+                style={{
+                  position: 'absolute', top: 0, bottom: 0,
+                  left: `${maxSec ? (seg.start / maxSec) * 100 : 0}%`,
+                  width: `${maxSec ? ((seg.end - seg.start) / maxSec) * 100 : 0}%`,
+                  background: 'rgba(59,130,246,0.35)', border: '1px solid var(--accent-color)', borderRadius: '3px',
+                }}
+              />
+            ))}
+            {!disabled && (
+              <div style={{
+                position: 'absolute', top: 0, bottom: 0,
+                left: `${maxSec ? (startSec / maxSec) * 100 : 0}%`,
+                width: `${maxSec ? ((endSec - startSec) / maxSec) * 100 : 0}%`,
+                background: 'var(--accent-color)', borderRadius: '3px',
+              }} />
+            )}
+          </div>
+
+          {!disabled && (
+            <>
               <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block' }}>시작 - {secToDuration(startSec)}</label>
@@ -630,36 +664,39 @@ function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
                 onClick={handleAddSegment}
                 disabled={startSec >= endSec}
               >+ 구간 추가</button>
-
-              {segments.length > 0 && (
-                <div className="proto-table-wrap" style={{ marginBottom: '4px' }}>
-                  <table className="proto-table">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>시작</th>
-                        <th>종료</th>
-                        <th>길이</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {segments.map((seg, idx) => (
-                        <tr key={idx}>
-                          <td className="text-center">{idx + 1}</td>
-                          <td>{secToDuration(seg.start)}</td>
-                          <td>{secToDuration(seg.end)}</td>
-                          <td>{secToDuration(seg.end - seg.start)}</td>
-                          <td className="text-center">
-                            <button className="proto-note-cancel-btn" onClick={() => handleRemoveSegment(idx)}>✕</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </>
+          )}
+
+          {/* 분할 구간 목록: 구간 번호 / 시작~종료 시간 / 구간 상태(프로젝트 관리 등록 기준) */}
+          {segments.length > 0 && (
+            <div className="proto-table-wrap" style={{ marginBottom: '4px' }}>
+              <table className="proto-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>시작 ~ 종료</th>
+                    <th>길이</th>
+                    <th className="text-center">상태</th>
+                    {!disabled && <th></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {segments.map((seg, idx) => (
+                    <tr key={idx}>
+                      <td className="text-center">{idx + 1}</td>
+                      <td>{secToDuration(seg.start)} ~ {secToDuration(seg.end)}</td>
+                      <td>{secToDuration(seg.end - seg.start)}</td>
+                      <td className="text-center">{segmentStatusBadge(getSegmentStatus(idx))}</td>
+                      {!disabled && (
+                        <td className="text-center">
+                          <button className="proto-note-cancel-btn" onClick={() => handleRemoveSegment(idx)}>✕</button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
         <div className="pm-modal-ft">
@@ -703,13 +740,18 @@ function FileManageTab({ s }) {
   const [splitModalFile, setSplitModalFile] = useState(null);
   const fileInputRef = useRef();
 
-  // 이 파일(또는 분할 구간)이 프로젝트 관리에서 이미 작업자 배정되었는지 확인 — 배정된 경우 분할정보 수정 불가
-  const isFileWorkerAssigned = (fileNo) => {
+  // 프로젝트 관리(subjects)에 등록된 projFiles 전체 목록 조회
+  const getProjFiles = () => {
     const subjects = getMeetingSamples().find((v) => v.id === s.id)?.subjects || [];
-    return subjects
-      .flatMap((p) => p.projFiles || [])
-      .some((pf) => pf.worker && (pf.fileNo === fileNo || String(pf.fileNo).startsWith(`${fileNo}-`)));
+    return subjects.flatMap((p) => p.projFiles || []);
   };
+
+  // 이 파일(또는 분할 구간)이 프로젝트 관리에서 이미 작업자 배정되었는지 확인 — 배정된 경우 분할정보 수정 불가
+  const isFileWorkerAssigned = (fileNo) =>
+    getProjFiles().some((pf) => pf.worker && (pf.fileNo === fileNo || String(pf.fileNo).startsWith(`${fileNo}-`)));
+
+  // 분할 구간(원본 fileNo + 구간 순번)이 프로젝트 관리에 등록된 경우 그 작업 상태를 조회, 없으면 작업대기
+  const getSegmentStatus = (segFileNo) => getProjFiles().find((pf) => pf.fileNo === segFileNo)?.status || '작업대기';
 
   const handleSaveSplits = (fileNo, segments) => {
     const updated = files.map((f) => (f.fileNo === fileNo ? { ...f, splits: segments } : f));
@@ -907,6 +949,7 @@ function FileManageTab({ s }) {
         <FileSplitSettingModal
           file={splitModalFile}
           disabled={isFileWorkerAssigned(splitModalFile.fileNo)}
+          getSegmentStatus={(idx) => getSegmentStatus(`${splitModalFile.fileNo}-${idx + 1}`)}
           onClose={() => setSplitModalFile(null)}
           onSave={(segments) => handleSaveSplits(splitModalFile.fileNo, segments)}
         />
