@@ -4229,6 +4229,10 @@ function MtgSettlementTab({ s }) {
   const [remarkEdit, setRemarkEdit] = useState({});  // { [rowIndex]: draft string }
   const [rejectReason, setRejectReason] = useState('');
   const [rejectViewModal, setRejectViewModal] = useState(null);
+  // 현장속기 작업자 정산 시간 단가 — 기본 8만원, 수정 시 작업자 정산 내역 전체에 반영
+  const [workerRate, setWorkerRate] = useState(STG_WORKER_RATE_PER_HOUR);
+  const [editingWorkerRate, setEditingWorkerRate] = useState(false);
+  const [workerRateInput, setWorkerRateInput] = useState(String(STG_WORKER_RATE_PER_HOUR));
 
   const now = () => {
     const d = new Date();
@@ -4276,13 +4280,30 @@ function MtgSettlementTab({ s }) {
     setRejectModal(null);
   };
 
-  // 현장속기: 작업시간 수기 입력 시 시간 단가(8만원)를 반영해 정산금액·실지급액(정산금액+출장비)을 다시 계산
+  // 현장속기: 작업시간 수기 입력 시 시간 단가를 반영해 정산금액·실지급액(정산금액+출장비)을 다시 계산
   const updateWorkerWorkTime = (index, value) => {
     setWorkers((prev) => prev.map((r, i) => {
       if (i !== index) return r;
-      const amount = Math.round(parseWorkTimeHours(value) * STG_WORKER_RATE_PER_HOUR);
+      const amount = Math.round(parseWorkTimeHours(value) * workerRate);
       return { ...r, workTime: value, amount, netAmount: amount + (r.travelFee || 0) };
     }));
+  };
+
+  // 시간 단가 수정 시 작업자 정산 내역 전체(정산금액·실지급액)를 새 단가로 다시 계산
+  const startEditWorkerRate = () => {
+    setWorkerRateInput(String(workerRate));
+    setEditingWorkerRate(true);
+  };
+
+  const commitWorkerRate = () => {
+    const next = Number(workerRateInput.replace(/[^0-9]/g, ''));
+    if (!next) return;
+    setWorkerRate(next);
+    setWorkers((prev) => prev.map((r) => {
+      const amount = Math.round(parseWorkTimeHours(r.workTime) * next);
+      return { ...r, amount, netAmount: amount + (r.travelFee || 0) };
+    }));
+    setEditingWorkerRate(false);
   };
 
   // 출장비 수기 입력 시 실지급액(정산금액+출장비)을 다시 계산
@@ -4360,7 +4381,32 @@ function MtgSettlementTab({ s }) {
 
   return (
     <div className="proto-tab-panel">
-      <p className="proto-section-title">작업자 정산 내역</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <p className="proto-section-title">작업자 정산 내역</p>
+        {isStenography && (
+          editingWorkerRate ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>시간당 단가</span>
+              <input
+                type="text"
+                className="preg-input"
+                style={{ width: '90px' }}
+                value={workerRateInput}
+                onChange={(e) => setWorkerRateInput(e.target.value)}
+                autoFocus
+              />
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>원</span>
+              <button className="proto-note-save-btn" onClick={commitWorkerRate}>✓</button>
+              <button className="proto-note-cancel-btn" onClick={() => setEditingWorkerRate(false)}>✕</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>시간당 단가 {workerRate.toLocaleString()}원</span>
+              <button className="proto-log-btn" style={{ fontSize: '11px', padding: '3px 10px' }} onClick={startEditWorkerRate}>수정</button>
+            </div>
+          )
+        )}
+      </div>
       <div className="proto-table-wrap proto-table-wrap--scroll" style={{ marginBottom: '24px' }}>
         <table className="proto-table">
           <thead>
