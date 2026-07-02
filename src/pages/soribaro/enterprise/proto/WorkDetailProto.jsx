@@ -677,7 +677,7 @@ function segmentStatusBadge(status) {
   );
 }
 
-function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
+export function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
   const maxSec = durationToSec(file.duration);
   const [segments, setSegments] = useState(file.splits || []);
   const [startSec, setStartSec] = useState(0);
