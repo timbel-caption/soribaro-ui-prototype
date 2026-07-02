@@ -66,16 +66,6 @@ function formatRegDate(regDttm) {
   return regDttm.replace(/-/g, '').slice(2, 8);
 }
 
-const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
-
-// 납품 모니터링용 의뢰일자 표시: "6.16(금)" 형식
-function formatMonitorDate(regDttm) {
-  if (!regDttm) return '-';
-  const d = new Date((regDttm || '').slice(0, 10));
-  if (Number.isNaN(d.getTime())) return '-';
-  return `${d.getMonth() + 1}.${d.getDate()}(${WEEKDAY_KO[d.getDay()]})`;
-}
-
 // 진행의뢰현황 > 상세보기 > 프로젝트 관리(workProgress)의 파일별 진행률을 전체 대비 100 기준으로 환산
 function computeOverallProgress(s) {
   if (!s.workProgress || s.workProgress.length === 0) return 0;
@@ -274,44 +264,127 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     </div>
   );
 
-  // 진행 의뢰 현황 탭 공용 테이블. showProgress=true(회의록 납품 일정 확인 탭)일 때만 상태 앞에 진행률 컬럼 표시.
-  // 현장속기는 진행률 항목 없이 기본 7개 컬럼만 사용.
-  const mergedTable = (items, showProgress) => (
-    <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
-      <table className="proto-table">
-        <thead>
-          <tr>
-            <th className="text-center">의뢰일자</th>
-            <th>업체명</th>
-            <th className="text-center">계약구분</th>
-            <th className="text-center">회차</th>
-            <th style={{ minWidth: '100px' }}>검수자</th>
-            {showProgress && <th className="text-center">진행률</th>}
-            <th className="text-center">상태</th>
-            <th style={{ minWidth: '140px' }}>특이사항</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.length === 0 ? (
-            <tr><td colSpan={showProgress ? 8 : 7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>해당 건이 없습니다.</td></tr>
-          ) : (
-            items.map((s) => (
-              <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
-                <td className="text-center">{formatMonitorDate(s.regDttm)}</td>
-                <td style={{ fontWeight: 600 }}>{s.entNm}</td>
-                <td className="text-center">{contractBadge(s.contractType)}</td>
-                <td className="text-center">{s.round || '-'}</td>
-                <td>{managerOverrides[s.id] ?? s.managerNm ?? '-'}</td>
-                {showProgress && <td className="text-center">{computeOverallProgress(s)}%</td>}
-                <td className="text-center">{statusBadge(s.overallStatus)}</td>
-                <td>{s.specialNote || '-'}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
+  const isStenographyType = workType === 'stenography';
+
+  // 진행 의뢰 현황 탭 공용 테이블 (진행 전체 / 금일 납품 / 납품 일정 확인 공통).
+  // - 현장속기는 회차 뒤에 "시작-종료" 컬럼을 추가로 표시한다.
+  // - showProgress=true(회의록 납품 일정 확인 탭)일 때만 납품기한 앞에 진행률(바) 컬럼을 표시한다.
+  const mergedTable = (items, showProgress) => {
+    const colCount = 12 + (isStenographyType ? 1 : 0) + (showProgress ? 1 : 0);
+    return (
+      <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
+        <table className="proto-table">
+          <thead>
+            <tr>
+              <th className="text-center">의뢰일자</th>
+              <th>업체명</th>
+              <th className="text-center">계약구분</th>
+              <th className="text-center">회차</th>
+              {isStenographyType && <th className="text-center">시작-종료</th>}
+              <th className="text-center">의뢰시간</th>
+              {showProgress && <th className="text-center">진행률</th>}
+              <th className="text-center">납품기한</th>
+              <th style={{ minWidth: '100px' }}>검수자</th>
+              <th style={{ minWidth: '140px' }}>특이사항</th>
+              <th className="text-center">상태</th>
+              <th className="text-center">정산</th>
+              <th className="text-center">실제 납품일</th>
+              <th className="text-center" style={{ minWidth: '90px' }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr><td colSpan={colCount} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>해당 건이 없습니다.</td></tr>
+            ) : (
+              items.map((s) => {
+                const isEditingNote = editingNoteId === s.id;
+                const isEditingManager = editingManagerId === s.id;
+                const managerNm = managerOverrides[s.id] ?? s.managerNm ?? '';
+                const progress = computeOverallProgress(s);
+                return (
+                  <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
+                    <td className="text-center">{formatRegDate(s.regDttm)}</td>
+                    <td style={{ fontWeight: 600 }}>{s.entNm}</td>
+                    <td className="text-center">{contractBadge(s.contractType)}</td>
+                    <td className="text-center">{s.round || '-'}</td>
+                    {isStenographyType && <td className="text-center">{s.sessionTime || '-'}</td>}
+                    <td className="text-center" style={{ maxWidth: '100px', fontSize: '13px' }}>
+                      {s.totalPlayTm || <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                    </td>
+                    {showProgress && (
+                      <td>
+                        <div className="proto-progress-wrap">
+                          <div className="proto-progress-bar">
+                            <div className={`proto-progress-fill${progress === 100 ? ' complete' : ''}`} style={{ width: `${progress}%` }} />
+                          </div>
+                          <span className="proto-progress-text">{progress}%</span>
+                        </div>
+                      </td>
+                    )}
+                    <td className="text-center">{s.dueDate}</td>
+                    <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '120px' }}>
+                      {isEditingManager ? (
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          <input
+                            className="proto-note-inline-input"
+                            value={managerInput}
+                            onChange={(e) => setManagerInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') commitManager(s); if (e.key === 'Escape') cancelManager(); }}
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <button className="proto-note-save-btn" onClick={() => commitManager(s)}>✓</button>
+                          <button className="proto-note-cancel-btn" onClick={cancelManager}>✕</button>
+                        </div>
+                      ) : (
+                        <div
+                          className="proto-note-cell"
+                          title={managerNm}
+                          onClick={(e) => startEditManager(s, e)}
+                        >
+                          {managerNm || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
+                        </div>
+                      )}
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()} style={{ maxWidth: '180px' }}>
+                      {isEditingNote ? (
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          <input
+                            className="proto-note-inline-input"
+                            value={noteInput}
+                            onChange={(e) => setNoteInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') commitNote(s); if (e.key === 'Escape') cancelNote(); }}
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <button className="proto-note-save-btn" onClick={() => commitNote(s)}>✓</button>
+                          <button className="proto-note-cancel-btn" onClick={cancelNote}>✕</button>
+                        </div>
+                      ) : (
+                        <div
+                          className="proto-note-cell"
+                          title={s.specialNote || ''}
+                          onClick={(e) => startEditNote(s, e)}
+                        >
+                          {s.specialNote || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>입력</span>}
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-center">{statusBadge(s.overallStatus)}</td>
+                    <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
+                    <td className="text-center">{s.actualDeliveryDate || '-'}</td>
+                    <td className="text-center" style={{ whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                      <button className="mtg-detail-btn" onClick={(e) => { e.stopPropagation(); navigate(toDetailPath(s.protoPath)); }}>상세보기</button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   const tableBody = (
     <tbody>
