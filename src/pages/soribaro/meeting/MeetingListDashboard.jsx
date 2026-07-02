@@ -124,8 +124,16 @@ function computeAlerts(samples) {
   return { todayDue: todayDueItems.length, overdue: overdueItems.length, todayDueItems, overdueItems };
 }
 
+// 진행 의뢰 현황 + 납품 모니터링 통합 탭
+const REQUEST_TABS = [
+  { key: 'all', label: '진행 전체' },
+  { key: 'today', label: '금일 납품' },
+  { key: 'overdue', label: '납품 일정 확인' },
+];
+
 export default function MeetingListDashboard({ samples, onSamplesChange, showAll, workType = 'meeting' }) {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('all');
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -266,7 +274,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     </div>
   );
 
-  const monitorTable = (items) => (
+  // 진행 의뢰 현황 탭 공용 테이블. showProgress=true(납품 일정 확인 탭)일 때만 상태 앞에 진행률 컬럼 표시
+  const mergedTable = (items, showProgress) => (
     <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
       <table className="proto-table">
         <thead>
@@ -276,14 +285,14 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             <th className="text-center">계약구분</th>
             <th className="text-center">회차</th>
             <th style={{ minWidth: '100px' }}>검수자</th>
-            <th className="text-center">진행률</th>
+            {showProgress && <th className="text-center">진행률</th>}
             <th className="text-center">상태</th>
             <th style={{ minWidth: '140px' }}>특이사항</th>
           </tr>
         </thead>
         <tbody>
           {items.length === 0 ? (
-            <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>해당 건이 없습니다.</td></tr>
+            <tr><td colSpan={showProgress ? 8 : 7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>해당 건이 없습니다.</td></tr>
           ) : (
             items.map((s) => (
               <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
@@ -292,7 +301,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 <td className="text-center">{contractBadge(s.contractType)}</td>
                 <td className="text-center">{s.round || '-'}</td>
                 <td>{managerOverrides[s.id] ?? s.managerNm ?? '-'}</td>
-                <td className="text-center">{computeOverallProgress(s)}%</td>
+                {showProgress && <td className="text-center">{computeOverallProgress(s)}%</td>}
                 <td className="text-center">{statusBadge(s.overallStatus)}</td>
                 <td>{s.specialNote || '-'}</td>
               </tr>
@@ -512,58 +521,54 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
       <div className="proto-dash-projects">
         <p className="proto-dash-section-title" style={{ marginBottom: '8px' }}>진행 의뢰 현황</p>
-        <div className="filter-bar" style={{ marginBottom: '12px' }}>
-          <input className="filter-date" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} title="의뢰일 시작" />
-          <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
-          <input className="filter-date" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} title="의뢰일 종료" />
-          <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-            <option value="">상태 전체</option>
-            <option value="WORKING">작업중</option>
-            <option value="CHECKING">검수중</option>
-            <option value="DONE">완료</option>
-          </select>
-          <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>
-            <option value="">정산 전체</option>
-            <option value="정산전">정산전</option>
-            <option value="정산대기">정산대기</option>
-            <option value="부분정산">부분정산</option>
-            <option value="정산완료">정산완료</option>
-          </select>
-          <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
-            <option value="">계약구분 전체</option>
-            {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
-          </select>
-          <select className="filter-select" value={searchCondition} onChange={(e) => setSearchCondition(e.target.value)}>
-            {searchConditionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-          </select>
-          <input className="filter-input" type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
-          <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 14px' }} onClick={handleSearch}>검색</button>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+          {REQUEST_TABS.map((t) => {
+            const count = t.key === 'all' ? filtered.length : t.key === 'today' ? alerts.todayDue : alerts.overdue;
+            return (
+              <button
+                key={t.key}
+                className="proto-log-btn"
+                style={activeTab === t.key ? { background: 'var(--accent-color)', color: '#fff', borderColor: 'var(--accent-color)' } : undefined}
+                onClick={() => setActiveTab(t.key)}
+              >
+                {t.label} ({count})
+              </button>
+            );
+          })}
         </div>
-        <div className="proto-table-wrap" style={{ marginBottom: '8px' }}>
-          <table className="proto-table">
-            {tableHead}
-            {tableBody}
-          </table>
-        </div>
-        {pagination}
-      </div>
-
-      <div className="proto-dash-status-bottom">
-        <p className="proto-dash-section-title">납품 모니터링</p>
-        <div className="proto-alert-list">
-          <div className="proto-alert-item proto-alert-urgent">
-            <span className="proto-alert-icon">△</span>
-            <span className="proto-alert-text">금일 납품</span>
-            <span className="proto-alert-count">{alerts.todayDue}건</span>
+        {activeTab === 'all' && (
+          <div className="filter-bar" style={{ marginBottom: '12px' }}>
+            <input className="filter-date" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} title="의뢰일 시작" />
+            <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
+            <input className="filter-date" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} title="의뢰일 종료" />
+            <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              <option value="">상태 전체</option>
+              <option value="WORKING">작업중</option>
+              <option value="CHECKING">검수중</option>
+              <option value="DONE">완료</option>
+            </select>
+            <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>
+              <option value="">정산 전체</option>
+              <option value="정산전">정산전</option>
+              <option value="정산대기">정산대기</option>
+              <option value="부분정산">부분정산</option>
+              <option value="정산완료">정산완료</option>
+            </select>
+            <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
+              <option value="">계약구분 전체</option>
+              {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
+            </select>
+            <select className="filter-select" value={searchCondition} onChange={(e) => setSearchCondition(e.target.value)}>
+              {searchConditionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+            <input className="filter-input" type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
+            <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 14px' }} onClick={handleSearch}>검색</button>
           </div>
-          {monitorTable(alerts.todayDueItems)}
-          <div className="proto-alert-item proto-alert-delay" style={{ marginTop: '12px' }}>
-            <span className="proto-alert-icon">🔔</span>
-            <span className="proto-alert-text">납품 일정 확인</span>
-            <span className="proto-alert-count">{alerts.overdue}건</span>
-          </div>
-          {monitorTable(alerts.overdueItems)}
-        </div>
+        )}
+        {activeTab === 'all' && mergedTable(filtered, false)}
+        {activeTab === 'today' && mergedTable(alerts.todayDueItems, false)}
+        {activeTab === 'overdue' && mergedTable(alerts.overdueItems, true)}
+        {activeTab === 'all' && pagination}
       </div>
       {assignModalJsx}
     </div>
