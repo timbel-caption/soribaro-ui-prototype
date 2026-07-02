@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { COMPANY_DATA, getCompanyStaff, getEnterpriseCustomersByEntNm } from '../enterprise/proto/enterpriseProtoData';
 import { getRequestTypes } from '../manage/manageProtoStore';
+import { FileSplitSettingModal } from '../enterprise/proto/WorkDetailProto';
 
 function addBusinessDays(dateStr, days) {
   const d = new Date(dateStr);
@@ -37,6 +38,15 @@ function formatDurationHM(sec) {
   return `${Math.floor(total / 3600)}:${String(Math.floor((total % 3600) / 60)).padStart(2, '0')}`;
 }
 
+// 초(number) → "HH:MM:SS" (파일분할 팝업의 durationToSec 파싱 형식에 맞춤)
+function formatDurationHMS(sec) {
+  const total = Math.max(0, Math.round(sec));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
+}
+
 const todayStr = new Date().toISOString().split('T')[0];
 
 const meetingContractTypes = getRequestTypes().find((rt) => rt.name === '회의록')?.contractTypes ?? [];
@@ -59,6 +69,9 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [files, setFiles] = useState([]);
+  const [fileDurationsSec, setFileDurationsSec] = useState([]);
+  const [fileSplitsList, setFileSplitsList] = useState([]);
+  const [splitModalIndex, setSplitModalIndex] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const dropRef = useRef(null);
@@ -92,10 +105,26 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
   };
 
   const addFiles = (incoming) => {
-    setFiles((prev) => [...prev, ...Array.from(incoming)]);
+    const arr = Array.from(incoming);
+    setFiles((prev) => [...prev, ...arr]);
+    setFileSplitsList((prev) => [...prev, ...arr.map(() => [])]);
+    setFileDurationsSec((prev) => [...prev, ...arr.map(() => 0)]);
+    // 회의록만 등록 단계에서 파일 분할이 가능하므로, 그 경우에만 재생시간을 미리 추출해둔다
+    if (workType === 'meeting') {
+      const base = files.length;
+      arr.forEach((f, i) => {
+        extractDurationSec(f).then((sec) => {
+          setFileDurationsSec((prev) => prev.map((d, idx) => (idx === base + i ? sec : d)));
+        });
+      });
+    }
   };
 
-  const removeFile = (idx) => setFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeFile = (idx) => {
+    setFiles((prev) => prev.filter((_, i) => i !== idx));
+    setFileDurationsSec((prev) => prev.filter((_, i) => i !== idx));
+    setFileSplitsList((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -103,17 +132,14 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     addFiles(e.dataTransfer.files);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!form.entNm) return;
     // 회의록: 등록한 파일의 재생시간 합산으로 의뢰시간을 산정한다 (현장속기는 시작-종료/정회 시간 기준으로 별도 산정)
-    let totalPlayTm = '-';
-    let fileDurations = [];
-    if (workType === 'meeting' && files.length > 0) {
-      const durationsSec = await Promise.all(files.map(extractDurationSec));
-      fileDurations = durationsSec.map(formatDurationHM);
-      totalPlayTm = formatDurationHM(durationsSec.reduce((a, b) => a + b, 0));
-    }
-    onSubmit({ ...form, staff: selectedStaff, totalPlayTm, fileDurations }, files);
+    const totalPlayTm = workType === 'meeting' && files.length > 0
+      ? formatDurationHM(fileDurationsSec.reduce((a, b) => a + b, 0))
+      : '-';
+    const fileDurations = workType === 'meeting' ? fileDurationsSec.map(formatDurationHM) : [];
+    onSubmit({ ...form, staff: selectedStaff, totalPlayTm, fileDurations, fileSplits: fileSplitsList }, files);
     setSubmitted(true);
   };
 
@@ -365,6 +391,15 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                     <span className="preg-file-icon">🎵</span>
                     <span className="preg-file-name">{f.name}</span>
                     <span className="preg-file-size">{formatSize(f.size)}</span>
+                    {workType === 'meeting' && (
+                      <button
+                        className="proto-log-btn"
+                        style={{ fontSize: '11px', padding: '2px 8px', marginRight: '6px' }}
+                        onClick={() => setSplitModalIndex(i)}
+                      >
+                        {fileSplitsList[i]?.length > 0 ? `${fileSplitsList[i].length}개 구간` : '분할 설정'}
+                      </button>
+                    )}
                     <button className="preg-file-remove" onClick={() => removeFile(i)}>✕</button>
                   </div>
                 ))}
@@ -372,6 +407,20 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
             )}
           </div>
         </div>
+
+        {/* 파일 분할 설정 팝업 (상세보기 > 파일관리 > 파일분할과 동일한 컴포넌트) */}
+        {splitModalIndex != null && (
+          <FileSplitSettingModal
+            file={{
+              fileName: files[splitModalIndex].name,
+              duration: formatDurationHMS(fileDurationsSec[splitModalIndex] || 0),
+              splits: fileSplitsList[splitModalIndex] || [],
+            }}
+            disabled={false}
+            onClose={() => setSplitModalIndex(null)}
+            onSave={(segments) => setFileSplitsList((prev) => prev.map((s, i) => (i === splitModalIndex ? segments : s)))}
+          />
+        )}
 
         {/* 실무자 선택 팝업 */}
         {showStaffModal && (() => {
