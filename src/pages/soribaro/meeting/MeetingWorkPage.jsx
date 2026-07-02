@@ -82,7 +82,7 @@ export default function MeetingWorkPage() {
         </div>
       </div>
 
-      <MeetingListDashboard samples={samples} onSamplesChange={refreshSamples} showAll={showAll} />
+      <MeetingListDashboard samples={samples} onSamplesChange={refreshSamples} showAll={showAll} workType="meeting" />
 
       {showRegister && (
         <MeetingRegisterModal onClose={() => { setShowRegister(false); refreshSamples(); }} onSubmit={handleRegister} />
