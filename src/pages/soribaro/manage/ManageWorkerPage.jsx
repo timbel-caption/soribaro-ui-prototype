@@ -26,6 +26,45 @@ const SITE_TYPE_OPTIONS = [
   { value: "ROLE_USERC", key: "clipdesk" },
 ];
 
+// 거주지 / 속기 자격증 — 프로토타입 정적 더미 데이터 (membNo 기준 고정 매핑)
+const RESIDENCE_SAMPLES = [
+  "경기도 광명시",
+  "전라남도 남해군",
+  "부산광역시 해운대구",
+  "인천광역시 서구",
+  "서울특별시 강서구",
+  "대구광역시 수성구",
+  "충청북도 청주시",
+  "강원특별자치도 원주시",
+];
+const STENO_CERT_SAMPLES = [
+  "한글속기 1급",
+  "한글속기 2급",
+  "한글속기 3급",
+  "없음",
+  "확인 필요",
+];
+
+const residenceOf = (params) => {
+  const no = Number(params.data?.membNo);
+  if (!Number.isFinite(no)) return "-";
+  return RESIDENCE_SAMPLES[no % RESIDENCE_SAMPLES.length];
+};
+const stenoCertOf = (params) => {
+  const no = Number(params.data?.membNo);
+  if (!Number.isFinite(no)) return "-";
+  return STENO_CERT_SAMPLES[no % STENO_CERT_SAMPLES.length];
+};
+
+// 속기 자격증 셀 렌더러 (급수 배지)
+const StenoCertCellRenderer = (params) => {
+  const label = params.value || "-";
+  const cls = label.startsWith("한글속기") ? "steno-cert-badge steno-cert-badge--has"
+            : label === "확인 필요"        ? "steno-cert-badge steno-cert-badge--check"
+            : "steno-cert-badge steno-cert-badge--none";
+  return <span className={cls}>{label}</span>;
+};
+
 // 상태 렌더러
 const StatRenderer = (params) => {
   const label = params.data?.statDtl || params.value || "-";
@@ -132,6 +171,21 @@ export default function ManageWorkerPage() {
       },
       { field: "membId", headerName: t('manage.worker.columns.membId'), width: 220 },
       { field: "membNm", headerName: t('manage.worker.columns.membNm'), width: 180 },
+      {
+        field: "residence",
+        headerName: t('manage.worker.columns.residence'),
+        width: 150,
+        valueGetter: residenceOf,
+      },
+      {
+        field: "stenoCert",
+        headerName: t('manage.worker.columns.stenoCert'),
+        width: 120,
+        cellClass: "text-center",
+        headerClass: "text-center",
+        valueGetter: stenoCertOf,
+        cellRenderer: StenoCertCellRenderer,
+      },
       { field: "entNm", headerName: t('manage.worker.columns.entNm'), flex: 1, minWidth: 140 },
       {
         field: "membLvl",
