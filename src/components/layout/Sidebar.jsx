@@ -94,13 +94,8 @@ const menuData = [
         adminOnly: true,
         children: [
           {
-            id: "recording-request",
-            labelKey: "sidebar.requestManagement",
-            path: "/soribaro/recording/request",
-          },
-          {
             id: "recording-work",
-            labelKey: "sidebar.workManagement",
+            labelKey: "sidebar.recordingWorkManagement",
             path: "/soribaro/recording/work",
           },
         ],

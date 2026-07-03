@@ -6,7 +6,7 @@ const quickLinks = [
     title: '소리바로',
     description: '녹취록, 엔터프라이즈, 번역 작업 관리',
     icon: '🎙️',
-    path: '/soribaro/recording/request',
+    path: '/soribaro/recording/work',
     color: '#00d9ff',
   },
   {

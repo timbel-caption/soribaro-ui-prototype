@@ -16,10 +16,9 @@ import UserErrorPage from './pages/UserErrorPage';
 import LoginPage from './pages/LoginPage';
 
 // 소리바로 - 녹취록 페이지
-import RecordingRequestPage from './pages/soribaro/recording/RecordingRequestPage';
-import RecordingRequestDetailPage from './pages/soribaro/recording/RecordingRequestDetailPage';
-import RecordingWorkPage from './pages/soribaro/recording/RecordingWorkPage';
-import RecordingWorkDetailPage from './pages/soribaro/recording/RecordingWorkDetailPage';
+// [5차 고도화 프로토타입] 회의록 작업관리와 동일한 구조/기능의 독립 프로토타입 (protoStore._recordingSamples 별도 저장소 사용)
+import RecordingWorkManagePage from './pages/soribaro/recording/RecordingWorkManagePage';
+import RecordingMenuDetailProto from './pages/soribaro/recording/RecordingMenuDetailProto';
 
 // 소리바로 - 마이페이지
 import MyPage from './pages/soribaro/mypage/MyPage';
@@ -253,11 +252,9 @@ function AppRoutes() {
         {/* 소리바로 - 마이페이지 */}
         <Route path="soribaro/mypage" element={<MyPage />} />
 
-        {/* 소리바로 - 녹취록 (관리자 전용) */}
-        <Route path="soribaro/recording/request" element={<AdminRoute><RecordingRequestPage /></AdminRoute>} />
-        <Route path="soribaro/recording/request/:servCd" element={<AdminRoute><RecordingRequestDetailPage /></AdminRoute>} />
-        <Route path="soribaro/recording/work" element={<AdminRoute><RecordingWorkPage /></AdminRoute>} />
-        <Route path="soribaro/recording/work/:servCd" element={<RecordingWorkDetailPage />} />
+        {/* 소리바로 - 녹취록 (관리자 전용) — 회의록 작업관리와 동일한 구조/기능의 독립 프로토타입 */}
+        <Route path="soribaro/recording/work" element={<AdminRoute><RecordingWorkManagePage /></AdminRoute>} />
+        <Route path="soribaro/recording/detail/:id" element={<AdminRoute><RecordingMenuDetailProto /></AdminRoute>} />
 
         {/* 소리바로 - 엔터프라이즈 */}
         <Route path="soribaro/meeting/work" element={<AdminRoute><MeetingWorkPage /></AdminRoute>} />

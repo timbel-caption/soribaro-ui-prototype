@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime, updateStenographyWorkerAssign, getMeetingSamples, getStenographySamples } from '../enterprise/proto/protoStore';
+import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime, updateStenographyWorkerAssign, getMeetingSamples, getStenographySamples, getRecordingSamples } from '../enterprise/proto/protoStore';
 import StenographyWorkerAssignModal from '../enterprise/proto/StenographyWorkerAssignModal';
 import { downloadMeetingWorkExcel, downloadStenographyWorkExcel } from '../../../utils/workManagementExcel';
 
@@ -75,7 +75,7 @@ function computeOverallProgress(s) {
 
 // 상세보기 > 프로젝트 관리에 등록된 프로젝트들의 작업자를 조회 (중복 제거, 쉼표로 나열)
 function getProjectWorkers(s) {
-  const store = s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+  const store = s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
   const subjects = store.find((v) => v.id === s.id)?.subjects || [];
   const workers = [...new Set(subjects.map((p) => p.worker).filter(Boolean))];
   return workers.join(', ');
@@ -684,7 +684,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         )}
         {activeTab === 'all' && mergedTable(filtered, false, true)}
         {activeTab === 'today' && mergedTable(alerts.todayDueItems, false)}
-        {activeTab === 'overdue' && mergedTable(alerts.overdueItems, workType === 'meeting')}
+        {activeTab === 'overdue' && mergedTable(alerts.overdueItems, workType === 'meeting' || workType === 'recording')}
         {activeTab === 'all' && pagination}
       </div>
       {assignModalJsx}

@@ -25,10 +25,8 @@ const SECTIONS = [
   {
     title: '소리바로 · 녹취록',
     links: [
-      { to: '/soribaro/recording/request', label: '의뢰 관리 (목록)' },
-      { to: '/soribaro/recording/request/REC20260001', label: '의뢰 상세' },
-      { to: '/soribaro/recording/work', label: '작업 관리 (목록)' },
-      { to: '/soribaro/recording/work/REC20260001', label: '작업 상세' },
+      { to: '/soribaro/recording/work', label: '녹취록 작업관리 (목록)' },
+      { to: '/soribaro/recording/detail/PROTO-REC-001', label: '녹취록 작업관리 상세' },
     ],
   },
   {
