@@ -55,6 +55,9 @@ const _updateSampleField = (id, patch) => {
   if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, ...patch } : s); }
 };
 
+// 회의록 파일관리: 난도 선택(전체 파일 일괄 적용) — 선택해야 프로젝트 관리에서 파일 추가 가능
+export const updateSampleFileDifficulty = (id, fileDifficulty) => _updateSampleField(id, { fileDifficulty });
+
 export const updateSampleNoteEntries = (id, noteEntries) => _updateSampleField(id, { noteEntries });
 export const updateSampleMemoEntries = (id, memoEntries) => _updateSampleField(id, { memoEntries });
 export const updateSamplePlayTime = (id, totalPlayTm) => _updateSampleField(id, { totalPlayTm });

@@ -1,5 +1,5 @@
 import { useState, useRef, Fragment } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
@@ -853,7 +853,17 @@ function FileManageTab({ s }) {
   const [dragOver, setDragOver] = useState(false);
   const [checked, setChecked] = useState(new Set());
   const [splitModalFile, setSplitModalFile] = useState(null);
+  // 난도(전체 파일 일괄 적용) — 선택해야 프로젝트 관리 탭에서 파일 추가가 가능하다
+  const [difficulty, setDifficulty] = useState(() => {
+    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    return store.find((v) => v.id === s.id)?.fileDifficulty ?? s.fileDifficulty ?? '';
+  });
   const fileInputRef = useRef();
+
+  const changeDifficulty = (value) => {
+    setDifficulty(value);
+    updateSampleFileDifficulty(s.id, value);
+  };
 
   // 프로젝트 관리(subjects)에 등록된 projFiles 전체 목록 조회
   const getProjFiles = () => {
@@ -984,6 +994,20 @@ function FileManageTab({ s }) {
         >
           선택 삭제 {checked.size > 0 ? `(${checked.size})` : ''}
         </button>
+        {isMeeting && (
+          <span className="proto-file-diff-wrap">
+            <select
+              className="proto-file-diff-select"
+              value={difficulty}
+              onChange={(e) => changeDifficulty(e.target.value)}
+              title="전체 파일에 일괄 적용되는 난도 — 선택해야 프로젝트 관리 탭에서 파일 추가가 가능합니다"
+            >
+              <option value="">선택</option>
+              <option value="보통">보통</option>
+              <option value="Master">Master</option>
+            </select>
+          </span>
+        )}
       </div>
 
       <div className="proto-table-wrap proto-table-wrap--scroll">
@@ -2206,11 +2230,18 @@ function VodProjectManageView({ s }) {
 
 function ProjectManageTab({ s }) {
   const isVodProj = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
+  const isMeetingProj = s.bssTypeName === '회의록';
 
   // 파일관리 탭에서 저장한 분할 정보(splits)를 반영하기 위해 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const currentFiles = (() => {
     const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
     return store.find((v) => v.id === s.id)?.files ?? s.files;
+  })();
+
+  // 파일관리 탭에서 선택한 난도(전체 파일 일괄 적용) — 선택 전에는 파일 추가 불가
+  const currentDifficulty = (() => {
+    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    return store.find((v) => v.id === s.id)?.fileDifficulty ?? s.fileDifficulty ?? '';
   })();
 
   // 견적서/최종산출물/알림발송 — 회의록 전용
@@ -2549,7 +2580,14 @@ function ProjectManageTab({ s }) {
               <div className="pm-project-body">
                 <div className="pm-action-bar">
                   <button className="pm-btn">수정</button>
-                  <button className="pm-btn" onClick={() => setFileModalFor(proj.id)}>+ 파일 추가</button>
+                  <button
+                    className="pm-btn"
+                    onClick={() => setFileModalFor(proj.id)}
+                    disabled={isMeetingProj && !currentDifficulty}
+                    title={isMeetingProj && !currentDifficulty ? '파일관리 탭에서 난도를 먼저 선택해야 파일을 추가할 수 있습니다' : undefined}
+                  >
+                    + 파일 추가
+                  </button>
                   <button
                     className={`pm-btn${proj.workspyRegistered ? ' pm-btn--active' : ''}`}
                     onClick={() => proj.workspyRegistered ? toggleWorkspy(proj.id) : setWorkspyModal(proj.id)}

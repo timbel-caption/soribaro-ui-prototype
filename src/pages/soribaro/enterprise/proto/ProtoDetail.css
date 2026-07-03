@@ -1490,6 +1490,22 @@
   background: var(--accent-bg-subtle);
 }
 
+.proto-file-diff-wrap {
+  margin-left: auto;
+}
+.proto-file-diff-select {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.proto-file-diff-select:focus { border-color: var(--accent-color); }
+
 /* 파일관리 탭: 체크된 행 하이라이트 */
 .proto-row-checked {
   background: var(--accent-bg-subtle);
@@ -1960,6 +1976,8 @@
   white-space: nowrap;
 }
 .pm-btn:hover { background: var(--surface-light); color: var(--text-primary); }
+.pm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pm-btn:disabled:hover { background: none; color: var(--text-secondary); }
 
 .pm-btn--active {
   background: var(--accent-color);
