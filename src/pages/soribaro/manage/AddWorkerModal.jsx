@@ -14,6 +14,8 @@ const INITIAL_FORM = {
   membLvl: '',
   siteType: '',
   recvEmail: '',
+  residence: '',
+  stenoCert: '',
 };
 
 const MEMB_LVL_OPTIONS = [
@@ -21,6 +23,14 @@ const MEMB_LVL_OPTIONS = [
   { value: '3', key: 'membLvl3' },
   { value: '6', key: 'membLvl6' },
   { value: '2', key: 'membLvl4' },
+];
+
+const STENO_CERT_OPTIONS = [
+  { value: '한글속기 1급', key: 'stenoCert1' },
+  { value: '한글속기 2급', key: 'stenoCert2' },
+  { value: '한글속기 3급', key: 'stenoCert3' },
+  { value: '없음', key: 'stenoCertNone' },
+  { value: '확인 필요', key: 'stenoCertCheck' },
 ];
 
 const SITE_TYPE_OPTIONS = [
@@ -191,6 +201,31 @@ export default function AddWorkerModal({ open, onClose, onSuccess }) {
               onChange={(e) => handleChange('recvEmail', e.target.value)}
               placeholder={t(`${prefix}.placeholderRecvEmail`)}
             />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>{t(`${prefix}.labelResidence`)} <span className="text-muted">{t(`${prefix}.optional`)}</span></label>
+              <input
+                type="text"
+                value={form.residence}
+                onChange={(e) => handleChange('residence', e.target.value)}
+                placeholder={t(`${prefix}.placeholderResidence`)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>{t(`${prefix}.labelStenoCert`)} <span className="text-muted">{t(`${prefix}.optional`)}</span></label>
+              <select
+                value={form.stenoCert}
+                onChange={(e) => handleChange('stenoCert', e.target.value)}
+              >
+                <option value="">{t(`${prefix}.selectStenoCert`)}</option>
+                {STENO_CERT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{t(`${prefix}.${o.key}`)}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

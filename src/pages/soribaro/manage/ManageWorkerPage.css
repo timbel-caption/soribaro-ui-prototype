@@ -17,6 +17,30 @@
   line-height: 1.6;
 }
 
+/* 속기 자격증 배지 */
+.manage-worker-page .steno-cert-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 10px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.manage-worker-page .steno-cert-badge--has {
+  background: rgba(99, 102, 241, 0.14);
+  color: #a5b4fc;
+}
+.manage-worker-page .steno-cert-badge--none {
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+.manage-worker-page .steno-cert-badge--check {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+}
+
 /* 작업자 등급 셀 */
 .manage-worker-page .wl-cell {
   display: inline-flex;
