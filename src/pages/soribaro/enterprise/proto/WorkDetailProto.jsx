@@ -1,5 +1,5 @@
 import { useState, useRef, Fragment } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
@@ -286,7 +286,7 @@ function SessionTimeField({ s }) {
 // ─── 탭 1: 기본정보 ───
 function BasicInfoTab({ s }) {
   // VOD 작업관리에서만 특이사항/내부 메모를 로그형(추가·수정·삭제) 카드로 제공
-  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
+  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기' && s.bssTypeName !== '녹취록';
   const authorName = useUserStore((st) => st.user?.membNm) || '관리자';
 
   // 견적서/최종산출물/알림발송 (회의록·현장속기 전용)
@@ -299,7 +299,7 @@ function BasicInfoTab({ s }) {
 
   // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const [noteEntries, setNoteEntries] = useState(() => {
-    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
     const cur = store.find((v) => v.id === s.id);
     const entries = cur?.noteEntries ?? s.noteEntries;
     if (entries) return entries;
@@ -326,9 +326,9 @@ function BasicInfoTab({ s }) {
   };
   const syncMemos = (next) => { setMemoEntries(next); updateSampleMemoEntries(s.id, next); };
 
-  // 첨부파일 (회의록·현장속기 전용) — 현장속기는 빈 목록으로 시작
+  // 첨부파일 (회의록·녹취록·현장속기 전용) — 현장속기는 빈 목록으로 시작
   const [attachments, setAttachments] = useState(() =>
-    s.bssTypeName === '회의록' ? ATTACH_SEED.map(r => ({ ...r })) : []
+    (s.bssTypeName === '회의록' || s.bssTypeName === '녹취록') ? ATTACH_SEED.map(r => ({ ...r })) : []
   );
   const [attachChecked, setAttachChecked] = useState(new Set());
 
@@ -511,8 +511,8 @@ function BasicInfoTab({ s }) {
         </div>
       </div>
 
-      {/* 첨부파일 (회의록·현장속기 전용) */}
-      {(s.bssTypeName === '회의록' || s.bssTypeName === '현장속기') && (
+      {/* 첨부파일 (회의록·녹취록·현장속기 전용) */}
+      {(s.bssTypeName === '회의록' || s.bssTypeName === '녹취록' || s.bssTypeName === '현장속기') && (
         <div className="attach-section">
           <div className="attach-section-header">
             <span className="proto-section-title" style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>첨부파일</span>
@@ -843,11 +843,11 @@ function expandFilesWithSplits(files) {
 }
 
 function FileManageTab({ s }) {
-  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
-  const isMeeting = s.bssTypeName === '회의록';
+  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기' && s.bssTypeName !== '녹취록';
+  const isMeeting = s.bssTypeName === '회의록' || s.bssTypeName === '녹취록';
   // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const [files, setFiles] = useState(() => {
-    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
     return store.find((v) => v.id === s.id)?.files ?? s.files;
   });
   const [dragOver, setDragOver] = useState(false);
@@ -855,7 +855,7 @@ function FileManageTab({ s }) {
   const [splitModalFile, setSplitModalFile] = useState(null);
   // 난도(전체 파일 일괄 적용) — 선택해야 프로젝트 관리 탭에서 파일 추가가 가능하다
   const [difficulty, setDifficulty] = useState(() => {
-    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
     return store.find((v) => v.id === s.id)?.fileDifficulty ?? s.fileDifficulty ?? '';
   });
   const fileInputRef = useRef();
@@ -867,7 +867,8 @@ function FileManageTab({ s }) {
 
   // 프로젝트 관리(subjects)에 등록된 projFiles 전체 목록 조회
   const getProjFiles = () => {
-    const subjects = getMeetingSamples().find((v) => v.id === s.id)?.subjects || [];
+    const store = s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
+    const subjects = store.find((v) => v.id === s.id)?.subjects || [];
     return subjects.flatMap((p) => p.projFiles || []);
   };
 
@@ -1326,6 +1327,14 @@ const SEED_MTG_PROJ1_FILES = [
 const SEED_MTG_PROJ2_FILES = [
   { fileNo: 'mtg2-1', fileName: '학폭위 34회 (3).wav', split: '-', range: '', workTime: '0:31', status: '작업중', progress: 20, lastWork: '2026-06-17 12:00', worker: '김나리', reviewer: '' },
   { fileNo: 'mtg2-2', fileName: '학폭위 34회 (4).wav', split: '-', range: '', workTime: '0:27', status: '미배정', progress: 0,  lastWork: '-',                worker: '김나리', reviewer: '' },
+];
+
+// 녹취록 — subjects 미보유 샘플의 프로젝트 관리 탭 기본 시드(SEED_MTG_PROJ*와 동일한 용도, 녹취록 전용 별도 데이터)
+const SEED_REC_PROJ1_FILES = [
+  { fileNo: 'rec1-1', fileName: '계약분쟁_조정회의_1부.wav', split: '-', range: '', workTime: '0:36', status: '작업중', progress: 55, lastWork: '2026-06-19 11:00', worker: '오세훈', reviewer: '' },
+];
+const SEED_REC_PROJ2_FILES = [
+  { fileNo: 'rec2-1', fileName: '하도급_협의_전체.wav', split: '-', range: '', workTime: '2:05', status: '작업중', progress: 100, lastWork: '2026-06-19 20:00', worker: '문가은', reviewer: '' },
 ];
 
 const SEED_PROJ_FILES = [
@@ -2229,18 +2238,18 @@ function VodProjectManageView({ s }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ProjectManageTab({ s }) {
-  const isVodProj = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
-  const isMeetingProj = s.bssTypeName === '회의록';
+  const isVodProj = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기' && s.bssTypeName !== '녹취록';
+  const isMeetingProj = s.bssTypeName === '회의록' || s.bssTypeName === '녹취록';
 
   // 파일관리 탭에서 저장한 분할 정보(splits)를 반영하기 위해 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const currentFiles = (() => {
-    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
     return store.find((v) => v.id === s.id)?.files ?? s.files;
   })();
 
   // 파일관리 탭에서 선택한 난도(전체 파일 일괄 적용) — 선택 전에는 파일 추가 불가
   const currentDifficulty = (() => {
-    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
     return store.find((v) => v.id === s.id)?.fileDifficulty ?? s.fileDifficulty ?? '';
   })();
 
@@ -2253,37 +2262,38 @@ function ProjectManageTab({ s }) {
   const outputInputRef = useRef();
   const initProjects = () => {
     // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
-    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : getMeetingSamples();
+    const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
     const cur = store.find((v) => v.id === s.id);
     const subjs = cur?.subjects || s.subjects || [];
     if (subjs.length > 0) return subjs;
-    if (s.bssTypeName === '회의록' || s.bssTypeName === '현장속기') {
+    if (s.bssTypeName === '회의록' || s.bssTypeName === '현장속기' || s.bssTypeName === '녹취록') {
+      const isRec = s.bssTypeName === '녹취록';
       return [
         {
           id: 'proj-seed-001',
-          name: '회의록 전사 프로젝트',
+          name: `${s.bssTypeName} 전사 프로젝트`,
           status: '작업중',
           workTime: '1:00',
           accuracy: '99.61%',
           errors: 1,
-          worker: '홍길동',
+          worker: isRec ? '오세훈' : '홍길동',
           reviewer: '',
           workspyRegistered: false,
-          projFiles: SEED_MTG_PROJ1_FILES,
+          projFiles: isRec ? SEED_REC_PROJ1_FILES : SEED_MTG_PROJ1_FILES,
           messages: { admin: '', worker: '', reviewer: '' },
           expanded: true,
         },
         {
           id: 'proj-seed-002',
-          name: '회의록 전사 프로젝트',
+          name: `${s.bssTypeName} 전사 프로젝트`,
           status: '작업중',
           workTime: '0:58',
           accuracy: '98.27%',
           errors: 5,
-          worker: '김나리',
+          worker: isRec ? '문가은' : '김나리',
           reviewer: '',
           workspyRegistered: false,
-          projFiles: SEED_MTG_PROJ2_FILES,
+          projFiles: isRec ? SEED_REC_PROJ2_FILES : SEED_MTG_PROJ2_FILES,
           messages: { admin: '', worker: '', reviewer: '' },
           expanded: false,
         },
@@ -2389,9 +2399,9 @@ function ProjectManageTab({ s }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
           <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
         </div>
-        {/* 새 프로젝트 + 견적서/최종산출물/알림발송 (회의록 전용) — 두 번째 줄 우측 */}
+        {/* 새 프로젝트 + 견적서/최종산출물/알림발송 (회의록·녹취록 전용) — 두 번째 줄 우측 */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
-          {s.bssTypeName === '회의록' && (
+          {(s.bssTypeName === '회의록' || s.bssTypeName === '녹취록') && (
             <>
               <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
               <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
@@ -2412,8 +2422,8 @@ function ProjectManageTab({ s }) {
         </div>
       </div>
 
-      {/* 알림발송 팝업 — 회의록 전용 */}
-      {s.bssTypeName === '회의록' && notifyModal && (
+      {/* 알림발송 팝업 — 회의록·녹취록 전용 */}
+      {(s.bssTypeName === '회의록' || s.bssTypeName === '녹취록') && notifyModal && (
         <div className="pm-overlay" onClick={() => setNotifyModal(false)}>
           <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
@@ -2448,7 +2458,7 @@ function ProjectManageTab({ s }) {
             <div className="pm-workspy-body">
               <div className="pm-workspy-field">
                 <label className="preg-label">프로젝트명 *</label>
-                <input className="preg-input" value={newProjName} onChange={e => setNewProjName(e.target.value)} placeholder="회의록 전사 프로젝트" autoFocus onKeyDown={e => e.key === 'Enter' && createProject()} />
+                <input className="preg-input" value={newProjName} onChange={e => setNewProjName(e.target.value)} placeholder={`${s.bssTypeName} 전사 프로젝트`} autoFocus onKeyDown={e => e.key === 'Enter' && createProject()} />
               </div>
               <div className="pm-workspy-row">
                 <div className="pm-workspy-field">
@@ -2536,7 +2546,7 @@ function ProjectManageTab({ s }) {
               )}
               {(proj.accuracy || proj.errors != null) && (
                 <span className="pm-accuracy-chip">
-                  정확도 {proj.accuracy || '-'} / 회의록 오류 {proj.errors ?? '-'}
+                  정확도 {proj.accuracy || '-'} / {s.bssTypeName} 오류 {proj.errors ?? '-'}
                 </span>
               )}
               {proj.workspyRegistered && proj.workspyData && (() => {
@@ -4248,7 +4258,7 @@ function MtgSettlementTab({ s }) {
   const isStenography = s.bssTypeName === '현장속기';
   const [workers, setWorkers] = useState(() => {
     if (s.settlement?.workerRows) return s.settlement.workerRows;
-    const store = getMeetingSamples();
+    const store = s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
     const cur = store.find((v) => v.id === s.id);
     const subjects = cur?.subjects || [];
     return SETTLE_WORKER_SEED.map((r) => {
@@ -5257,7 +5267,7 @@ function HistoryMemoTab({ s }) {
   const handleAddMemo = () => {
     window.alert('[프로토타입 안내]\n메모 작성 기능은 정식 서비스 단계에서 구현 예정입니다.');
   };
-  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기';
+  const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기' && s.bssTypeName !== '녹취록';
 
   if (isVod) return <VodProjectHistoryTab />;
 
@@ -5342,7 +5352,7 @@ export default function WorkDetailProto({ samples, backPath }) {
     updateSampleSettlement(id, { companySettled: false, status: deriveSettleStatus(workerSettled, false) });
   };
 
-  const isMtg = s.bssTypeName === '회의록';
+  const isMtg = s.bssTypeName === '회의록' || s.bssTypeName === '녹취록';
   const isStenography = s.bssTypeName === '현장속기';
   const TAB_LABELS = isMtg ? TAB_LABELS_MTG : isStenography ? TAB_LABELS_STG : TAB_LABELS_VOD;
   const tabContent = isMtg

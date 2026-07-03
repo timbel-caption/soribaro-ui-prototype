@@ -49,9 +49,15 @@ function formatDurationHMS(sec) {
 
 const todayStr = new Date().toISOString().split('T')[0];
 
-const meetingContractTypes = getRequestTypes().find((rt) => rt.name === '회의록')?.contractTypes ?? [];
+// workType → 의뢰유형(getRequestTypes) 명칭 매핑. 녹취록은 회의록과 동일한 등록 흐름을 쓰되 계약구분 목록만 별도로 가져온다.
+const REQUEST_TYPE_NAME_BY_WORK_TYPE = {
+  meeting: '회의록',
+  stenography: '현장속기',
+  recording: '녹취록',
+};
 
 export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'meeting' }) {
+  const contractTypes = getRequestTypes().find((rt) => rt.name === REQUEST_TYPE_NAME_BY_WORK_TYPE[workType])?.contractTypes ?? [];
   const [form, setForm] = useState({
     entNm: '',
     managerNm: '',
@@ -110,7 +116,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     setFileSplitsList((prev) => [...prev, ...arr.map(() => [])]);
     setFileDurationsSec((prev) => [...prev, ...arr.map(() => 0)]);
     // 회의록만 등록 단계에서 파일 분할이 가능하므로, 그 경우에만 재생시간을 미리 추출해둔다
-    if (workType === 'meeting') {
+    if ((workType === 'meeting' || workType === 'recording')) {
       const base = files.length;
       arr.forEach((f, i) => {
         extractDurationSec(f).then((sec) => {
@@ -142,11 +148,11 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
   const handleSubmit = () => {
     if (!form.entNm) return;
     // 회의록: 의뢰시간은 분할 구간을 반영한 재생시간 합산으로 산정한다 (현장속기는 시작-종료/정회 시간 기준으로 별도 산정)
-    const totalPlayTm = workType === 'meeting' && files.length > 0
+    const totalPlayTm = (workType === 'meeting' || workType === 'recording') && files.length > 0
       ? formatDurationHM(files.reduce((sum, _, i) => sum + effectiveDurationSec(i), 0))
       : '-';
     // 파일관리의 파일별 재생시간은 분할 여부와 무관하게 원본 파일의 실제 재생시간을 그대로 사용한다
-    const fileDurations = workType === 'meeting' ? fileDurationsSec.map(formatDurationHM) : [];
+    const fileDurations = (workType === 'meeting' || workType === 'recording') ? fileDurationsSec.map(formatDurationHM) : [];
     onSubmit({ ...form, staff: selectedStaff, totalPlayTm, fileDurations, fileSplits: fileSplitsList }, files);
     setSubmitted(true);
   };
@@ -260,7 +266,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                   disabled={!form.managerNm}
                 >
                   <option value="">▼</option>
-                  {meetingContractTypes.map((ct) => (
+                  {contractTypes.map((ct) => (
                     <option key={ct} value={ct}>{ct}</option>
                   ))}
                 </select>
@@ -372,7 +378,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
           </div>
 
           {/* 음성 파일 등록 섹션 (현장속기는 등록 단계에서 음성파일을 받지 않는다) */}
-          {workType === 'meeting' && (
+          {(workType === 'meeting' || workType === 'recording') && (
             <div className="preg-section">
               <div className="preg-section-header">🎙 음성 파일 등록</div>
               <div

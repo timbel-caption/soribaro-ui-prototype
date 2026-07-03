@@ -1,31 +1,38 @@
 import { VOD_SAMPLES } from './vodSampleData';
 import { MEETING_SAMPLES } from './meetingSampleData';
 import { STENOGRAPHY_SAMPLES } from './stenographySampleData';
+import { RECORDING_SAMPLES } from './recordingSampleData';
 
 let _vodSamples = [...VOD_SAMPLES];
 let _meetingSamples = [...MEETING_SAMPLES];
 let _stenographySamples = [...STENOGRAPHY_SAMPLES];
+// 녹취록 작업관리 전용 저장소. 회의록(_meetingSamples)과 별개 배열로 관리해 두 화면의 데이터가 서로 영향을 주지 않는다.
+let _recordingSamples = [...RECORDING_SAMPLES];
 
 export const getVodSamples = () => _vodSamples;
 export const getMeetingSamples = () => _meetingSamples;
 export const getStenographySamples = () => _stenographySamples;
+export const getRecordingSamples = () => _recordingSamples;
 
 export const addVodSample = (s) => { _vodSamples = [s, ..._vodSamples]; };
 export const addMeetingSample = (s) => { _meetingSamples = [s, ..._meetingSamples]; };
 export const appendMeetingSample = (s) => { _meetingSamples = [..._meetingSamples, s]; };
 export const appendVodSample = (s) => { _vodSamples = [..._vodSamples, s]; };
 export const appendStenographySample = (s) => { _stenographySamples = [..._stenographySamples, s]; };
+export const appendRecordingSample = (s) => { _recordingSamples = [..._recordingSamples, s]; };
 
 export const updateSampleSpecialNote = (id, note) => {
   _meetingSamples = _meetingSamples.map((s) => s.id === id ? { ...s, specialNote: note } : s);
   _vodSamples = _vodSamples.map((s) => s.id === id ? { ...s, specialNote: note } : s);
   _stenographySamples = _stenographySamples.map((s) => s.id === id ? { ...s, specialNote: note } : s);
+  _recordingSamples = _recordingSamples.map((s) => s.id === id ? { ...s, specialNote: note } : s);
 };
 
 export const updateSampleSubfileStatus = (id, status) => {
   _meetingSamples = _meetingSamples.map((s) => s.id === id ? { ...s, subfileStatus: status } : s);
   _vodSamples = _vodSamples.map((s) => s.id === id ? { ...s, subfileStatus: status } : s);
   _stenographySamples = _stenographySamples.map((s) => s.id === id ? { ...s, subfileStatus: status } : s);
+  _recordingSamples = _recordingSamples.map((s) => s.id === id ? { ...s, subfileStatus: status } : s);
 };
 
 export const updateSampleFiles = (id, newFiles) => {
@@ -34,7 +41,9 @@ export const updateSampleFiles = (id, newFiles) => {
   const si = _stenographySamples.findIndex((s) => s.id === id);
   if (si !== -1) { _stenographySamples = _stenographySamples.map((s, i) => i === si ? { ...s, files: newFiles } : s); return; }
   const mi = _meetingSamples.findIndex((s) => s.id === id);
-  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, files: newFiles } : s); }
+  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, files: newFiles } : s); return; }
+  const ri = _recordingSamples.findIndex((s) => s.id === id);
+  if (ri !== -1) { _recordingSamples = _recordingSamples.map((s, i) => i === ri ? { ...s, files: newFiles } : s); }
 };
 
 export const updateSampleSubjects = (id, newSubjects) => {
@@ -43,7 +52,9 @@ export const updateSampleSubjects = (id, newSubjects) => {
   const si = _stenographySamples.findIndex((s) => s.id === id);
   if (si !== -1) { _stenographySamples = _stenographySamples.map((s, i) => i === si ? { ...s, subjects: newSubjects } : s); return; }
   const mi = _meetingSamples.findIndex((s) => s.id === id);
-  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, subjects: newSubjects } : s); }
+  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, subjects: newSubjects } : s); return; }
+  const ri = _recordingSamples.findIndex((s) => s.id === id);
+  if (ri !== -1) { _recordingSamples = _recordingSamples.map((s, i) => i === ri ? { ...s, subjects: newSubjects } : s); }
 };
 
 const _updateSampleField = (id, patch) => {
@@ -52,7 +63,9 @@ const _updateSampleField = (id, patch) => {
   const si = _stenographySamples.findIndex((s) => s.id === id);
   if (si !== -1) { _stenographySamples = _stenographySamples.map((s, i) => i === si ? { ...s, ...patch } : s); return; }
   const mi = _meetingSamples.findIndex((s) => s.id === id);
-  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, ...patch } : s); }
+  if (mi !== -1) { _meetingSamples = _meetingSamples.map((s, i) => i === mi ? { ...s, ...patch } : s); return; }
+  const ri = _recordingSamples.findIndex((s) => s.id === id);
+  if (ri !== -1) { _recordingSamples = _recordingSamples.map((s, i) => i === ri ? { ...s, ...patch } : s); }
 };
 
 // 회의록 파일관리: 난도 선택(전체 파일 일괄 적용) — 선택해야 프로젝트 관리에서 파일 추가 가능
@@ -76,4 +89,5 @@ export const updateSampleSettlement = (id, patch) => {
   _meetingSamples = _meetingSamples.map(merge);
   _stenographySamples = _stenographySamples.map(merge);
   _vodSamples = _vodSamples.map(merge);
+  _recordingSamples = _recordingSamples.map(merge);
 };
