@@ -1058,6 +1058,8 @@
         "labelZipCode": "우편번호",
         "labelBaseAddr": "기본주소",
         "labelDtlAddr": "상세주소",
+        "labelCertificate": "자격증",
+        "certificatePlaceholder": "자격증명을 입력하세요",
         "labelMarketingConsent": "마케팅 수신 동의",
         "labelNotificationConsent": "알림 수신 동의",
         "labelMemo": "비고",

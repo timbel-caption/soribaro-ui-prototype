@@ -206,6 +206,7 @@ export default function ManageWorkerDetailPage() {
           zipCd: data.zipCd || '',
           baseAddr: data.baseAddr || '',
           dtlAddr: data.dtlAddr || '',
+          certificate: data.certificate || '',
           mblRecvYn: data.mblRecvYn || 'N',
           mblNotiYn: data.mblNotiYn || 'N',
           memo: data.memo || '',
@@ -264,6 +265,7 @@ export default function ManageWorkerDetailPage() {
         zipCd: originalData.zipCd || '',
         baseAddr: originalData.baseAddr || '',
         dtlAddr: originalData.dtlAddr || '',
+        certificate: originalData.certificate || '',
         mblRecvYn: originalData.mblRecvYn || 'N',
         mblNotiYn: originalData.mblNotiYn || 'N',
         memo: originalData.memo || '',
@@ -407,6 +409,7 @@ export default function ManageWorkerDetailPage() {
         {renderWorkerLevelChips(originalData?.workerLevelIds ?? originalData?.workerLevelId, originalData?.workerLevelNames)}
       </PropRow>
       <PropRow label={t('manage.worker.detail.addressInfo')} value={buildAddress()} wide />
+      <PropRow label={t('manage.worker.detail.labelCertificate')} value={originalData?.certificate} />
       <PropRow label={t('manage.worker.detail.labelMarketingConsent')} value={originalData?.mblRecvYn === 'Y' ? t('manage.worker.detail.agree') : t('manage.worker.detail.disagree')} />
       <PropRow label={t('manage.worker.detail.labelNotificationConsent')} value={originalData?.mblNotiYn === 'Y' ? t('manage.worker.detail.agree') : t('manage.worker.detail.disagree')} />
       <PropRow label={t('manage.worker.detail.labelMemo')} value={originalData?.memo} wide />
@@ -449,6 +452,14 @@ export default function ManageWorkerDetailPage() {
           <input type="text" value={formData.baseAddr} onChange={(e) => handleChange('baseAddr', e.target.value)} placeholder={t('manage.worker.detail.labelBaseAddr')} />
           <input type="text" value={formData.dtlAddr} onChange={(e) => handleChange('dtlAddr', e.target.value)} placeholder={t('manage.worker.detail.labelDtlAddr')} />
         </div>
+      </PropRow>
+      <PropRow label={t('manage.worker.detail.labelCertificate')}>
+        <input
+          type="text"
+          value={formData.certificate}
+          onChange={(e) => handleChange('certificate', e.target.value)}
+          placeholder={t('manage.worker.detail.certificatePlaceholder')}
+        />
       </PropRow>
       <PropRow label={t('manage.worker.detail.labelMarketingConsent')}>
         <select value={formData.mblRecvYn} onChange={(e) => handleChange('mblRecvYn', e.target.value)}>
