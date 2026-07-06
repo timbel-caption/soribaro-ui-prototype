@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime, updateStenographyWorkerAssign, getMeetingSamples, getStenographySamples, getRecordingSamples } from '../enterprise/proto/protoStore';
 import StenographyWorkerAssignModal from '../enterprise/proto/StenographyWorkerAssignModal';
 import { downloadMeetingWorkExcel, downloadStenographyWorkExcel } from '../../../utils/workManagementExcel';
+import { getRequestTypes } from '../manage/manageProtoStore';
 
 const STATUS_LABEL = {
   WORKING:  { label: '작업중',  cls: 'mtg-status-working' },
@@ -42,6 +43,8 @@ const CONTRACT_TYPE_COLOR = {
   '시청':     { bg: 'rgba(250,204,21,0.12)',  color: '#facc15',  border: 'rgba(250,204,21,0.4)' },
   '의회':     { bg: 'rgba(96,165,250,0.12)',  color: '#60a5fa',  border: 'rgba(96,165,250,0.4)' },
   '일반회의': { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8',  border: 'rgba(148,163,184,0.4)' },
+  '현장녹음': { bg: 'rgba(74,222,128,0.12)',  color: '#4ade80',  border: 'rgba(74,222,128,0.4)' },
+  '통화녹음': { bg: 'rgba(56,189,248,0.12)',  color: '#38bdf8',  border: 'rgba(56,189,248,0.4)' },
 };
 
 function contractBadge(type) {
@@ -60,6 +63,14 @@ const SUBFILE_TEXT  = { '미요청': '',   '요청': '요청', '수령': '확인
 const SUBFILE_CLS   = { '미요청': 'mtg-subfile-none', '요청': 'mtg-subfile-req', '수령': 'mtg-subfile-recv' };
 
 const CONTRACT_TYPE_OPTIONS = ['학폭위', '교권위', '성고충위', '징계위', '특운위', '시청', '의회', '일반회의'];
+
+// 녹취록 작업관리의 계약구분은 서비스 관리 > 엔터프라이즈 관리 > 의뢰유형 관리(녹취록)의 계약구분과 동일하게 맞춘다.
+const RECORDING_CONTRACT_TYPE_OPTIONS = getRequestTypes().find((rt) => rt.name === '녹취록')?.contractTypes ?? [];
+
+function formatAmount(value) {
+  if (value == null || value === '') return '-';
+  return `${Number(value).toLocaleString()}원`;
+}
 
 function formatRegDate(regDttm) {
   if (!regDttm) return '-';
@@ -288,6 +299,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   );
 
   const isStenographyType = workType === 'stenography';
+  const isRecordingType = workType === 'recording';
+  const contractTypeOptions = isRecordingType ? RECORDING_CONTRACT_TYPE_OPTIONS : CONTRACT_TYPE_OPTIONS;
   const overdueIdSet = new Set(alerts.overdueItems.map((s) => s.id));
 
   // 진행 의뢰 현황 탭 공용 테이블 (진행 전체 / 금일 납품 / 납품 일정 확인 공통).
@@ -295,20 +308,21 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   // - showProgress=true(회의록 납품 일정 확인 탭)일 때만 납품기한 앞에 진행률(바) 컬럼을 표시한다.
   // - markOverdue=true(진행 전체 탭)일 때만 납품 일정 확인 대상 건의 의뢰일자 앞에 📝 메모 아이콘을 표시한다.
   const mergedTable = (items, showProgress, markOverdue = false) => {
-    const colCount = 13 + (isStenographyType ? 1 : 0) + (showProgress ? 1 : 0);
+    const colCount = (isRecordingType ? 12 : 13) + (isStenographyType ? 1 : 0) + (showProgress ? 1 : 0);
     return (
       <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
         <table className="proto-table">
           <thead>
             <tr>
               <th className="text-center">의뢰일자</th>
-              <th>업체명</th>
+              <th>{isRecordingType ? '의뢰자' : '업체명'}</th>
               <th className="text-center">계약구분</th>
-              <th className="text-center">회차</th>
+              {!isRecordingType && <th className="text-center">회차</th>}
               {isStenographyType && <th className="text-center">시작-종료</th>}
               <th className="text-center">의뢰시간</th>
+              {isRecordingType && <th className="text-center">확정금액</th>}
               {showProgress && <th className="text-center">진행률</th>}
-              <th className="text-center">납품기한</th>
+              {!isRecordingType && <th className="text-center">납품기한</th>}
               <th style={{ minWidth: '100px' }}>작업자</th>
               <th style={{ minWidth: '100px' }}>검수자</th>
               <th style={{ minWidth: '140px' }}>특이사항</th>
@@ -337,13 +351,14 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     <td className="text-center">
                       {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
                     </td>
-                    <td style={{ fontWeight: 600 }}>{s.entNm}</td>
+                    <td style={{ fontWeight: 600 }}>{isRecordingType ? s.membNm : s.entNm}</td>
                     <td className="text-center">{contractBadge(s.contractType)}</td>
-                    <td className="text-center">{s.round || '-'}</td>
+                    {!isRecordingType && <td className="text-center">{s.round || '-'}</td>}
                     {isStenographyType && <td className="text-center">{s.sessionTime || '-'}</td>}
                     <td className="text-center" style={{ maxWidth: '100px', fontSize: '13px' }}>
                       {s.totalPlayTm || <span style={{ color: 'var(--text-muted)' }}>-</span>}
                     </td>
+                    {isRecordingType && <td className="text-center">{formatAmount(s.fixPrice)}</td>}
                     {showProgress && (
                       <td>
                         <div className="proto-progress-wrap">
@@ -354,7 +369,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         </div>
                       </td>
                     )}
-                    <td className="text-center">{s.dueDate}</td>
+                    {!isRecordingType && <td className="text-center">{s.dueDate}</td>}
                     <td style={{ maxWidth: '160px', fontSize: '13px' }}>
                       {isStenographyType ? (
                         isCancelledWorker
@@ -435,10 +450,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     );
   };
 
+  const flatColCount = isRecordingType ? 12 : 13;
+
   const tableBody = (
     <tbody>
       {filtered.length === 0 ? (
-        <tr><td colSpan={13} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
+        <tr><td colSpan={flatColCount} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>검색 결과가 없습니다.</td></tr>
       ) : (
         filtered.map((s) => {
           const isEditingNote = editingNoteId === s.id;
@@ -453,13 +470,14 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
-              <td style={{ fontWeight: 600 }}>{s.entNm}</td>
+              <td style={{ fontWeight: 600 }}>{isRecordingType ? s.membNm : s.entNm}</td>
               <td className="text-center">{contractBadge(s.contractType)}</td>
-              <td className="text-center">{s.round || '-'}</td>
+              {!isRecordingType && <td className="text-center">{s.round || '-'}</td>}
               <td className="text-center" style={{ maxWidth: '100px', fontSize: '13px' }}>
                 {s.totalPlayTm || <span style={{ color: 'var(--text-muted)' }}>-</span>}
               </td>
-              <td className="text-center">{s.dueDate}</td>
+              {isRecordingType && <td className="text-center">{formatAmount(s.fixPrice)}</td>}
+              {!isRecordingType && <td className="text-center">{s.dueDate}</td>}
               <td style={{ maxWidth: '160px', fontSize: '13px' }}>
                 {isStenography
                   ? (isCancelledWorker
@@ -545,11 +563,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     <thead>
       <tr>
         <th className="text-center">의뢰일자</th>
-        <th>업체명</th>
+        <th>{isRecordingType ? '의뢰자' : '업체명'}</th>
         <th className="text-center">계약구분</th>
-        <th className="text-center">회차</th>
+        {!isRecordingType && <th className="text-center">회차</th>}
         <th className="text-center">의뢰시간</th>
-        <th className="text-center">납품기한</th>
+        {isRecordingType && <th className="text-center">확정금액</th>}
+        {!isRecordingType && <th className="text-center">납품기한</th>}
         <th style={{ minWidth: '100px' }}>작업자</th>
         <th style={{ minWidth: '100px' }}>검수자</th>
         <th style={{ minWidth: '140px' }}>특이사항</th>
@@ -595,7 +614,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               </select>
               <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
                 <option value="">계약구분 전체</option>
-                {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
+                {contractTypeOptions.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -673,7 +692,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             </select>
             <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
               <option value="">계약구분 전체</option>
-              {CONTRACT_TYPE_OPTIONS.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
+              {contractTypeOptions.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
             </select>
             <select className="filter-select" value={searchCondition} onChange={(e) => setSearchCondition(e.target.value)}>
               {searchConditionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -684,7 +703,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         )}
         {activeTab === 'all' && mergedTable(filtered, false, true)}
         {activeTab === 'today' && mergedTable(alerts.todayDueItems, false)}
-        {activeTab === 'overdue' && mergedTable(alerts.overdueItems, workType === 'meeting' || workType === 'recording')}
+        {activeTab === 'overdue' && mergedTable(alerts.overdueItems, workType === 'meeting')}
         {activeTab === 'all' && pagination}
       </div>
       {assignModalJsx}
