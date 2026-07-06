@@ -21,6 +21,11 @@ const TAB_LABELS_MTG = [
   '기본정보', '파일관리', '프로젝트 관리', '정산확인', '업체정산', '이력/메모',
   '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
 ];
+// 녹취록은 회의록과 동일한 탭 구성을 쓰되 업체정산 탭이 없다
+const TAB_LABELS_REC = [
+  '기본정보', '파일관리', '프로젝트 관리', '정산확인', '이력/메모',
+  '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
+];
 const TAB_LABELS_STG = [
   '기본정보', '배정 관리', '정산확인', '업체정산', '이력/메모',
   '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
@@ -4410,14 +4415,19 @@ function parseWorkTimeHours(workTime) {
 
 function MtgSettlementTab({ s }) {
   const isStenography = s.bssTypeName === '현장속기';
+  const isRecordingSettle = s.bssTypeName === '녹취록';
   const [workers, setWorkers] = useState(() => {
     if (s.settlement?.workerRows) return s.settlement.workerRows;
-    const store = s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
+    const store = isRecordingSettle ? getRecordingSamples() : getMeetingSamples();
     const cur = store.find((v) => v.id === s.id);
     const subjects = cur?.subjects || [];
     return SETTLE_WORKER_SEED.map((r) => {
       const proj = subjects.find((p) => p.worker === r.worker);
-      return { ...r, workTime: proj?.workTime ?? r.workTime };
+      // 녹취록: 프로젝트 관리에 표시되는 작업시간(파일 작업시간 합산값)과 동일하게 맞춘다
+      const workTime = isRecordingSettle
+        ? (proj ? calcProjWorkTime(proj.projFiles) : r.workTime)
+        : (proj?.workTime ?? r.workTime);
+      return { ...r, workTime };
     });
   });
   const [reviewers, setReviewers] = useState(() =>
@@ -4688,45 +4698,49 @@ function MtgSettlementTab({ s }) {
         </table>
       </div>
 
-      <p className="proto-section-title">검수자 정산 내역</p>
-      <div className="proto-table-wrap proto-table-wrap--scroll" style={{ marginBottom: '24px' }}>
-        <table className="proto-table">
-          <thead>
-            <tr>
-              <th>검수자</th>
-              <th className="text-center">등급</th>
-              <th className="text-center">검수시간</th>
-              <th>집행자</th>
-              <th className="text-center">실지급액</th>
-              <th className="text-center">상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reviewers.map((row, i) => (
-              <tr key={i}>
-                <td style={{ fontWeight: 600 }}>{row.worker}</td>
-                <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
-                <td className="text-center">
-                  {isStenography ? (
-                    <input
-                      className="proto-log-input"
-                      style={{ width: '80px', fontFamily: 'monospace', fontSize: '12px', textAlign: 'center' }}
-                      value={row.workTime}
-                      onChange={(e) => updateReviewerWorkTime(i, e.target.value)}
-                      placeholder="1:30"
-                    />
-                  ) : (
-                    <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</span>
-                  )}
-                </td>
-                <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'reviewer')}</td>
-                <td className="text-center" style={{ fontSize: '12px', fontWeight: 600 }}>{row.netAmount.toLocaleString()}원</td>
-                <td className="text-center">{statusCell(row, i, 'reviewer')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {!isRecordingSettle && (
+        <>
+          <p className="proto-section-title">검수자 정산 내역</p>
+          <div className="proto-table-wrap proto-table-wrap--scroll" style={{ marginBottom: '24px' }}>
+            <table className="proto-table">
+              <thead>
+                <tr>
+                  <th>검수자</th>
+                  <th className="text-center">등급</th>
+                  <th className="text-center">검수시간</th>
+                  <th>집행자</th>
+                  <th className="text-center">실지급액</th>
+                  <th className="text-center">상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reviewers.map((row, i) => (
+                  <tr key={i}>
+                    <td style={{ fontWeight: 600 }}>{row.worker}</td>
+                    <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
+                    <td className="text-center">
+                      {isStenography ? (
+                        <input
+                          className="proto-log-input"
+                          style={{ width: '80px', fontFamily: 'monospace', fontSize: '12px', textAlign: 'center' }}
+                          value={row.workTime}
+                          onChange={(e) => updateReviewerWorkTime(i, e.target.value)}
+                          placeholder="1:30"
+                        />
+                      ) : (
+                        <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</span>
+                      )}
+                    </td>
+                    <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'reviewer')}</td>
+                    <td className="text-center" style={{ fontSize: '12px', fontWeight: 600 }}>{row.netAmount.toLocaleString()}원</td>
+                    <td className="text-center">{statusCell(row, i, 'reviewer')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <p className="proto-section-title">정산 이력</p>
       <div className="settle-history-list">
@@ -5507,9 +5521,20 @@ export default function WorkDetailProto({ samples, backPath }) {
   };
 
   const isMtg = s.bssTypeName === '회의록' || s.bssTypeName === '녹취록';
+  const isRecordingDetail = s.bssTypeName === '녹취록';
   const isStenography = s.bssTypeName === '현장속기';
-  const TAB_LABELS = isMtg ? TAB_LABELS_MTG : isStenography ? TAB_LABELS_STG : TAB_LABELS_VOD;
-  const tabContent = isMtg
+  const TAB_LABELS = isRecordingDetail ? TAB_LABELS_REC : isMtg ? TAB_LABELS_MTG : isStenography ? TAB_LABELS_STG : TAB_LABELS_VOD;
+  const tabContent = isRecordingDetail
+    ? [
+        <BasicInfoTab s={sEff} />,
+        <FileManageTab s={sEff} />,
+        <ProjectManageTab s={sEff} />,
+        <MtgSettlementTab s={sEff} />,
+        <HistoryMemoTab s={sEff} />,
+        <ManualGlossaryTab s={sEff} />,
+        <AiQcTab s={sEff} />,
+      ]
+    : isMtg
     ? [
         <BasicInfoTab s={sEff} />,
         <FileManageTab s={sEff} />,
