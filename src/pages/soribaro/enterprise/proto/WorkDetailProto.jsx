@@ -1,5 +1,5 @@
 import { useState, useRef, Fragment } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty, updateSampleOverallStatus } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
@@ -27,9 +27,10 @@ const TAB_LABELS_STG = [
 ];
 
 const STATUS_MAP = {
-  WORKING:  { label: '작업중',  cls: 'proto-status-working' },
-  CHECKING: { label: '검수중',  cls: 'proto-status-checking' },
-  DONE:     { label: '완료',    cls: 'proto-status-done' },
+  WORKING:    { label: '작업중',   cls: 'proto-status-working' },
+  CHECKING:   { label: '검수중',   cls: 'proto-status-checking' },
+  DRAFT_DONE: { label: '초안완성', cls: 'proto-status-draft' },
+  DONE:       { label: '완료',     cls: 'proto-status-done' },
 };
 
 function statusBadge(overallStatus) {
@@ -2336,6 +2337,8 @@ function VodProjectManageView({ s }) {
 function ProjectManageTab({ s }) {
   const isVodProj = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기' && s.bssTypeName !== '녹취록';
   const isMeetingProj = s.bssTypeName === '회의록' || s.bssTypeName === '녹취록';
+  // 녹취록은 최종산출물/완본 업로드·다운로드·알림 발송 UI가 회의록과 다르게 구성된다
+  const isRecordingProj = s.bssTypeName === '녹취록';
 
   // 파일관리 탭에서 저장한 분할 정보(splits)를 반영하기 위해 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const currentFiles = (() => {
@@ -2349,13 +2352,16 @@ function ProjectManageTab({ s }) {
     return store.find((v) => v.id === s.id)?.fileDifficulty ?? s.fileDifficulty ?? '';
   })();
 
-  // 견적서/최종산출물/알림발송 — 회의록 전용
+  // 견적서/최종산출물/알림발송 — 회의록 전용, 녹취록은 최종산출물/완본 업로드+알림으로 구성
   const [quoteFile, setQuoteFile] = useState(null);
   const [outputFile, setOutputFile] = useState(null);
+  const [finalFile, setFinalFile] = useState(null);
+  // 녹취록: notifyModal 값으로 어떤 알림인지 구분한다 ('draft' = 최종산출물 알림, 'final' = 완본 알림)
   const [notifyModal, setNotifyModal] = useState(false);
   const [notifyTarget, setNotifyTarget] = useState('all');
   const quoteInputRef = useRef();
   const outputInputRef = useRef();
+  const finalInputRef = useRef();
   const initProjects = () => {
     // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
     const store = isVodProj ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
@@ -2495,40 +2501,76 @@ function ProjectManageTab({ s }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
           <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
         </div>
-        {/* 새 프로젝트 + 견적서/최종산출물/알림발송 (회의록·녹취록 전용) — 두 번째 줄 우측 */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
-          {(s.bssTypeName === '회의록' || s.bssTypeName === '녹취록') && (
-            <>
-              <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
-              <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
-              <button
-                className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
-                onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
-              >견적서 다운로드</button>
+        {isRecordingProj ? (
+          <>
+            {/* 최종산출물/완본 업로드·다운로드·알림 발송 (녹취록 전용) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
               <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
               <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
               <button
                 className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
                 onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
               >최종산출물 다운로드</button>
-              <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal(true)}>알림 발송</button>
-            </>
-          )}
-          <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
-        </div>
+              <button
+                className={`pm-doc-btn pm-doc-btn--notify${outputFile ? '' : ' pm-doc-btn--disabled'}`}
+                disabled={!outputFile}
+                title={outputFile ? undefined : '최종산출물을 먼저 업로드하세요'}
+                onClick={() => setNotifyModal('draft')}
+              >최종산출물 알림 발송</button>
+
+              <input ref={finalInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setFinalFile(e.target.files[0].name); e.target.value = ''; }} />
+              <button className="pm-doc-btn" onClick={() => finalInputRef.current.click()}>완본 업로드</button>
+              <button
+                className={`pm-doc-btn${finalFile ? '' : ' pm-doc-btn--disabled'}`}
+                onClick={() => finalFile ? window.alert(`[프로토타입 안내]\n'${finalFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 완본이 없습니다.')}
+              >완본 다운로드</button>
+              <button
+                className={`pm-doc-btn pm-doc-btn--notify${finalFile ? '' : ' pm-doc-btn--disabled'}`}
+                disabled={!finalFile}
+                title={finalFile ? undefined : '완본을 먼저 업로드하세요'}
+                onClick={() => setNotifyModal('final')}
+              >완본 알림 발송</button>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+              <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
+            </div>
+          </>
+        ) : (
+          /* 새 프로젝트 + 견적서/최종산출물/알림발송 (회의록 전용) — 두 번째 줄 우측 */
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+            {s.bssTypeName === '회의록' && (
+              <>
+                <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
+                <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
+                <button
+                  className={`pm-doc-btn${quoteFile ? '' : ' pm-doc-btn--disabled'}`}
+                  onClick={() => quoteFile ? window.alert(`[프로토타입 안내]\n'${quoteFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 견적서가 없습니다.')}
+                >견적서 다운로드</button>
+                <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
+                <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
+                <button
+                  className={`pm-doc-btn${outputFile ? '' : ' pm-doc-btn--disabled'}`}
+                  onClick={() => outputFile ? window.alert(`[프로토타입 안내]\n'${outputFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 최종산출물이 없습니다.')}
+                >최종산출물 다운로드</button>
+                <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal('draft')}>알림 발송</button>
+              </>
+            )}
+            <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
+          </div>
+        )}
       </div>
 
-      {/* 알림발송 팝업 — 회의록·녹취록 전용 */}
+      {/* 알림발송 팝업 — 회의록·녹취록 전용. 녹취록은 notifyModal 값('draft'=최종산출물, 'final'=완본)에 따라 문구·상태 갱신이 달라진다 */}
       {(s.bssTypeName === '회의록' || s.bssTypeName === '녹취록') && notifyModal && (
         <div className="pm-overlay" onClick={() => setNotifyModal(false)}>
           <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">알림 발송</span>
+              <span className="pm-modal-title">{notifyModal === 'final' ? '완본 알림 발송' : '최종산출물 알림 발송'}</span>
               <button className="preg-x-btn" onClick={() => setNotifyModal(false)}>✕</button>
             </div>
             <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
               <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
-                초안 완성 알림을 발송하시겠습니까?
+                {notifyModal === 'final' ? '완본 알림을 발송하시겠습니까?' : '초안 완성 알림을 발송하시겠습니까?'}
               </p>
               <div style={{ background: 'var(--bg-hover)', borderRadius: '6px', padding: '12px 14px', fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div><span style={{ color: 'var(--text-muted)', minWidth: '56px', display: 'inline-block' }}>실무자</span><span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.staffNm || '-'}</span></div>
@@ -2537,7 +2579,16 @@ function ProjectManageTab({ s }) {
             </div>
             <div className="pm-modal-ft">
               <button className="proto-log-btn" onClick={() => setNotifyModal(false)}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save pm-doc-btn--notify" style={{ border: 'none' }} onClick={() => { setNotifyModal(false); window.alert('[프로토타입 안내]\n알림이 발송되었습니다.'); }}>발송</button>
+              <button
+                className="proto-log-btn proto-log-btn--save pm-doc-btn--notify"
+                style={{ border: 'none' }}
+                onClick={() => {
+                  // 녹취록: 최종산출물 알림 완료 → 초안완성, 완본 알림 완료 → 완료로 상태를 자동 갱신
+                  if (isRecordingProj) updateSampleOverallStatus(s.id, notifyModal === 'final' ? 'DONE' : 'DRAFT_DONE');
+                  setNotifyModal(false);
+                  window.alert('[프로토타입 안내]\n알림이 발송되었습니다.');
+                }}
+              >발송</button>
             </div>
           </div>
         </div>

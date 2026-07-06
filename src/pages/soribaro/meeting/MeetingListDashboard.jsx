@@ -6,9 +6,10 @@ import { downloadMeetingWorkExcel, downloadStenographyWorkExcel } from '../../..
 import { getRequestTypes } from '../manage/manageProtoStore';
 
 const STATUS_LABEL = {
-  WORKING:  { label: '작업중',  cls: 'mtg-status-working' },
-  CHECKING: { label: '검수중',  cls: 'mtg-status-checking' },
-  DONE:     { label: '완료',    cls: 'mtg-status-done' },
+  WORKING:    { label: '작업중',   cls: 'mtg-status-working' },
+  CHECKING:   { label: '검수중',   cls: 'mtg-status-checking' },
+  DRAFT_DONE: { label: '초안완성', cls: 'mtg-status-draft' },
+  DONE:       { label: '완료',     cls: 'mtg-status-done' },
 };
 
 function statusBadge(s) {
@@ -603,6 +604,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 <option value="">상태 전체</option>
                 <option value="WORKING">작업중</option>
                 <option value="CHECKING">검수중</option>
+                {isRecordingType && <option value="DRAFT_DONE">초안완성</option>}
                 <option value="DONE">완료</option>
               </select>
               <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>
@@ -681,6 +683,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <option value="">상태 전체</option>
               <option value="WORKING">작업중</option>
               <option value="CHECKING">검수중</option>
+              {isRecordingType && <option value="DRAFT_DONE">초안완성</option>}
               <option value="DONE">완료</option>
             </select>
             <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>

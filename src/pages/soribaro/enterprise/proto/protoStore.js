@@ -71,6 +71,9 @@ const _updateSampleField = (id, patch) => {
 // 회의록 파일관리: 난도 선택(전체 파일 일괄 적용) — 선택해야 프로젝트 관리에서 파일 추가 가능
 export const updateSampleFileDifficulty = (id, fileDifficulty) => _updateSampleField(id, { fileDifficulty });
 
+// 녹취록 프로젝트 관리: 최종산출물 알림 발송 완료 시 '초안완성', 완본 알림 발송 완료 시 '완료'로 상태를 갱신
+export const updateSampleOverallStatus = (id, overallStatus) => _updateSampleField(id, { overallStatus });
+
 export const updateSampleNoteEntries = (id, noteEntries) => _updateSampleField(id, { noteEntries });
 export const updateSampleMemoEntries = (id, memoEntries) => _updateSampleField(id, { memoEntries });
 export const updateSamplePlayTime = (id, totalPlayTm) => _updateSampleField(id, { totalPlayTm });
