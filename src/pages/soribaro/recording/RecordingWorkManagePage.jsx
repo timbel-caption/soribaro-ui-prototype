@@ -21,7 +21,7 @@ export default function RecordingWorkManagePage() {
       servCd: newId,
       entNm: form.entNm,
       servTitle: `${form.entNm} 녹취록`,
-      membNm: form.managerNm || '-',
+      membNm: form.entNm || '-',
       bssType: '녹취록',
       bssTypeName: '녹취록',
       totalPlayTm: form.totalPlayTm || '-',

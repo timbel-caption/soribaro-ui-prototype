@@ -57,6 +57,7 @@ const REQUEST_TYPE_NAME_BY_WORK_TYPE = {
 };
 
 export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'meeting' }) {
+  const isRecordingType = workType === 'recording';
   const contractTypes = getRequestTypes().find((rt) => rt.name === REQUEST_TYPE_NAME_BY_WORK_TYPE[workType])?.contractTypes ?? [];
   const [form, setForm] = useState({
     entNm: '',
@@ -66,7 +67,8 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     sessionStart: '',
     sessionEnd: '',
     regDate: todayStr,
-    dueDate: addBusinessDays(todayStr, 2),
+    // 녹취록은 납품예정일을 자동으로 계산하지 않고 직접 입력받는다
+    dueDate: isRecordingType ? '' : addBusinessDays(todayStr, 2),
     specialNote: '',
     internalMemo: '',
   });
@@ -187,147 +189,183 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
           <div className="preg-section">
             <div className="preg-section-header">📋 기본 정보</div>
 
-            {/* 업체명 / 담당관리자 / 계약구분 */}
-            <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', marginBottom: '14px' }}>
-              {/* 업체명 */}
-              <div className="preg-field" style={{ position: 'relative' }} ref={dropRef}>
-                <label className="preg-label">업체명 <span className="preg-required">*</span></label>
-                <div style={{ position: 'relative' }}>
+            {isRecordingType ? (
+              /* 의뢰자 / 계약구분 */
+              <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: '14px' }}>
+                {/* 의뢰자 */}
+                <div className="preg-field">
+                  <label className="preg-label">의뢰자 <span className="preg-required">*</span></label>
                   <input
                     className="preg-input"
-                    value={companySearch}
-                    onChange={(e) => {
-                      setCompanySearch(e.target.value);
-                      setShowCompanyDrop(true);
-                      setForm((f) => ({ ...f, entNm: '', managerNm: '', contractType: '' }));
-                    }}
-                    onFocus={() => setShowCompanyDrop(true)}
-                    placeholder="업체명을 입력하세요"
-                    style={{ paddingRight: '32px' }}
+                    value={form.entNm}
+                    onChange={(e) => setForm((f) => ({ ...f, entNm: e.target.value }))}
+                    placeholder="의뢰자명을 입력하세요"
                   />
-                  <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '13px', pointerEvents: 'none' }}>🔍</span>
-                  {showCompanyDrop && filteredCompanies.length > 0 && (
-                    <div style={{
-                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
-                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-                      borderRadius: '6px', boxShadow: '0 4px 16px rgba(0,0,0,0.3)', marginTop: '2px',
-                      maxHeight: '180px', overflowY: 'auto',
-                    }}>
-                      {filteredCompanies.map((c) => (
-                        <div
-                          key={c.entNm}
-                          onMouseDown={() => selectCompany(c.entNm)}
-                          style={{
-                            padding: '9px 12px', fontSize: '13px', cursor: 'pointer',
-                            color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)',
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = ''}
-                        >
-                          {c.entNm}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                </div>
+
+                {/* 계약구분 */}
+                <div className="preg-field">
+                  <label className="preg-label">계약구분 <span className="preg-required">*</span></label>
+                  <select
+                    className="preg-select"
+                    value={form.contractType}
+                    onChange={(e) => setForm((f) => ({ ...f, contractType: e.target.value }))}
+                    disabled={!form.entNm}
+                  >
+                    <option value="">▼</option>
+                    {contractTypes.map((ct) => (
+                      <option key={ct} value={ct}>{ct}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-
-              {/* 담당관리자 */}
-              <div className="preg-field">
-                <label className="preg-label">담당관리자 <span className="preg-required">*</span></label>
-                <select
-                  className="preg-select"
-                  value={form.managerNm}
-                  onChange={(e) => handleManagerChange(e.target.value)}
-                  disabled={!form.entNm}
-                  title={!form.entNm ? '업체명을 먼저 선택하세요' : undefined}
-                >
-                  <option value="">
-                    {!form.entNm ? '업체명을 먼저 선택하세요' : availableManagers.length === 0 ? '등록된 담당관리자 없음' : '담당관리자를 선택하세요'}
-                  </option>
-                  {availableManagers.map((m) => (
-                    <option key={m.membNo} value={m.membNm}>{m.membNm}</option>
-                  ))}
-                </select>
-                {!form.entNm && (
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
-                    업체명 선택 후 담당관리자를 선택할 수 있습니다
-                  </span>
-                )}
-              </div>
-
-              {/* 계약구분 */}
-              <div className="preg-field">
-                <label className="preg-label">계약구분 <span className="preg-required">*</span></label>
-                <select
-                  className="preg-select"
-                  value={form.contractType}
-                  onChange={(e) => setForm((f) => ({ ...f, contractType: e.target.value }))}
-                  disabled={!form.managerNm}
-                >
-                  <option value="">▼</option>
-                  {contractTypes.map((ct) => (
-                    <option key={ct} value={ct}>{ct}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* 실무자 관리 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className="proto-log-btn proto-log-btn--save"
-                style={{ fontSize: '12px', padding: '5px 14px', opacity: form.entNm ? 1 : 0.5 }}
-                disabled={!form.entNm}
-                onClick={() => form.entNm && setShowStaffModal(true)}
-              >실무자 관리</button>
-              {selectedStaff ? (
-                <>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{selectedStaff.name}</span>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{selectedStaff.email}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{selectedStaff.tel}</span>
-                </>
-              ) : (
-                form.entNm && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>실무자를 선택하세요</span>
-              )}
-            </div>
-
-            {/* 회차 / 의뢰일 / 납품예정일 */}
-            <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', marginBottom: '14px' }}>
-              <div className="preg-field">
-                <label className="preg-label">회차 <span className="preg-required">*</span></label>
-                <input
-                  className="preg-input"
-                  value={form.round}
-                  onChange={(e) => setForm((f) => ({ ...f, round: e.target.value }))}
-                  placeholder="제OO회"
-                />
-                {workType === 'stenography' && (
-                  <>
-                    <label className="preg-label" style={{ marginTop: '8px' }}>시작-종료 시간</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            ) : (
+              <>
+                {/* 업체명 / 담당관리자 / 계약구분 */}
+                <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', marginBottom: '14px' }}>
+                  {/* 업체명 */}
+                  <div className="preg-field" style={{ position: 'relative' }} ref={dropRef}>
+                    <label className="preg-label">업체명 <span className="preg-required">*</span></label>
+                    <div style={{ position: 'relative' }}>
                       <input
                         className="preg-input"
-                        type="text"
-                        placeholder="13:00"
-                        value={form.sessionStart}
-                        onChange={(e) => setForm((f) => ({ ...f, sessionStart: e.target.value }))}
-                        style={{ flex: 1 }}
+                        value={companySearch}
+                        onChange={(e) => {
+                          setCompanySearch(e.target.value);
+                          setShowCompanyDrop(true);
+                          setForm((f) => ({ ...f, entNm: '', managerNm: '', contractType: '' }));
+                        }}
+                        onFocus={() => setShowCompanyDrop(true)}
+                        placeholder="업체명을 입력하세요"
+                        style={{ paddingRight: '32px' }}
                       />
-                      <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
-                      <input
-                        className="preg-input"
-                        type="text"
-                        placeholder="15:00"
-                        value={form.sessionEnd}
-                        onChange={(e) => setForm((f) => ({ ...f, sessionEnd: e.target.value }))}
-                        style={{ flex: 1 }}
-                      />
+                      <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '13px', pointerEvents: 'none' }}>🔍</span>
+                      {showCompanyDrop && filteredCompanies.length > 0 && (
+                        <div style={{
+                          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+                          background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
+                          borderRadius: '6px', boxShadow: '0 4px 16px rgba(0,0,0,0.3)', marginTop: '2px',
+                          maxHeight: '180px', overflowY: 'auto',
+                        }}>
+                          {filteredCompanies.map((c) => (
+                            <div
+                              key={c.entNm}
+                              onMouseDown={() => selectCompany(c.entNm)}
+                              style={{
+                                padding: '9px 12px', fontSize: '13px', cursor: 'pointer',
+                                color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = ''}
+                            >
+                              {c.entNm}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+
+                  {/* 담당관리자 */}
+                  <div className="preg-field">
+                    <label className="preg-label">담당관리자 <span className="preg-required">*</span></label>
+                    <select
+                      className="preg-select"
+                      value={form.managerNm}
+                      onChange={(e) => handleManagerChange(e.target.value)}
+                      disabled={!form.entNm}
+                      title={!form.entNm ? '업체명을 먼저 선택하세요' : undefined}
+                    >
+                      <option value="">
+                        {!form.entNm ? '업체명을 먼저 선택하세요' : availableManagers.length === 0 ? '등록된 담당관리자 없음' : '담당관리자를 선택하세요'}
+                      </option>
+                      {availableManagers.map((m) => (
+                        <option key={m.membNo} value={m.membNm}>{m.membNm}</option>
+                      ))}
+                    </select>
+                    {!form.entNm && (
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                        업체명 선택 후 담당관리자를 선택할 수 있습니다
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 계약구분 */}
+                  <div className="preg-field">
+                    <label className="preg-label">계약구분 <span className="preg-required">*</span></label>
+                    <select
+                      className="preg-select"
+                      value={form.contractType}
+                      onChange={(e) => setForm((f) => ({ ...f, contractType: e.target.value }))}
+                      disabled={!form.managerNm}
+                    >
+                      <option value="">▼</option>
+                      {contractTypes.map((ct) => (
+                        <option key={ct} value={ct}>{ct}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 실무자 관리 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="proto-log-btn proto-log-btn--save"
+                    style={{ fontSize: '12px', padding: '5px 14px', opacity: form.entNm ? 1 : 0.5 }}
+                    disabled={!form.entNm}
+                    onClick={() => form.entNm && setShowStaffModal(true)}
+                  >실무자 관리</button>
+                  {selectedStaff ? (
+                    <>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{selectedStaff.name}</span>
+                      <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{selectedStaff.email}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{selectedStaff.tel}</span>
+                    </>
+                  ) : (
+                    form.entNm && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>실무자를 선택하세요</span>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* 회차 / 의뢰일 / 납품예정일 (녹취록은 회차 항목을 표시하지 않는다) */}
+            <div className="preg-form-grid" style={{ gridTemplateColumns: isRecordingType ? '1fr 1fr' : '1fr 1fr 1fr', marginBottom: '14px' }}>
+              {!isRecordingType && (
+                <div className="preg-field">
+                  <label className="preg-label">회차 <span className="preg-required">*</span></label>
+                  <input
+                    className="preg-input"
+                    value={form.round}
+                    onChange={(e) => setForm((f) => ({ ...f, round: e.target.value }))}
+                    placeholder="제OO회"
+                  />
+                  {workType === 'stenography' && (
+                    <>
+                      <label className="preg-label" style={{ marginTop: '8px' }}>시작-종료 시간</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <input
+                          className="preg-input"
+                          type="text"
+                          placeholder="13:00"
+                          value={form.sessionStart}
+                          onChange={(e) => setForm((f) => ({ ...f, sessionStart: e.target.value }))}
+                          style={{ flex: 1 }}
+                        />
+                        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
+                        <input
+                          className="preg-input"
+                          type="text"
+                          placeholder="15:00"
+                          value={form.sessionEnd}
+                          onChange={(e) => setForm((f) => ({ ...f, sessionEnd: e.target.value }))}
+                          style={{ flex: 1 }}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
               <div className="preg-field">
                 <label className="preg-label">의뢰일 <span className="preg-required">*</span></label>
                 <input
@@ -337,7 +375,8 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                   onChange={(e) => setForm((f) => ({
                     ...f,
                     regDate: e.target.value,
-                    dueDate: addBusinessDays(e.target.value, 2),
+                    // 녹취록은 납품예정일 자동 계산을 적용하지 않는다
+                    ...(isRecordingType ? {} : { dueDate: addBusinessDays(e.target.value, 2) }),
                   }))}
                 />
               </div>
