@@ -2682,6 +2682,11 @@ function ProjectManageTab({ s }) {
                   onClick={e => e.stopPropagation()}
                   autoFocus
                 />
+              ) : isRecordingProj ? (
+                // 녹취록은 등록된 파일의 작업시간 합산값을 그대로 표시한다 — 파일 추가·삭제·변경 시 자동 갱신, 수동 수정 불가
+                <span className="pm-total-time-chip">
+                  총 {calcProjWorkTime(proj.projFiles)}
+                </span>
               ) : (
                 <span
                   className="pm-total-time-chip pm-total-time-chip--editable"
@@ -2712,13 +2717,15 @@ function ProjectManageTab({ s }) {
               {/* 스페이서 — 우측 그룹을 끝으로 밀기 */}
               <span style={{ flex: 1 }} />
 
-              {/* 오른쪽: 병합검수 + 배정 버튼 */}
-              <button
-                className="pm-merge-qc-btn"
-                onClick={e => { e.stopPropagation(); window.alert('[프로토타입] 병합검수 기능은 정식 서비스 단계에서 구현 예정입니다.'); }}
-              >
-                병합검수
-              </button>
+              {/* 오른쪽: 병합검수(녹취록 제외) + 배정 버튼 */}
+              {!isRecordingProj && (
+                <button
+                  className="pm-merge-qc-btn"
+                  onClick={e => { e.stopPropagation(); window.alert('[프로토타입] 병합검수 기능은 정식 서비스 단계에서 구현 예정입니다.'); }}
+                >
+                  병합검수
+                </button>
+              )}
               {!proj.workspyRegistered && (
                 <span className="pm-assign-area" style={{ marginLeft: 0 }}>
                   <span className="pm-assign-label">작업자</span>
