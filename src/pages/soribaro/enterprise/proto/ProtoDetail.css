@@ -252,6 +252,12 @@
 .proto-basic-card-body--6col {
   grid-template-columns: repeat(6, 1fr);
 }
+.proto-basic-card-body--5col {
+  grid-template-columns: repeat(5, 1fr);
+}
+.proto-basic-card-body--4col {
+  grid-template-columns: repeat(4, 1fr);
+}
 
 .proto-basic-field {
   padding: 12px 14px;
@@ -279,6 +285,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.proto-basic-field-value--wrap {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 /* 특이사항 & 내부 메모 */

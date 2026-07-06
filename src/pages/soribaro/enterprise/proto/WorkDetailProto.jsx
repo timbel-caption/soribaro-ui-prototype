@@ -287,6 +287,8 @@ function SessionTimeField({ s }) {
 function BasicInfoTab({ s }) {
   // VOD 작업관리에서만 특이사항/내부 메모를 로그형(추가·수정·삭제) 카드로 제공
   const isVod = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기' && s.bssTypeName !== '녹취록';
+  // 녹취록은 의뢰 기본정보 카드 구성이 회의록/현장속기와 다르다
+  const isRecording = s.bssTypeName === '녹취록';
   const authorName = useUserStore((st) => st.user?.membNm) || '관리자';
 
   // 견적서/최종산출물/알림발송 (회의록·현장속기 전용)
@@ -363,6 +365,12 @@ function BasicInfoTab({ s }) {
     { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
     { label: '납품예정일', value: s.dueDate || '-' },
     { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
+  ] : isRecording ? [
+    { label: '작업유형', value: s.bssTypeName },
+    { label: '계약구분', value: s.contractType || '-' },
+    { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
+    { label: '납품 예정일', value: s.dueDate || '-' },
+    { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
   ] : [
     { label: '작업 유형', value: s.bssTypeName },
     { label: '업체명', value: s.entNm || '-' },
@@ -378,6 +386,11 @@ function BasicInfoTab({ s }) {
     { label: '납품 형식', value: s.deliveryFormats || '-' },
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
     { label: '정산 상태', value: s.settlement?.status || '-' },
+  ] : isRecording ? [
+    { label: '의뢰자', value: s.membNm || '-' },
+    { label: '연락처', value: s.phone || '010-1234-5678' },
+    { label: '이메일', value: s.email || 'kim@go.kr' },
+    { label: '수령 주소', value: s.deliveryAddress || '-', span2: true, wrap: true },
   ] : [
     { label: '의뢰자', value: s.managerNm || s.membNm || '-' },
     { label: '연락처', value: s.phone || '010-1234-5678' },
@@ -386,7 +399,12 @@ function BasicInfoTab({ s }) {
     { label: '프로젝트 상태', value: statusBadge(s.overallStatus) },
     { label: '정산 상태', value: s.settlement?.status || '-' },
   ];
-  const row3 = !isVod ? [
+  const row3 = isRecording ? [
+    { label: '결제유형', value: s.paymentType || '-' },
+    { label: '확정금액', value: s.fixPrice != null ? `${Number(s.fixPrice).toLocaleString()}원` : '-' },
+    { label: '녹음장소', value: s.recordingLocation || '-' },
+    { label: '추가신청(제본)', value: s.bindingCount ?? '-' },
+  ] : !isVod ? [
     { label: '실무자(납품)', value: s.staffNm || '-' },
     { label: '연락처', value: s.staffPhone || '-' },
     { label: '이메일', value: s.staffEmail || '-' },
@@ -419,46 +437,124 @@ function BasicInfoTab({ s }) {
           <span>📋</span>
           <span>{isVod ? '프로젝트 기본정보' : '의뢰 기본 정보'}</span>
         </div>
-        <div className={`proto-basic-card-body${!isVod ? ' proto-basic-card-body--6col' : ''}`}>
-          {row1.map(({ label, value }, i) => (
-            <div
-              key={label}
-              className={`proto-basic-field${i === row1.length - 1 ? ' proto-basic-field--no-right' : ''}`}
-            >
-              <div className="proto-basic-field-label">{label}</div>
-              <div className="proto-basic-field-value">{value}</div>
+        {isRecording ? (
+          <>
+            <div className="proto-basic-card-body proto-basic-card-body--5col">
+              {row1.map(({ label, value }, i) => (
+                <div
+                  key={label}
+                  className={`proto-basic-field${i === row1.length - 1 ? ' proto-basic-field--no-right' : ''}`}
+                >
+                  <div className="proto-basic-field-label">{label}</div>
+                  <div className="proto-basic-field-value">{value}</div>
+                </div>
+              ))}
             </div>
-          ))}
-          {row2.map(({ label, value, span2 }, i) => (
-            <div
-              key={label}
-              className={[
-                'proto-basic-field',
-                !row3 ? 'proto-basic-field--last-row' : '',
-                span2 ? 'proto-basic-field--span2' : '',
-                i === row2.length - 1 ? 'proto-basic-field--no-right' : '',
-              ].filter(Boolean).join(' ')}
-            >
-              <div className="proto-basic-field-label">{label}</div>
-              <div className="proto-basic-field-value">{value}</div>
+            <div className="proto-basic-card-body proto-basic-card-body--5col">
+              {row2.map(({ label, value, span2, wrap }, i) => (
+                <div
+                  key={label}
+                  className={[
+                    'proto-basic-field',
+                    span2 ? 'proto-basic-field--span2' : '',
+                    i === row2.length - 1 ? 'proto-basic-field--no-right' : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  <div className="proto-basic-field-label">{label}</div>
+                  <div className={`proto-basic-field-value${wrap ? ' proto-basic-field-value--wrap' : ''}`}>{value}</div>
+                </div>
+              ))}
             </div>
-          ))}
-          {row3 && row3.map(({ label, value, span3 }, i) => (
-            <div
-              key={label ?? `empty-${i}`}
-              className={[
-                'proto-basic-field',
-                'proto-basic-field--last-row',
-                i === row3.length - 1 ? 'proto-basic-field--no-right' : '',
-              ].filter(Boolean).join(' ')}
-              style={span3 ? { gridColumn: 'span 3' } : undefined}
-            >
-              {!span3 && <div className="proto-basic-field-label">{label}</div>}
-              {!span3 && <div className="proto-basic-field-value">{value}</div>}
+            <div className="proto-basic-card-body proto-basic-card-body--4col">
+              {row3.map(({ label, value }, i) => (
+                <div
+                  key={label}
+                  className={[
+                    'proto-basic-field',
+                    'proto-basic-field--last-row',
+                    i === row3.length - 1 ? 'proto-basic-field--no-right' : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  <div className="proto-basic-field-label">{label}</div>
+                  <div className="proto-basic-field-value">{value}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <div className={`proto-basic-card-body${!isVod ? ' proto-basic-card-body--6col' : ''}`}>
+            {row1.map(({ label, value }, i) => (
+              <div
+                key={label}
+                className={`proto-basic-field${i === row1.length - 1 ? ' proto-basic-field--no-right' : ''}`}
+              >
+                <div className="proto-basic-field-label">{label}</div>
+                <div className="proto-basic-field-value">{value}</div>
+              </div>
+            ))}
+            {row2.map(({ label, value, span2 }, i) => (
+              <div
+                key={label}
+                className={[
+                  'proto-basic-field',
+                  !row3 ? 'proto-basic-field--last-row' : '',
+                  span2 ? 'proto-basic-field--span2' : '',
+                  i === row2.length - 1 ? 'proto-basic-field--no-right' : '',
+                ].filter(Boolean).join(' ')}
+              >
+                <div className="proto-basic-field-label">{label}</div>
+                <div className="proto-basic-field-value">{value}</div>
+              </div>
+            ))}
+            {row3 && row3.map(({ label, value, span3 }, i) => (
+              <div
+                key={label ?? `empty-${i}`}
+                className={[
+                  'proto-basic-field',
+                  'proto-basic-field--last-row',
+                  i === row3.length - 1 ? 'proto-basic-field--no-right' : '',
+                ].filter(Boolean).join(' ')}
+                style={span3 ? { gridColumn: 'span 3' } : undefined}
+              >
+                {!span3 && <div className="proto-basic-field-label">{label}</div>}
+                {!span3 && <div className="proto-basic-field-value">{value}</div>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* 화자 정보 (녹취록 전용) */}
+      {isRecording && (
+        <div className="proto-basic-card">
+          <div className="proto-basic-card-header">
+            <span>🗣</span>
+            <span>화자 정보</span>
+          </div>
+          <div style={{ padding: '14px 20px' }}>
+            <table className="proto-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '90px' }} className="text-center">화자 번호</th>
+                  <th style={{ width: '160px' }}>화자명</th>
+                  <th>화자 특징</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(s.speakers || []).length === 0 ? (
+                  <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>등록된 화자 정보가 없습니다.</td></tr>
+                ) : s.speakers.map((sp) => (
+                  <tr key={sp.no}>
+                    <td className="text-center">{sp.no}</td>
+                    <td style={{ fontWeight: 600 }}>{sp.name}</td>
+                    <td style={{ color: 'var(--text-muted)' }}>{sp.feature}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {s.bssTypeName === '현장속기' && (
         <div className="proto-basic-card" style={{ marginTop: '12px' }}>
