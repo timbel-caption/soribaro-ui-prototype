@@ -353,9 +353,29 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const handleOpenNotify = () => setNotifyStep('select');
 
+  // 차주 배정 알림 / 작업자 익일 회의 알림 / 작업자 배정 알림 공통: 작업자 배정 상태가 '배정완료'인 대상이
+  // 하나도 없으면 발송 대상 확인 팝업으로 넘어가지 않고 안내 팝업만 노출한다.
   const handleSelectNotifyType = (type) => {
-    if (type === 'assign' && selectedIds.size === 0) {
-      window.alert('알림을 보낼 의뢰를 선택해 주세요.');
+    if (type === 'assign') {
+      if (selectedIds.size === 0) {
+        window.alert('알림을 보낼 의뢰를 선택해 주세요.');
+        return;
+      }
+      const hasEligible = [...selectedIds].some((id) => {
+        const sample = samples.find((sm) => sm.id === id);
+        if (!sample || sample.bssTypeName !== '현장속기') return false;
+        const effStatus = workerOverrides[id]?.status ?? sample.assignStatus;
+        return effStatus === '배정완료';
+      });
+      if (!hasEligible) {
+        window.alert('발송 가능한 대상이 없습니다. 작업자 배정 상태가 배정완료인 의뢰만 알림을 발송할 수 있습니다.');
+        return;
+      }
+    } else if (type === 'nextWeek' && nextWeekTargets.length === 0) {
+      window.alert('발송 가능한 대상이 없습니다. 작업자 배정 상태가 배정완료인 의뢰만 알림을 발송할 수 있습니다.');
+      return;
+    } else if (type === 'nextDay' && nextDayTargets.immediate.length === 0 && nextDayTargets.scheduled.length === 0) {
+      window.alert('발송 가능한 대상이 없습니다. 작업자 배정 상태가 배정완료인 의뢰만 알림을 발송할 수 있습니다.');
       return;
     }
     setNotifyType(type);
@@ -365,18 +385,22 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const nextWeekRange = getNextWeekRange(today);
+  // 차주 배정 알림 대상: 작업자 배정 상태가 '배정완료'인 현장속기 건만 발송 가능
   const nextWeekTargets = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
+    const effStatus = workerOverrides[sm.id]?.status ?? sm.assignStatus;
+    if (effStatus !== '배정완료') return false;
     const d = toDateOnly(sm.regDttm);
     return d && d >= nextWeekRange.start && d <= nextWeekRange.end;
   });
-  // 작업자 익일 회의 알림 대상: 발송 버튼을 누른 날짜 기준 익일(diffDays===1) 회의만 즉시 발송하고,
+  // 작업자 익일 회의 알림 대상: 작업자 배정 상태가 '배정완료'인 건만 발송 가능하며,
+  // 발송 버튼을 누른 날짜 기준 익일(diffDays===1) 회의만 즉시 발송하고,
   // 그보다 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
   const nextDayCandidates = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
     const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
     const effStatus = workerOverrides[sm.id]?.status ?? sm.assignStatus;
-    if (!effWorker || (effStatus !== '배정완료' && effStatus !== '업체전달완료')) return false;
+    if (!effWorker || effStatus !== '배정완료') return false;
     const meetingDate = toDateOnly(sm.regDttm);
     if (!meetingDate) return false;
     const diffDays = Math.round((meetingDate - today) / 86400000);
