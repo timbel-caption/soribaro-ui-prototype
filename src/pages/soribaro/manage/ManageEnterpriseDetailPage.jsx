@@ -179,8 +179,8 @@ export default function ManageEnterpriseDetailPage() {
     setManagers(getCompanyStaff(entNm));
   };
 
-  // 견적서 관리 팝업
-  const INVOICE_TYPES = ['계약업체', 'n시간 절가', '세금계산서', '일반계산서'];
+  // 견적서 관리 팝업 — n시간 이후 단가가 입력된 업체는 계산서 발행 형태와 무관하게 자동으로 n시간 절가로 계산되므로 별도 선택 항목을 두지 않는다
+  const INVOICE_TYPES = ['계약업체', '세금계산서', '일반계산서'];
   const [quoteModal, setQuoteModal] = useState(false);
   const [quoteReqType, setQuoteReqType] = useState('');
   const [quoteContractType, setQuoteContractType] = useState('');
@@ -486,7 +486,14 @@ export default function ManageEnterpriseDetailPage() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <label className="preg-label">기본 단가 적용 (분)</label>
-                  <input className="preg-input" type="number" value={quoteForm.baseRateHours} onChange={e => setQuoteForm(p => ({ ...p, baseRateHours: +e.target.value }))} />
+                  <input
+                    className="preg-input"
+                    type="number"
+                    value={quoteForm.baseRateHours}
+                    onChange={e => setQuoteForm(p => ({ ...p, baseRateHours: +e.target.value }))}
+                    disabled={!quoteForm.overtimePrice}
+                    title={!quoteForm.overtimePrice ? 'n시간 이후 단가를 입력해야 사용할 수 있습니다' : undefined}
+                  />
                 </div>
               </div>
             </div>

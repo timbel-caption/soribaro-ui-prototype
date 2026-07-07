@@ -4868,47 +4868,46 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   const { invoiceType, unitPrice, baseUnit, roundUnit, overtimePrice, baseRateHours } = qs;
 
   const calcMin = totalMin === 0 ? 0 : Math.max(baseUnit, Math.ceil(totalMin / roundUnit) * roundUnit);
-  const units = calcMin / baseUnit;
 
   let baseSupply = 0, baseTax = 0, baseTimeMin = 0;
   let extraSupply = 0, extraTax = 0, extraMin = 0;
   let totalSupply = 0, totalTax = 0;
 
-  const isNTimeDiscount = invoiceType === 'n시간 절가';
+  // n시간 이후 단가가 입력된 업체만 기본 단가 적용(분) 기준으로 구간을 나눠 계산하고,
+  // 미입력이면 작업시간 전체에 단가(원/시간)를 적용한다. 계산서 발행 형태는 세액 처리 방식만 결정한다.
+  const isNTimeDiscount = !!overtimePrice;
 
-  if (invoiceType === '계약업체') {
-    const total = units * unitPrice;
-    baseSupply = Math.round(total / 1.1);
-    baseTax = total - baseSupply;
-    totalSupply = baseSupply;
-    totalTax = baseTax;
-  } else if (isNTimeDiscount) {
-    baseTimeMin = baseRateHours * 60;
+  let basePay = 0, extraPay = 0;
+  if (isNTimeDiscount) {
+    baseTimeMin = baseRateHours || 0;
     const baseCalcMin = Math.max(baseUnit, Math.ceil(Math.min(calcMin, baseTimeMin) / roundUnit) * roundUnit);
-    const baseUnits = baseCalcMin / baseUnit;
-    const basePay = baseUnits * unitPrice;
-    baseSupply = Math.round(basePay / 1.1);
-    baseTax = basePay - baseSupply;
+    basePay = unitPrice * (baseCalcMin / 60);
     if (calcMin > baseTimeMin) {
       extraMin = calcMin - baseTimeMin;
-      const extraUnits = extraMin / baseUnit;
-      const extraPay = extraUnits * overtimePrice;
-      extraSupply = Math.round(extraPay / 1.1);
-      extraTax = extraPay - extraSupply;
+      extraPay = overtimePrice * (extraMin / 60);
     }
-    totalSupply = baseSupply + extraSupply;
-    totalTax = baseTax + extraTax;
-  } else if (invoiceType === '세금계산서') {
-    baseSupply = units * unitPrice;
-    baseTax = Math.round(baseSupply * 0.1);
-    totalSupply = baseSupply;
-    totalTax = baseTax;
-  } else if (invoiceType === '일반계산서') {
-    baseSupply = units * unitPrice;
-    baseTax = 0;
-    totalSupply = baseSupply;
-    totalTax = baseTax;
+  } else {
+    basePay = unitPrice * (calcMin / 60);
   }
+
+  if (invoiceType === '계약업체') {
+    baseSupply = Math.round(basePay / 1.1);
+    baseTax = basePay - baseSupply;
+    extraSupply = Math.round(extraPay / 1.1);
+    extraTax = extraPay - extraSupply;
+  } else if (invoiceType === '세금계산서') {
+    baseSupply = basePay;
+    baseTax = Math.round(baseSupply * 0.1);
+    extraSupply = extraPay;
+    extraTax = Math.round(extraSupply * 0.1);
+  } else if (invoiceType === '일반계산서') {
+    baseSupply = basePay;
+    baseTax = 0;
+    extraSupply = extraPay;
+    extraTax = 0;
+  }
+  totalSupply = baseSupply + extraSupply;
+  totalTax = baseTax + extraTax;
 
   const noData = totalMin === 0;
 
@@ -4991,13 +4990,13 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
               <tbody>
                 <tr>
                   <td style={tdStyle}>{s.totalPlayTm || '-'}</td>
-                  <td style={tdStyle}>{invoiceType}</td>
+                  <td style={tdStyle}>{invoiceType}{isNTimeDiscount ? '(n시간 절가)' : ''}</td>
                   <td style={tdStyle}>{fmt(unitPrice)}</td>
                   <td style={tdStyle}>{baseUnit}</td>
                   <td style={tdStyle}>{roundUnit}</td>
                   <td style={tdBold}>{noData ? '-' : fmtHM(calcMin)}</td>
                   <td style={tdStyle}>{isNTimeDiscount ? fmt(overtimePrice) : '-'}</td>
-                  <td style={tdStyleAlt}>{isNTimeDiscount ? fmtHM(baseRateHours * 60) : '-'}</td>
+                  <td style={tdStyleAlt}>{isNTimeDiscount ? fmtHM(baseTimeMin) : '-'}</td>
                   <td style={tdStyleAlt}>{noData ? '-' : fmt(baseSupply)}</td>
                   <td style={tdStyleAlt}>{noData ? '-' : fmt(baseTax)}</td>
                   <td style={tdStyleAlt}>{isNTimeDiscount && !noData ? fmtHM(extraMin) : '-'}</td>

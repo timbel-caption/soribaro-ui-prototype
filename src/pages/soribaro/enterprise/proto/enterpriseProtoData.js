@@ -85,14 +85,15 @@ export function removeCompanyStaff(entNm, id) {
 }
 
 // ─── 업체별 견적서(업체정산) 설정 스토어 (prototype용 module-level state) ───
-const DEFAULT_QUOTE = { invoiceType: '계약업체', unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 45000, baseRateHours: 2 };
+// n시간 이후 단가(overtimePrice)가 입력된 업체만 기본 단가 적용(baseRateHours, 분 단위)을 기준으로 구간별 단가가 적용된다.
+const DEFAULT_QUOTE = { invoiceType: '계약업체', unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 0, baseRateHours: 0 };
 const _companyQuoteSettings = {
-  '서울시의회':        { invoiceType: '계약업체',   unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 45000, baseRateHours: 2 },
-  '서울특별시교육청':  { invoiceType: '세금계산서', unitPrice: 50000, baseUnit: 60, roundUnit: 30, overtimePrice: 35000, baseRateHours: 2 },
-  '한국방송공사':      { invoiceType: 'n시간 절가', unitPrice: 55000, baseUnit: 60, roundUnit: 30, overtimePrice: 40000, baseRateHours: 2 },
-  '국회사무처':        { invoiceType: '일반계산서', unitPrice: 65000, baseUnit: 60, roundUnit: 30, overtimePrice: 50000, baseRateHours: 3 },
-  '부산광역시의회':    { invoiceType: '계약업체',   unitPrice: 55000, baseUnit: 60, roundUnit: 30, overtimePrice: 40000, baseRateHours: 2 },
-  '서울중부교육지원청':{ invoiceType: '세금계산서', unitPrice: 48000, baseUnit: 60, roundUnit: 30, overtimePrice: 35000, baseRateHours: 2 },
+  '서울시의회':        { invoiceType: '계약업체',   unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 0,     baseRateHours: 0 },
+  '서울특별시교육청':  { invoiceType: '세금계산서', unitPrice: 50000, baseUnit: 60, roundUnit: 30, overtimePrice: 0,     baseRateHours: 0 },
+  '한국방송공사':      { invoiceType: '계약업체',   unitPrice: 55000, baseUnit: 60, roundUnit: 30, overtimePrice: 40000, baseRateHours: 120 },
+  '국회사무처':        { invoiceType: '일반계산서', unitPrice: 65000, baseUnit: 60, roundUnit: 30, overtimePrice: 0,     baseRateHours: 0 },
+  '부산광역시의회':    { invoiceType: '계약업체',   unitPrice: 55000, baseUnit: 60, roundUnit: 30, overtimePrice: 0,     baseRateHours: 0 },
+  '서울중부교육지원청':{ invoiceType: '세금계산서', unitPrice: 48000, baseUnit: 60, roundUnit: 30, overtimePrice: 0,     baseRateHours: 0 },
 };
 
 export function getCompanyQuoteSettings(entNm) {
