@@ -96,14 +96,14 @@ function fmtDateOnly(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// 알림 발송 시각 표기(예: 26-07-09 17:00) — 업체명/작업자 알림 툴팁에 발송 일시로 표시
+// 알림 발송 시각 표기(예: 2026-07-09 17:00) — 업체명/작업자 알림 완료 툴팁에 발송 일시로 표시
 function fmtDateTime(d) {
-  const yy = String(d.getFullYear()).slice(2);
+  const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   const hh = String(d.getHours()).padStart(2, '0');
   const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${yy}-${mm}-${dd} ${hh}:${mi}`;
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
 }
 
 // 현재 주를 제외한 다음 주(월~일) 범위
@@ -121,7 +121,7 @@ function getNextWeekRange(today) {
 }
 
 const NOTIFY_TYPES = [
-  { key: 'assign', label: '작업자 배정 알림', desc: '업체 대상' },
+  { key: 'assign', label: '수동 배정 알림', desc: '업체·작업자 대상' },
   { key: 'nextWeek', label: '차주 배정 알림', desc: '차주 회의 일정 안내 (업체·작업자 대상)' },
   { key: 'nextDay', label: '작업자 익일 회의 알림', desc: '익일 회의 안내 (작업자 대상)' },
 ];
@@ -339,21 +339,32 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   // 진행의뢰현황 알림 발송 — 1) 알림 유형 선택 → 2) 발송 대상 확인 2단계 팝업
   const [notifyStep, setNotifyStep] = useState(null); // null | 'select' | 'confirm'
   const [notifyType, setNotifyType] = useState(null); // 'assign' | 'nextWeek' | 'nextDay'
-  // 속기사 전날 일정 알림: 이미 즉시발송/예약등록 처리한 건은 중복 등록하지 않는다 (프로토타입 세션 내 유지)
-  const [nextDayNotifiedIds, setNextDayNotifiedIds] = useState(new Set());
-  const [nextDayScheduledIds, setNextDayScheduledIds] = useState(new Set());
+  // 작업자 익일 회의 알림 발송/예약 이력은 "의뢰ID::작업자명" 단위로 관리한다.
+  // 재배정으로 작업자가 바뀌면 새 작업자에게는 재발송이 가능하고, 이미 알림을 받은 작업자에게는 중복 발송되지 않는다.
+  const [nextDayNotifiedKeys, setNextDayNotifiedKeys] = useState(new Set());
+  const [nextDayScheduledKeys, setNextDayScheduledKeys] = useState(new Set());
   // 차주 배정 알림: 발송된 건을 기록해 업체명/작업자 알림 상태 아이콘에 반영한다
   const [nextWeekNotifiedIds, setNextWeekNotifiedIds] = useState(new Set());
-  // 알림별 발송 일시(id -> 'YY-MM-DD HH:mm') — 업체명/작업자 알림 툴팁에 발송 시각을 함께 표시한다
+  // 알림별 발송 일시(키 -> 'YYYY-MM-DD HH:MM') — 발송 완료 후 아이콘 툴팁에 발송 일시로 표시한다
   const [nextWeekNotifiedAt, setNextWeekNotifiedAt] = useState({});
-  const [nextDayNotifiedAt, setNextDayNotifiedAt] = useState({});
+  const [nextDayNotifiedAt, setNextDayNotifiedAt] = useState({}); // 키: "의뢰ID::작업자명"
   const [assignNotifiedAt, setAssignNotifiedAt] = useState({});
 
   const closeNotifyFlow = () => { setNotifyStep(null); setNotifyType(null); };
 
   const handleOpenNotify = () => setNotifyStep('select');
 
-  // 차주 배정 알림 / 작업자 익일 회의 알림 / 작업자 배정 알림 공통: 작업자 배정 상태가 '배정완료'인 대상이
+  // 알림 발송 대상 판단 기준: 의뢰 상태값이 아니라 작업자 배정 데이터(배정된 작업자) 존재 여부로 판단한다.
+  // 배정취소된 건만 제외하며, 이미 수동 배정 알림을 보낸(업체전달완료) 건도 작업자가 배정돼 있으므로 계속 대상에 포함된다.
+  const isWorkerAssigned = (sm) => {
+    const worker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
+    const status = workerOverrides[sm.id]?.status ?? sm.assignStatus;
+    return !!worker && status !== '배정취소';
+  };
+
+  const notifyKey = (id, worker) => `${id}::${worker}`;
+
+  // 차주 배정 알림 / 작업자 익일 회의 알림 / 수동 배정 알림 공통: 발송 가능한 대상이
   // 하나도 없으면 발송 대상 확인 팝업으로 넘어가지 않고 안내 팝업만 노출한다.
   const handleSelectNotifyType = (type) => {
     if (type === 'assign') {
@@ -364,18 +375,17 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       const hasEligible = [...selectedIds].some((id) => {
         const sample = samples.find((sm) => sm.id === id);
         if (!sample || sample.bssTypeName !== '현장속기') return false;
-        const effStatus = workerOverrides[id]?.status ?? sample.assignStatus;
-        return effStatus === '배정완료';
+        return isWorkerAssigned(sample);
       });
       if (!hasEligible) {
-        window.alert('발송 가능한 대상이 없습니다. 작업자 배정 상태가 배정완료인 의뢰만 알림을 발송할 수 있습니다.');
+        window.alert('발송 가능한 대상이 없습니다. 작업자가 배정된 의뢰만 알림을 발송할 수 있습니다.');
         return;
       }
     } else if (type === 'nextWeek' && nextWeekTargets.length === 0) {
-      window.alert('발송 가능한 대상이 없습니다. 작업자 배정 상태가 배정완료인 의뢰만 알림을 발송할 수 있습니다.');
+      window.alert('발송 가능한 대상이 없습니다. 작업자가 배정된 의뢰만 알림을 발송할 수 있습니다.');
       return;
     } else if (type === 'nextDay' && nextDayTargets.immediate.length === 0 && nextDayTargets.scheduled.length === 0) {
-      window.alert('발송 가능한 대상이 없습니다. 작업자 배정 상태가 배정완료인 의뢰만 알림을 발송할 수 있습니다.');
+      window.alert('발송 가능한 대상이 없습니다. 모든 작업자가 이미 익일 배정 알림을 받았거나 배정된 작업자가 없습니다.');
       return;
     }
     setNotifyType(type);
@@ -385,22 +395,19 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const nextWeekRange = getNextWeekRange(today);
-  // 차주 배정 알림 대상: 작업자 배정 상태가 '배정완료'인 현장속기 건만 발송 가능
+  // 차주 배정 알림 대상: 작업자가 배정된(배정취소 제외) 현장속기 건만 발송 가능
   const nextWeekTargets = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
-    const effStatus = workerOverrides[sm.id]?.status ?? sm.assignStatus;
-    if (effStatus !== '배정완료') return false;
+    if (!isWorkerAssigned(sm)) return false;
     const d = toDateOnly(sm.regDttm);
     return d && d >= nextWeekRange.start && d <= nextWeekRange.end;
   });
-  // 작업자 익일 회의 알림 대상: 작업자 배정 상태가 '배정완료'인 건만 발송 가능하며,
+  // 작업자 익일 회의 알림 대상: 작업자가 배정된 건만 발송 가능하며,
   // 발송 버튼을 누른 날짜 기준 익일(diffDays===1) 회의만 즉시 발송하고,
   // 그보다 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
   const nextDayCandidates = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
-    const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
-    const effStatus = workerOverrides[sm.id]?.status ?? sm.assignStatus;
-    if (!effWorker || effStatus !== '배정완료') return false;
+    if (!isWorkerAssigned(sm)) return false;
     const meetingDate = toDateOnly(sm.regDttm);
     if (!meetingDate) return false;
     const diffDays = Math.round((meetingDate - today) / 86400000);
@@ -408,23 +415,27 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   });
   const nextDayTargets = {
     immediate: nextDayCandidates.filter((sm) => {
+      const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
       const diffDays = Math.round((toDateOnly(sm.regDttm) - today) / 86400000);
-      return diffDays === 1 && !nextDayNotifiedIds.has(sm.id);
+      return diffDays === 1 && !nextDayNotifiedKeys.has(notifyKey(sm.id, effWorker));
     }),
     scheduled: nextDayCandidates.filter((sm) => {
+      const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
       const meetingDate = toDateOnly(sm.regDttm);
       const diffDays = Math.round((meetingDate - today) / 86400000);
-      if (diffDays <= 1 || nextDayScheduledIds.has(sm.id)) return false;
+      if (diffDays <= 1 || nextDayScheduledKeys.has(notifyKey(sm.id, effWorker))) return false;
       const dayBefore = new Date(meetingDate);
       dayBefore.setDate(dayBefore.getDate() - 1);
       return isWeekendOrHoliday(dayBefore);
     }),
   };
 
-  // 작업자 익일 회의 알림 상태 + (예약인 경우) 회의 전날 발송 예정일시
+  // 작업자 익일 회의 알림 상태(현재 배정된 작업자 기준) + 발송 완료 일시 또는 (예약인 경우) 회의 전날 발송 예정일시
   const getNextDayNotifyStatus = (s) => {
-    if (nextDayNotifiedIds.has(s.id)) return { label: '발송' };
-    if (nextDayScheduledIds.has(s.id)) {
+    const effWorker = workerOverrides[s.id]?.worker ?? s.assignWorker;
+    const key = notifyKey(s.id, effWorker);
+    if (nextDayNotifiedKeys.has(key)) return { label: '발송', at: nextDayNotifiedAt[key] };
+    if (nextDayScheduledKeys.has(key)) {
       const meetingDate = toDateOnly(s.regDttm);
       if (meetingDate) {
         const sendAt = new Date(meetingDate);
@@ -436,97 +447,78 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     return { label: '미발송' };
   };
 
-  // 업체명·작업자 알림 아이콘 1개는 대표 알림의 발송 여부에 따라 미발송/발송 완료 2단계로 색상을 구분한다
+  // 알림 아이콘은 미발송 상태에서만 노출되고(none), 발송 완료 후에는 벨 아이콘 대신 완료 표시(done)로 바뀐다.
   const NOTIFY_ICON_BY_LEVEL = {
-    none: { icon: '🔕', color: 'var(--text-muted)' },
-    done: { icon: '🔔', color: '#4ade80' },
+    none: { icon: '🔔', color: 'var(--text-muted)' },
+    done: { icon: '✔', color: '#4ade80' },
   };
 
-  // 업체명 옆 알림 아이콘 1개 — 차주 회의면 차주 배정 알림, 금주 회의(차주 배정 알림 미발송 대상)면 작업자 배정 알림 발송 상태를 대표로 표시.
-  // 툴팁에는 회의장 정보와 함께 실제 발송된 알림 목록을 발송 일시와 함께 보여준다.
+  // 업체명 옆 알림 아이콘 — 수동 배정 알림·차주 배정 알림 중 하나도 발송되지 않았으면 미발송 아이콘만 노출하고,
+  // 하나라도 발송 완료되면 벨 아이콘을 숨기고 완료 표시로 바뀌며 툴팁에 알림별 발송 완료 일시를 보여준다.
   const companyNotifyIcon = (s, isNotified) => {
-    const d = toDateOnly(s.regDttm);
-    const isNextWeekMeeting = d && d >= nextWeekRange.start && d <= nextWeekRange.end;
-    const primarySent = isNextWeekMeeting ? nextWeekNotifiedIds.has(s.id) : isNotified;
-    const { icon, color } = NOTIFY_ICON_BY_LEVEL[primarySent ? 'done' : 'none'];
+    const nextWeekSent = nextWeekNotifiedIds.has(s.id);
+    const assignSent = isNotified;
+    const anySent = nextWeekSent || assignSent;
 
-    const sentItems = [];
-    if (nextWeekNotifiedIds.has(s.id)) sentItems.push({ label: '차주 배정 알림', at: nextWeekNotifiedAt[s.id] });
-    if (isNotified) sentItems.push({ label: '작업자 배정 알림', at: assignNotifiedAt[s.id] });
-
-    let sentSection;
-    if (sentItems.length === 0) {
-      sentSection = '발송된 알림 없음';
-    } else {
-      const groups = new Map();
-      sentItems.forEach(({ label, at }) => {
-        const key = at || '';
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(label);
-      });
-      const groupLines = [...groups.entries()].map(([at, labels]) => `발송 ${labels.join('/')}${at ? ` ${at}` : ''}`);
-      sentSection = ['발송된 알림', ...groupLines].join('\n');
+    if (!anySent) {
+      const tooltip = `${buildVenueTooltip(s)}\n\n발송된 알림 없음`;
+      return <span style={{ color: NOTIFY_ICON_BY_LEVEL.none.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.none.icon}</span>;
     }
 
-    const tooltip = `${buildVenueTooltip(s)}\n\n${sentSection}`;
-    return <span style={{ color, marginLeft: '4px' }} title={tooltip}>{icon}</span>;
+    const doneLines = [];
+    if (nextWeekSent) doneLines.push(`차주 배정 알림 완료 : ${nextWeekNotifiedAt[s.id] || '-'}`);
+    if (assignSent) doneLines.push(`수동 배정 알림 완료 : ${assignNotifiedAt[s.id] || '-'}`);
+    const tooltip = `${buildVenueTooltip(s)}\n\n${doneLines.join('\n')}`;
+    return <span style={{ color: NOTIFY_ICON_BY_LEVEL.done.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.done.icon}</span>;
   };
 
-  // 작업자 옆 알림 아이콘 1개(차주 배정 알림 기준) — 작업자 익일 회의 알림 아이콘은 별도로 표시하지 않고,
-  // 툴팁에서 차주 배정 알림·작업자 익일 회의 알림 상태를 발송 일시와 함께 보여준다.
+  // 작업자 옆 알림 아이콘 — 익일 배정 알림만 표시한다. 미발송·예약 상태는 벨 아이콘을 노출하고,
+  // 발송 완료 후에는 벨 아이콘을 숨기고 완료 표시로 바뀌며 툴팁에 발송 완료 일시를 보여준다.
   const workerNotifyIcon = (s) => {
-    const sent = nextWeekNotifiedIds.has(s.id);
-    const { icon, color } = NOTIFY_ICON_BY_LEVEL[sent ? 'done' : 'none'];
-    const nextWeekAt = nextWeekNotifiedAt[s.id];
-    const line1 = `차주 배정 알림 : ${sent ? '발송' : '미발송'}${sent && nextWeekAt ? ` ${nextWeekAt}` : ''}`;
-
-    const nextDayStatus = getNextDayNotifyStatus(s);
-    const nextDayAt = nextDayNotifiedAt[s.id];
-    let line2;
-    if (nextDayStatus.label === '발송') {
-      line2 = `작업자 익일 회의 알림 : 발송${nextDayAt ? ` ${nextDayAt}` : ''}`;
-    } else if (nextDayStatus.label === '예약') {
-      line2 = `작업자 익일 회의 알림 : 예약${nextDayStatus.sendAt ? ` (발송 예정일시: ${nextDayStatus.sendAt})` : ''}`;
-    } else {
-      line2 = '작업자 익일 회의 알림 : 미발송';
+    const status = getNextDayNotifyStatus(s);
+    if (status.label === '발송') {
+      const tooltip = `익일 배정 알림 완료 : ${status.at || '-'}`;
+      return <span style={{ color: NOTIFY_ICON_BY_LEVEL.done.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.done.icon}</span>;
     }
-
-    return <span style={{ color, marginLeft: '4px' }} title={`${line1}\n${line2}`}>{icon}</span>;
+    const tooltip = status.label === '예약' && status.sendAt
+      ? `익일 배정 알림 : 예약 (발송 예정일시: ${status.sendAt})`
+      : '익일 배정 알림 : 미발송';
+    return <span style={{ color: NOTIFY_ICON_BY_LEVEL.none.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.none.icon}</span>;
   };
 
   const confirmNotifySend = () => {
     const now = fmtDateTime(new Date());
     if (notifyType === 'assign') {
-      let count = 0;
-      const sentIds = [];
-      setWorkerOverrides((prev) => {
-        const next = { ...prev };
-        selectedIds.forEach((id) => {
-          const sample = samples.find((sm) => sm.id === id);
-          if (!sample || sample.bssTypeName !== '현장속기') return;
-          const w = next[id]?.worker ?? sample.assignWorker;
-          const st = next[id]?.status ?? sample.assignStatus;
-          if (w && st === '배정완료') {
+      // 발송 대상을 먼저 확정한 뒤 상태를 갱신한다 — setState 업데이터 함수 안에서 건수를 세면
+      // 함수가 비동기로 실행돼 곧바로 이어지는 alert 문구가 실제 처리 결과와 어긋날 수 있다.
+      const eligibleIds = [...selectedIds].filter((id) => {
+        const sample = samples.find((sm) => sm.id === id);
+        return sample && sample.bssTypeName === '현장속기' && isWorkerAssigned(sample);
+      });
+      if (eligibleIds.length > 0) {
+        setWorkerOverrides((prev) => {
+          const next = { ...prev };
+          eligibleIds.forEach((id) => {
+            const sample = samples.find((sm) => sm.id === id);
+            const w = prev[id]?.worker ?? sample.assignWorker;
             next[id] = { worker: w, status: '업체전달완료' };
             updateStenographyWorkerAssign(id, { assignWorker: w, assignStatus: '업체전달완료' });
-            count += 1;
-            sentIds.push(id);
-          }
+          });
+          return next;
         });
-        return next;
-      });
-      if (sentIds.length > 0) {
-        setAssignNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(sentIds.map((id) => [id, now])) }));
+        setAssignNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(eligibleIds.map((id) => [id, now])) }));
       }
-      window.alert(count > 0 ? `${count}건에 작업자 배정 알림을 발송했습니다.` : '배정완료 상태인 의뢰가 없어 발송하지 않았습니다.');
+      window.alert(eligibleIds.length > 0 ? `${eligibleIds.length}건에 수동 배정 알림을 발송했습니다.` : '발송 가능한 대상이 없어 발송하지 않았습니다.');
     } else if (notifyType === 'nextWeek') {
       setNextWeekNotifiedIds((prev) => new Set([...prev, ...nextWeekTargets.map((sm) => sm.id)]));
       setNextWeekNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(nextWeekTargets.map((sm) => [sm.id, now])) }));
       window.alert(`${fmtDateOnly(nextWeekRange.start)} ~ ${fmtDateOnly(nextWeekRange.end)} 일정의 업체·작업자 ${nextWeekTargets.length}건에 차주 배정 알림을 발송했습니다.`);
     } else if (notifyType === 'nextDay') {
-      setNextDayNotifiedIds((prev) => new Set([...prev, ...nextDayTargets.immediate.map((sm) => sm.id)]));
-      setNextDayNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(nextDayTargets.immediate.map((sm) => [sm.id, now])) }));
-      setNextDayScheduledIds((prev) => new Set([...prev, ...nextDayTargets.scheduled.map((sm) => sm.id)]));
+      const immediateKeys = nextDayTargets.immediate.map((sm) => notifyKey(sm.id, workerOverrides[sm.id]?.worker ?? sm.assignWorker));
+      const scheduledKeys = nextDayTargets.scheduled.map((sm) => notifyKey(sm.id, workerOverrides[sm.id]?.worker ?? sm.assignWorker));
+      setNextDayNotifiedKeys((prev) => new Set([...prev, ...immediateKeys]));
+      setNextDayNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(immediateKeys.map((k) => [k, now])) }));
+      setNextDayScheduledKeys((prev) => new Set([...prev, ...scheduledKeys]));
       window.alert(`익일 회의 즉시 발송 ${nextDayTargets.immediate.length}건, 회의 전날(주말·공휴일) 자동 발송 예약 ${nextDayTargets.scheduled.length}건을 등록했습니다.`);
     }
     closeNotifyFlow();
@@ -683,7 +675,6 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                           ? (
                             <span style={{ color: 'var(--text-secondary)' }}>
                               {effWorker}
-                              {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
                               {workerNotifyIcon(s)}
                             </span>
                           )
@@ -801,7 +792,6 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                       ? (
                         <span style={{ color: 'var(--text-secondary)' }}>
                           {effWorker}
-                          {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
                           {workerNotifyIcon(s)}
                         </span>
                       )
@@ -1084,7 +1074,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 선택한 대상에게 알림을 발송하시겠습니까?
               </p>
               {notifyType === 'assign' && (
-                <p style={{ fontSize: '13px', fontWeight: 600 }}>선택한 {selectedIds.size}건 중 배정완료 상태인 의뢰에 발송됩니다.</p>
+                <p style={{ fontSize: '13px', fontWeight: 600 }}>선택한 {selectedIds.size}건 중 작업자가 배정된 의뢰에 발송됩니다.</p>
               )}
               {notifyType === 'nextWeek' && (
                 <p style={{ fontSize: '13px', fontWeight: 600 }}>
