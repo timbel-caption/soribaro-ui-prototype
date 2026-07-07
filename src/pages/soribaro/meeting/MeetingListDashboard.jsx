@@ -78,6 +78,11 @@ function formatRegDate(regDttm) {
   return regDttm.replace(/-/g, '').slice(2, 8);
 }
 
+// 현장속기 업체명 hover 툴팁 — 회의장 주소/회의 장소 표시, 미입력 시 "미입력"으로 표기
+function buildVenueTooltip(s) {
+  return `회의장 주소 : ${s.venueAddress || '미입력'}\n회의 장소 : ${s.venueName || '미입력'}`;
+}
+
 // 진행의뢰현황 > 상세보기 > 프로젝트 관리(workProgress)의 파일별 진행률을 전체 대비 100 기준으로 환산
 function computeOverallProgress(s) {
   if (!s.workProgress || s.workProgress.length === 0) return 0;
@@ -347,12 +352,13 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 const effStatus = workerOverrides[s.id]?.status ?? s.assignStatus;
                 const isAssigned = isStenography && effWorker && (effStatus === '배정완료' || effStatus === '업체전달완료');
                 const isCancelledWorker = isStenography && effStatus === '배정취소';
+                const isNotified = isStenography && effStatus === '업체전달완료';
                 return (
                   <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
                     <td className="text-center">
                       {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
                     </td>
-                    <td style={{ fontWeight: 600 }}>{isRecordingType ? s.membNm : s.entNm}</td>
+                    <td style={{ fontWeight: 600 }} title={isStenography ? buildVenueTooltip(s) : undefined}>{isRecordingType ? s.membNm : s.entNm}</td>
                     <td className="text-center">{contractBadge(s.contractType)}</td>
                     {!isRecordingType && <td className="text-center">{s.round || '-'}</td>}
                     {isStenographyType && <td className="text-center">{s.sessionTime || '-'}</td>}
@@ -376,7 +382,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         isCancelledWorker
                           ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
                           : isAssigned
-                          ? <span style={{ color: 'var(--text-secondary)' }}>{effWorker}</span>
+                          ? (
+                            <span style={{ color: 'var(--text-secondary)' }}>
+                              {effWorker}
+                              {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
+                            </span>
+                          )
                           : <span style={{ color: 'var(--text-muted)' }}>-</span>
                       ) : (
                         getProjectWorkers(s) || <span style={{ color: 'var(--text-muted)' }}>-</span>
@@ -468,10 +479,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           const effStatus = workerOverrides[s.id]?.status ?? s.assignStatus;
           const isAssigned = isStenography && effWorker && (effStatus === '배정완료' || effStatus === '업체전달완료');
           const isCancelledWorker = isStenography && effStatus === '배정취소';
+          const isNotified = isStenography && effStatus === '업체전달완료';
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
-              <td style={{ fontWeight: 600 }}>{isRecordingType ? s.membNm : s.entNm}</td>
+              <td style={{ fontWeight: 600 }} title={isStenography ? buildVenueTooltip(s) : undefined}>{isRecordingType ? s.membNm : s.entNm}</td>
               <td className="text-center">{contractBadge(s.contractType)}</td>
               {!isRecordingType && <td className="text-center">{s.round || '-'}</td>}
               <td className="text-center" style={{ maxWidth: '100px', fontSize: '13px' }}>
@@ -484,7 +496,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                   ? (isCancelledWorker
                       ? <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '10px', fontSize: '11px', background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>배정취소</span>
                       : isAssigned
-                      ? <span style={{ color: 'var(--text-secondary)' }}>{effWorker}</span>
+                      ? (
+                        <span style={{ color: 'var(--text-secondary)' }}>
+                          {effWorker}
+                          {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
+                        </span>
+                      )
                       : <span style={{ color: 'var(--text-muted)' }}>-</span>)
                   : (getProjectWorkers(s) || <span style={{ color: 'var(--text-muted)' }}>-</span>)
                 }

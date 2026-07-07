@@ -30,6 +30,8 @@ export default function StenographyWorkPage() {
       subfileStatus: '미요청',
       contractType: form.contractType || '',
       round: form.round ? parseInt(form.round, 10) || form.round : '-',
+      venueAddress: form.venueAddress || '',
+      venueName: form.venueName || '',
       sessionTime: form.sessionStart && form.sessionEnd ? `${form.sessionStart}-${form.sessionEnd}` : '-',
       regDttm: (form.regDate || today) + ' 09:00',
       dueDate: form.dueDate || today,

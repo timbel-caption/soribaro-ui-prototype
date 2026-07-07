@@ -64,6 +64,8 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     managerNm: '',
     contractType: '',
     round: '',
+    venueAddress: '',
+    venueName: '',
     sessionStart: '',
     sessionEnd: '',
     regDate: todayStr,
@@ -344,6 +346,22 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                   />
                   {workType === 'stenography' && (
                     <>
+                      <label className="preg-label" style={{ marginTop: '8px' }}>회의장 주소</label>
+                      <input
+                        className="preg-input"
+                        type="text"
+                        placeholder="회의장 주소를 입력하세요"
+                        value={form.venueAddress}
+                        onChange={(e) => setForm((f) => ({ ...f, venueAddress: e.target.value }))}
+                      />
+                      <label className="preg-label" style={{ marginTop: '8px' }}>회의 장소</label>
+                      <input
+                        className="preg-input"
+                        type="text"
+                        placeholder="예: 3층 대회의실"
+                        value={form.venueName}
+                        onChange={(e) => setForm((f) => ({ ...f, venueName: e.target.value }))}
+                      />
                       <label className="preg-label" style={{ marginTop: '8px' }}>시작-종료 시간</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <input
