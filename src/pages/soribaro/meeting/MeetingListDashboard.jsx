@@ -236,17 +236,40 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const [assignModal, setAssignModal] = useState(null);
   const [workerOverrides, setWorkerOverrides] = useState({});
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const handleOpenAssign = (e, s) => {
     e.stopPropagation();
-    setAssignModal({ id: s.id });
+    setAssignModal({ ids: [s.id] });
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  // 진행의뢰현황 일괄배정 — 체크박스로 선택한 여러 건을 기존 배정하기 팝업 하나로 한 번에 배정한다
+  const handleOpenBulkAssign = () => {
+    if (selectedIds.size === 0) {
+      window.alert('배정할 의뢰를 선택해 주세요.');
+      return;
+    }
+    setAssignModal({ ids: [...selectedIds] });
   };
 
   const handleConfirmAssign = (workerName) => {
     if (!workerName || !assignModal) return;
-    setWorkerOverrides((prev) => ({ ...prev, [assignModal.id]: { worker: workerName, status: '배정완료' } }));
-    updateStenographyWorkerAssign(assignModal.id, { assignWorker: workerName, assignStatus: '배정완료' });
+    setWorkerOverrides((prev) => {
+      const next = { ...prev };
+      assignModal.ids.forEach((id) => { next[id] = { worker: workerName, status: '배정완료' }; });
+      return next;
+    });
+    assignModal.ids.forEach((id) => updateStenographyWorkerAssign(id, { assignWorker: workerName, assignStatus: '배정완료' }));
     setAssignModal(null);
+    setSelectedIds(new Set());
   };
 
   const handleCancelWorker = (e, s) => {
@@ -264,11 +287,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
 
   const searchConditionOptions = ['업체명', '작업자명', '회차', '담당자명'];
 
-  const currentAssignSample = assignModal ? samples.find((sm) => sm.id === assignModal.id) : null;
+  // 단건 배정일 때만 해당 건의 시작-종료 시간을 팝업에 미리 채워준다 (일괄배정은 건마다 시간이 다를 수 있어 비워둔다)
+  const currentAssignSample = assignModal?.ids?.length === 1 ? samples.find((sm) => sm.id === assignModal.ids[0]) : null;
 
-  // 일정 충돌 판정용: 같은 화면의 다른 현장속기 배정 건들(작업자 + 시작-종료 시간)
+  // 일정 충돌 판정용: 같은 화면의 다른 현장속기 배정 건들(작업자 + 시작-종료 시간). 이번에 배정 대상인 건들은 제외한다.
   const assignedSchedules = samples
-    .filter((sm) => sm.bssTypeName === '현장속기' && sm.id !== assignModal?.id)
+    .filter((sm) => sm.bssTypeName === '현장속기' && !assignModal?.ids?.includes(sm.id))
     .map((sm) => {
       const worker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
       const status = workerOverrides[sm.id]?.status ?? sm.assignStatus;
@@ -314,12 +338,13 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   // - showProgress=true(회의록 납품 일정 확인 탭)일 때만 납품기한 앞에 진행률(바) 컬럼을 표시한다.
   // - markOverdue=true(진행 전체 탭)일 때만 납품 일정 확인 대상 건의 의뢰일자 앞에 📝 메모 아이콘을 표시한다.
   const mergedTable = (items, showProgress, markOverdue = false) => {
-    const colCount = (isRecordingType ? 12 : 13) + (isStenographyType ? 1 : 0) + (showProgress ? 1 : 0);
+    const colCount = (isRecordingType ? 12 : 13) + (isStenographyType ? 2 : 0) + (showProgress ? 1 : 0);
     return (
       <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
         <table className="proto-table">
           <thead>
             <tr>
+              {isStenographyType && <th style={{ width: '32px' }}></th>}
               <th className="text-center">의뢰일자</th>
               <th>{isRecordingType ? '의뢰자' : '업체명'}</th>
               <th className="text-center">계약구분</th>
@@ -355,6 +380,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 const isNotified = isStenography && effStatus === '업체전달완료';
                 return (
                   <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
+                    {isStenographyType && (
+                      <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" checked={selectedIds.has(s.id)} onChange={() => toggleSelect(s.id)} />
+                      </td>
+                    )}
                     <td className="text-center">
                       {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
                     </td>
@@ -675,7 +705,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       </div>
 
       <div className="proto-dash-projects">
-        <p className="proto-dash-section-title" style={{ marginBottom: '8px' }}>진행 의뢰 현황</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <p className="proto-dash-section-title" style={{ marginBottom: 0 }}>진행 의뢰 현황</p>
+          {isStenographyType && (
+            <button className="btn-primary" style={{ fontSize: '13px' }} onClick={handleOpenBulkAssign}>일괄배정</button>
+          )}
+        </div>
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           {REQUEST_TABS.map((t) => {
             const count = t.key === 'all' ? filtered.length : t.key === 'today' ? alerts.todayDue : alerts.overdue;
