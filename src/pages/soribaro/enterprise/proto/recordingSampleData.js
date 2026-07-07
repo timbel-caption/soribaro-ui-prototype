@@ -26,6 +26,7 @@ export const RECORDING_SAMPLES = [
     email: 'jdy@hanbit-law.kr',
     deliveryAddress: '04524 서울 중구 세종대로 110, 305호',
     paymentType: '계좌이체',
+    recordingDate: '2026-06-17',
     recordingLocation: '사무실 회의실',
     bindingCount: '-',
     speakers: [
@@ -107,6 +108,7 @@ export const RECORDING_SAMPLES = [
     email: 'ryujh@daesung-cst.co.kr',
     deliveryAddress: '41911 대구 중구 국채보상로 623, 7층',
     paymentType: '신용카드',
+    recordingDate: '2026-06-19',
     recordingLocation: '현장 사무소',
     bindingCount: 1,
     speakers: [

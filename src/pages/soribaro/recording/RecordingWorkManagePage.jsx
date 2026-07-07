@@ -33,6 +33,8 @@ export default function RecordingWorkManagePage() {
       regDttm: (form.regDate || today) + ' 09:00',
       dueDate: form.dueDate || today,
       actualDeliveryDate: '-',
+      recordingDate: form.recordingDate || '',
+      recordingLocation: form.recordingLocation || '',
       remark: form.specialNote || '',
       cnlYn: 'N',
       orgNm: form.entNm,

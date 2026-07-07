@@ -447,13 +447,21 @@ function BasicInfoTab({ s }) {
   const row3 = isRecording ? [
     { label: '결제유형', value: s.paymentType || '-' },
     { label: '확정금액', value: s.fixPrice != null ? `${Number(s.fixPrice).toLocaleString()}원` : '-' },
+    { label: '녹음일', value: s.recordingDate || '-' },
     { label: '녹음장소', value: s.recordingLocation || '-' },
     { label: '추가신청(제본)', value: s.bindingCount ?? '-' },
+  ] : s.bssTypeName === '회의록' ? [
+    { label: '실무자(납품)', value: s.staffNm || '-' },
+    { label: '연락처', value: s.staffPhone || '-' },
+    { label: '이메일', value: s.staffEmail || '-' },
+    { label: '녹음일', value: s.recordingDate || '-' },
+    { label: '녹음장소', value: s.recordingLocation || '-' },
+    { spanCols: 1 },
   ] : !isVod ? [
     { label: '실무자(납품)', value: s.staffNm || '-' },
     { label: '연락처', value: s.staffPhone || '-' },
     { label: '이메일', value: s.staffEmail || '-' },
-    { span3: true },
+    { spanCols: 3 },
   ] : null;
 
   return (
@@ -510,7 +518,7 @@ function BasicInfoTab({ s }) {
                 </div>
               ))}
             </div>
-            <div className="proto-basic-card-body proto-basic-card-body--4col">
+            <div className="proto-basic-card-body proto-basic-card-body--5col">
               {row3.map(({ label, value }, i) => (
                 <div
                   key={label}
@@ -551,7 +559,7 @@ function BasicInfoTab({ s }) {
                 <div className="proto-basic-field-value">{value}</div>
               </div>
             ))}
-            {row3 && row3.map(({ label, value, span3 }, i) => (
+            {row3 && row3.map(({ label, value, spanCols }, i) => (
               <div
                 key={label ?? `empty-${i}`}
                 className={[
@@ -559,10 +567,10 @@ function BasicInfoTab({ s }) {
                   'proto-basic-field--last-row',
                   i === row3.length - 1 ? 'proto-basic-field--no-right' : '',
                 ].filter(Boolean).join(' ')}
-                style={span3 ? { gridColumn: 'span 3' } : undefined}
+                style={spanCols ? { gridColumn: `span ${spanCols}` } : undefined}
               >
-                {!span3 && <div className="proto-basic-field-label">{label}</div>}
-                {!span3 && <div className="proto-basic-field-value">{value}</div>}
+                {!spanCols && <div className="proto-basic-field-label">{label}</div>}
+                {!spanCols && <div className="proto-basic-field-value">{value}</div>}
               </div>
             ))}
           </div>

@@ -69,6 +69,8 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     regDate: todayStr,
     // 녹취록은 납품예정일을 자동으로 계산하지 않고 직접 입력받는다
     dueDate: isRecordingType ? '' : addBusinessDays(todayStr, 2),
+    recordingDate: '',
+    recordingLocation: '',
     specialNote: '',
     internalMemo: '',
   });
@@ -390,6 +392,31 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
                 />
               </div>
             </div>
+
+            {/* 녹음일 / 녹음장소 (회의록·녹취록 전용) */}
+            {(workType === 'meeting' || workType === 'recording') && (
+              <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: '14px' }}>
+                <div className="preg-field">
+                  <label className="preg-label">녹음일</label>
+                  <input
+                    className="preg-input"
+                    type="date"
+                    value={form.recordingDate}
+                    onChange={(e) => setForm((f) => ({ ...f, recordingDate: e.target.value }))}
+                  />
+                </div>
+                <div className="preg-field">
+                  <label className="preg-label">녹음장소</label>
+                  <input
+                    className="preg-input"
+                    type="text"
+                    value={form.recordingLocation}
+                    onChange={(e) => setForm((f) => ({ ...f, recordingLocation: e.target.value }))}
+                    placeholder="녹음장소를 입력하세요"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* 특이사항 / 내부 메모 */}
             <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
