@@ -1,5 +1,5 @@
 import { useState, useRef, Fragment } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty, updateSampleOverallStatus } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty, updateSampleOverallStatus, updateSampleDraftUploadDate, updateSampleDepositInfo } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
@@ -289,6 +289,45 @@ function SessionTimeField({ s }) {
   );
 }
 
+// 녹취록 기본정보 > 입금정보 — 4개 항목 모두 수기 입력, 입력 즉시 protoStore에 반영
+const DEPOSIT_FIELDS = [
+  { key: 'depositorName', label: '입금자명', type: 'text', placeholder: '입금자명 입력' },
+  { key: 'depositDate', label: '입금날짜', type: 'date' },
+  { key: 'receiptIssued', label: '현금영수증/계산서 발급', type: 'text', placeholder: '예: 발급완료' },
+  { key: 'mailSentDate', label: '우편발송일', type: 'date' },
+];
+
+function DepositInfoCard({ s }) {
+  const [form, setForm] = useState(() =>
+    Object.fromEntries(DEPOSIT_FIELDS.map((f) => [f.key, s[f.key] || '']))
+  );
+
+  const update = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    updateSampleDepositInfo(s.id, { [key]: value });
+  };
+
+  return (
+    <div className="proto-basic-card-body proto-basic-card-body--4col">
+      {DEPOSIT_FIELDS.map((f, i) => (
+        <div
+          key={f.key}
+          className={`proto-basic-field proto-basic-field--last-row${i === DEPOSIT_FIELDS.length - 1 ? ' proto-basic-field--no-right' : ''}`}
+        >
+          <div className="proto-basic-field-label">{f.label}</div>
+          <input
+            className="proto-log-input"
+            type={f.type}
+            value={form[f.key]}
+            onChange={(e) => update(f.key, e.target.value)}
+            placeholder={f.placeholder}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── 탭 1: 기본정보 ───
 function BasicInfoTab({ s }) {
   // VOD 작업관리에서만 특이사항/내부 메모를 로그형(추가·수정·삭제) 카드로 제공
@@ -559,6 +598,17 @@ function BasicInfoTab({ s }) {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* 입금정보 (녹취록 전용) */}
+      {isRecording && (
+        <div className="proto-basic-card">
+          <div className="proto-basic-card-header">
+            <span>💰</span>
+            <span>입금정보</span>
+          </div>
+          <DepositInfoCard s={s} />
         </div>
       )}
 
@@ -2342,7 +2392,7 @@ function VodProjectManageView({ s }) {
 function ProjectManageTab({ s }) {
   const isVodProj = s.bssTypeName !== '회의록' && s.bssTypeName !== '현장속기' && s.bssTypeName !== '녹취록';
   const isMeetingProj = s.bssTypeName === '회의록' || s.bssTypeName === '녹취록';
-  // 녹취록은 최종산출물/완본 업로드·다운로드·알림 발송 UI가 회의록과 다르게 구성된다
+  // 녹취록은 최종산출물/공증파일 업로드·다운로드·알림 발송 UI가 회의록과 다르게 구성된다
   const isRecordingProj = s.bssTypeName === '녹취록';
 
   // 파일관리 탭에서 저장한 분할 정보(splits)를 반영하기 위해 store 최신값으로 복원 (stale prop 스냅샷 방지)
@@ -2357,11 +2407,11 @@ function ProjectManageTab({ s }) {
     return store.find((v) => v.id === s.id)?.fileDifficulty ?? s.fileDifficulty ?? '';
   })();
 
-  // 견적서/최종산출물/알림발송 — 회의록 전용, 녹취록은 최종산출물/완본 업로드+알림으로 구성
+  // 견적서/최종산출물/알림발송 — 회의록 전용, 녹취록은 최종산출물/공증파일 업로드+알림으로 구성
   const [quoteFile, setQuoteFile] = useState(null);
   const [outputFile, setOutputFile] = useState(null);
   const [finalFile, setFinalFile] = useState(null);
-  // 녹취록: notifyModal 값으로 어떤 알림인지 구분한다 ('draft' = 최종산출물 알림, 'final' = 완본 알림)
+  // 녹취록: notifyModal 값으로 어떤 알림인지 구분한다 ('draft' = 최종산출물 알림, 'final' = 공증파일 알림)
   const [notifyModal, setNotifyModal] = useState(false);
   const [notifyTarget, setNotifyTarget] = useState('all');
   const quoteInputRef = useRef();
@@ -2508,7 +2558,7 @@ function ProjectManageTab({ s }) {
         </div>
         {isRecordingProj ? (
           <>
-            {/* 최종산출물/완본 업로드·다운로드·알림 발송 (녹취록 전용) */}
+            {/* 최종산출물/공증파일 업로드·다운로드·알림 발송 (녹취록 전용) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
               <input ref={outputInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setOutputFile(e.target.files[0].name); e.target.value = ''; }} />
               <button className="pm-doc-btn" onClick={() => outputInputRef.current.click()}>최종산출물 업로드</button>
@@ -2524,17 +2574,17 @@ function ProjectManageTab({ s }) {
               >최종산출물 알림 발송</button>
 
               <input ref={finalInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setFinalFile(e.target.files[0].name); e.target.value = ''; }} />
-              <button className="pm-doc-btn" onClick={() => finalInputRef.current.click()}>완본 업로드</button>
+              <button className="pm-doc-btn" onClick={() => finalInputRef.current.click()}>공증파일 업로드</button>
               <button
                 className={`pm-doc-btn${finalFile ? '' : ' pm-doc-btn--disabled'}`}
-                onClick={() => finalFile ? window.alert(`[프로토타입 안내]\n'${finalFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 완본이 없습니다.')}
-              >완본 다운로드</button>
+                onClick={() => finalFile ? window.alert(`[프로토타입 안내]\n'${finalFile}' 다운로드는 정식 서비스 단계에서 구현 예정입니다.`) : window.alert('등록된 공증파일이 없습니다.')}
+              >공증파일 다운로드</button>
               <button
                 className={`pm-doc-btn pm-doc-btn--notify${finalFile ? '' : ' pm-doc-btn--disabled'}`}
                 disabled={!finalFile}
-                title={finalFile ? undefined : '완본을 먼저 업로드하세요'}
+                title={finalFile ? undefined : '공증파일을 먼저 업로드하세요'}
                 onClick={() => setNotifyModal('final')}
-              >완본 알림 발송</button>
+              >공증파일 알림 발송</button>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
               <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
@@ -2565,17 +2615,17 @@ function ProjectManageTab({ s }) {
         )}
       </div>
 
-      {/* 알림발송 팝업 — 회의록·녹취록 전용. 녹취록은 notifyModal 값('draft'=최종산출물, 'final'=완본)에 따라 문구·상태 갱신이 달라진다 */}
+      {/* 알림발송 팝업 — 회의록·녹취록 전용. 녹취록은 notifyModal 값('draft'=최종산출물, 'final'=공증파일)에 따라 문구·상태 갱신이 달라진다 */}
       {(s.bssTypeName === '회의록' || s.bssTypeName === '녹취록') && notifyModal && (
         <div className="pm-overlay" onClick={() => setNotifyModal(false)}>
           <div className="pm-modal pm-modal--workspy" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
             <div className="pm-modal-hd">
-              <span className="pm-modal-title">{notifyModal === 'final' ? '완본 알림 발송' : '최종산출물 알림 발송'}</span>
+              <span className="pm-modal-title">{notifyModal === 'final' ? '공증파일 알림 발송' : '최종산출물 알림 발송'}</span>
               <button className="preg-x-btn" onClick={() => setNotifyModal(false)}>✕</button>
             </div>
             <div className="pm-workspy-body" style={{ padding: '20px 24px' }}>
               <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
-                {notifyModal === 'final' ? '완본 알림을 발송하시겠습니까?' : '초안 완성 알림을 발송하시겠습니까?'}
+                {notifyModal === 'final' ? '공증파일 알림을 발송하시겠습니까?' : '초안 완성 알림을 발송하시겠습니까?'}
               </p>
               <div style={{ background: 'var(--bg-hover)', borderRadius: '6px', padding: '12px 14px', fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div><span style={{ color: 'var(--text-muted)', minWidth: '56px', display: 'inline-block' }}>실무자</span><span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.staffNm || '-'}</span></div>
@@ -2588,8 +2638,11 @@ function ProjectManageTab({ s }) {
                 className="proto-log-btn proto-log-btn--save pm-doc-btn--notify"
                 style={{ border: 'none' }}
                 onClick={() => {
-                  // 녹취록: 최종산출물 알림 완료 → 초안완성, 완본 알림 완료 → 완료로 상태를 자동 갱신
-                  if (isRecordingProj) updateSampleOverallStatus(s.id, notifyModal === 'final' ? 'DONE' : 'DRAFT_DONE');
+                  if (isRecordingProj) {
+                    // 최종산출물 알림 완료 → 초안완성 + 초안 업로드일 자동 입력, 공증파일 알림 완료 → 완료로 상태를 자동 갱신
+                    updateSampleOverallStatus(s.id, notifyModal === 'final' ? 'DONE' : 'DRAFT_DONE');
+                    if (notifyModal !== 'final') updateSampleDraftUploadDate(s.id, new Date().toISOString().split('T')[0]);
+                  }
                   setNotifyModal(false);
                   window.alert('[프로토타입 안내]\n알림이 발송되었습니다.');
                 }}

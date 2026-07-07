@@ -329,7 +329,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <th style={{ minWidth: '140px' }}>특이사항</th>
               <th className="text-center">상태</th>
               <th className="text-center">정산</th>
-              <th className="text-center">실제 납품일</th>
+              <th className="text-center">{isRecordingType ? '초안 업로드일' : '실제 납품일'}</th>
               <th className="text-center" style={{ minWidth: '90px' }}></th>
             </tr>
           </thead>
@@ -432,7 +432,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     </td>
                     <td className="text-center">{statusBadge(s.overallStatus)}</td>
                     <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
-                    <td className="text-center">{s.actualDeliveryDate || '-'}</td>
+                    <td className="text-center">{(isRecordingType ? s.draftUploadDate : s.actualDeliveryDate) || '-'}</td>
                     <td className="text-center" style={{ whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                       {isStenographyType && (
                         isAssigned
@@ -539,7 +539,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               </td>
               <td className="text-center">{statusBadge(s.overallStatus)}</td>
               <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
-              <td className="text-center">{s.actualDeliveryDate || '-'}</td>
+              <td className="text-center">{(isRecordingType ? s.draftUploadDate : s.actualDeliveryDate) || '-'}</td>
               <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
                 {isStenography && (
                   isAssigned
@@ -575,7 +575,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th style={{ minWidth: '140px' }}>특이사항</th>
         <th className="text-center">상태</th>
         <th className="text-center">정산</th>
-        <th className="text-center">실제 납품일</th>
+        <th className="text-center">{isRecordingType ? '초안 업로드일' : '실제 납품일'}</th>
         <th className="text-center" style={{ minWidth: '148px' }}></th>
       </tr>
     </thead>
