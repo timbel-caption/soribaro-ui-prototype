@@ -4839,14 +4839,15 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   // pendingReapply: '견적서 다시 적용' 이후 재확인 전 상태
   const [pendingReapply, setPendingReapply] = useState(false);
 
-  // 최종 정산(공급가액/세액/총합 수기 입력) — 저장되면 업체정산 확인·엑셀 다운로드 시 자동 계산 금액보다 우선 적용된다
+  // 최종 정산(공급가액/세액 수기 입력, 총합은 자동 계산) — 업체정산 확인을 눌러야 자동 계산 금액을 대신해 적용된다 (저장만으로는 미적용)
   const [showFinalSettlement, setShowFinalSettlement] = useState(false);
   const [savedFinal, setSavedFinal] = useState(s.finalSettlement || null);
   const [finalForm, setFinalForm] = useState(() => (
     s.finalSettlement
-      ? { supply: String(s.finalSettlement.supply), tax: String(s.finalSettlement.tax), total: String(s.finalSettlement.total) }
-      : { supply: '', tax: '', total: '' }
+      ? { supply: String(s.finalSettlement.supply), tax: String(s.finalSettlement.tax) }
+      : { supply: '', tax: '' }
   ));
+  const finalTotalPreview = (Number(finalForm.supply) || 0) + (Number(finalForm.tax) || 0);
 
   // 실제 표시할 견적:
   // - 확인 완료 & 재적용 대기 아님: frozenQs (고정)
@@ -4856,22 +4857,22 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
            : (restoredQs || liveQs);
 
   const handleSaveFinal = () => {
-    // 소수점이 발생하면 올림 처리한다
+    // 소수점이 발생하면 올림 처리하고, 총합은 공급가액+세액으로 자동 계산한다
     const supply = Math.ceil(Number(finalForm.supply) || 0);
     const tax = Math.ceil(Number(finalForm.tax) || 0);
-    const total = Math.ceil(Number(finalForm.total) || 0);
+    const total = supply + tax;
     const next = { supply, tax, total };
-    setFinalForm({ supply: String(supply), tax: String(tax), total: String(total) });
+    setFinalForm({ supply: String(supply), tax: String(tax) });
     setSavedFinal(next);
-    if (s?.id) updateSampleFinalSettlement(s.id, next);
-    // 이미 업체정산 확인이 완료된 상태였다면, 최종 정산 금액 기준으로 다시 확인할 수 있도록 재확인 대기 상태로 전환한다
+    // 저장만으로는 적용되지 않는다 — 업체정산 확인을 눌러야 이 금액이 최종 확정된다.
+    // 이미 확인 완료 상태였다면, 새 저장값으로 다시 확인할 수 있도록 재확인 대기 상태로 전환한다.
     if (isConfirmed && !pendingReapply) {
       setPrevQs(frozenQs || qs);
       setRestoredQs(null);
       setPendingReapply(true);
       onReapply();
     }
-    window.alert('최종 정산 금액이 저장되었습니다. 업체정산 확인을 다시 진행해 주세요.');
+    window.alert('최종 정산 금액이 저장되었습니다. 적용하려면 업체정산 확인을 눌러주세요.');
   };
 
   const totalMin = parseMinutes(s.totalPlayTm);
@@ -4923,6 +4924,8 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
 
   const handleConfirm = () => {
     setFrozenQs({ ...qs });     // 현재 견적 고정
+    // 최종 정산 영역이 열려 있고 저장된 금액이 있으면 그 금액을, 닫혀 있으면(자동 계산 결과 기준) null을 확정한다
+    if (s?.id) updateSampleFinalSettlement(s.id, showFinalSettlement && savedFinal ? savedFinal : null);
     setRestoredQs(null);
     setPendingReapply(false);
     onConfirm();
@@ -4941,6 +4944,18 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
     setPendingReapply(false);
   };
 
+  const toggleFinalSettlement = () => {
+    const next = !showFinalSettlement;
+    setShowFinalSettlement(next);
+    // 최종 정산 영역을 닫으면(=자동 계산 기준으로 되돌아가면) 이미 확인 완료 상태였더라도 다시 확인할 수 있도록 전환한다
+    if (!next && isConfirmed && !pendingReapply) {
+      setPrevQs(frozenQs || qs);
+      setRestoredQs(null);
+      setPendingReapply(true);
+      onReapply();
+    }
+  };
+
   const thStyle = {
     padding: '8px 10px', fontSize: '12px', fontWeight: 600,
     color: 'var(--text-secondary)', background: 'var(--bg-hover)',
@@ -4954,6 +4969,18 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   const tdStyleAlt = { ...tdStyle, background: '#f0f4ff' };
   const tdBold = { ...tdStyle, fontWeight: 700 };
   const tdAccentAlt = { ...tdStyleAlt, fontWeight: 700, color: 'var(--accent-color)' };
+
+  // 최종 정산 영역이 열려 있으면 그 안(저장 버튼 오른쪽)으로, 닫혀 있으면 기존 위치(하단 액션 영역)에 표시한다
+  const confirmButton = (
+    <button
+      className={`proto-log-btn${(!isConfirmed || pendingReapply) ? ' proto-log-btn--save' : ''}`}
+      disabled={(isConfirmed && !pendingReapply) || noData}
+      onClick={handleConfirm}
+      style={{ opacity: (isConfirmed && !pendingReapply) || noData ? 0.5 : 1, cursor: (isConfirmed && !pendingReapply) || noData ? 'default' : 'pointer' }}
+    >
+      {isConfirmed && !pendingReapply ? '확인 완료' : '업체정산 확인'}
+    </button>
+  );
 
   return (
     <div className="proto-tab-panel">
@@ -5028,7 +5055,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
             {/* 왼쪽: 최종 정산 수정 / 견적서 다시 적용 / 이전 버튼 */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button className="proto-log-btn" onClick={() => setShowFinalSettlement((v) => !v)}>
+              <button className="proto-log-btn" onClick={toggleFinalSettlement}>
                 {showFinalSettlement ? '최종 정산 닫기' : '최종 정산 수정'}
               </button>
               {isConfirmed && !pendingReapply && (
@@ -5042,54 +5069,60 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
                 </button>
               )}
             </div>
-            {/* 오른쪽: 완료 표시 + 확인 버튼 */}
+            {/* 오른쪽: 완료 표시 + 확인 버튼 (최종 정산 영역이 열려 있으면 그 안으로 이동) */}
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               {isConfirmed && !pendingReapply && (
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 600 }}>
                   ✓ 업체정산 완료 처리됨
                 </span>
               )}
-              <button
-                className={`proto-log-btn${(!isConfirmed || pendingReapply) ? ' proto-log-btn--save' : ''}`}
-                disabled={(isConfirmed && !pendingReapply) || noData}
-                onClick={handleConfirm}
-                style={{ opacity: (isConfirmed && !pendingReapply) || noData ? 0.5 : 1, cursor: (isConfirmed && !pendingReapply) || noData ? 'default' : 'pointer' }}
-              >
-                {isConfirmed && !pendingReapply ? '확인 완료' : '업체정산 확인'}
-              </button>
+              {!showFinalSettlement && confirmButton}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 최종 정산 — 공급가액/세액/총합을 수기로 입력해 자동 계산 금액을 덮어쓴다 (업체 견적 세부 내용은 그대로 유지) */}
+      {/* 최종 정산 — 공급가액/세액을 수기로 입력하면 총합은 자동 계산된다 (업체 견적 세부 내용은 그대로 유지, 업체정산 확인을 눌러야 최종 확정됨) */}
       {showFinalSettlement && (
         <div className="proto-section-card" style={{ marginTop: '16px' }}>
           <div className="proto-section-card-header">
             <span className="proto-section-card-title">최종 정산</span>
             {savedFinal && (
               <span style={{ marginLeft: '8px', fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>
-                ✓ 저장된 최종 정산 금액이 업체정산·계산서 발행·엑셀 다운로드에 우선 적용됩니다
+                ✓ 저장됨 — 업체정산 확인을 눌러야 이 금액이 최종 확정됩니다
               </span>
             )}
           </div>
           <div className="proto-section-card-body" style={{ padding: '16px 20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+            <div style={{ display: 'flex', gap: '14px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="preg-label">공급가액</label>
-                <input className="preg-input" type="number" value={finalForm.supply} onChange={e => setFinalForm(p => ({ ...p, supply: e.target.value }))} />
+                <input
+                  className="preg-input"
+                  style={{ width: '120px' }}
+                  type="number"
+                  value={finalForm.supply}
+                  onChange={e => setFinalForm(p => ({ ...p, supply: e.target.value }))}
+                />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="preg-label">세액</label>
-                <input className="preg-input" type="number" value={finalForm.tax} onChange={e => setFinalForm(p => ({ ...p, tax: e.target.value }))} />
+                <input
+                  className="preg-input"
+                  style={{ width: '120px' }}
+                  type="number"
+                  value={finalForm.tax}
+                  onChange={e => setFinalForm(p => ({ ...p, tax: e.target.value }))}
+                />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="preg-label">총합</label>
-                <input className="preg-input" type="number" value={finalForm.total} onChange={e => setFinalForm(p => ({ ...p, total: e.target.value }))} />
+                <input className="preg-input" style={{ width: '120px' }} type="number" value={finalTotalPreview} disabled />
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px' }}>
               <button className="proto-log-btn proto-log-btn--save" onClick={handleSaveFinal}>저장</button>
+              {confirmButton}
             </div>
           </div>
         </div>
