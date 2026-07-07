@@ -461,7 +461,8 @@ function BasicInfoTab({ s }) {
     { label: '실무자(납품)', value: s.staffNm || '-' },
     { label: '연락처', value: s.staffPhone || '-' },
     { label: '이메일', value: s.staffEmail || '-' },
-    { spanCols: 3 },
+    { label: '회의장 주소', value: s.venueAddress || '-', spanCols: 2 },
+    { label: '회의 장소', value: s.venueName || '-' },
   ] : null;
 
   return (
@@ -569,8 +570,8 @@ function BasicInfoTab({ s }) {
                 ].filter(Boolean).join(' ')}
                 style={spanCols ? { gridColumn: `span ${spanCols}` } : undefined}
               >
-                {!spanCols && <div className="proto-basic-field-label">{label}</div>}
-                {!spanCols && <div className="proto-basic-field-value">{value}</div>}
+                {label != null && <div className="proto-basic-field-label">{label}</div>}
+                {label != null && <div className="proto-basic-field-value">{value}</div>}
               </div>
             ))}
           </div>
@@ -4215,12 +4216,22 @@ function RedeliveryModal({ item, onConfirm, onClose }) {
 }
 
 // ─── 탭 (현장속기 전용): 배정 관리 ───
+// 배정 이력은 행위자·대상자·행위·사유를 담아 문장형 로그로 표시한다 (일시/로그/사유 테이블)
 const STG_ASSIGN_HISTORY_SEED = [
-  { dttm: '26/06/25 10:00', actor: '정윤실_관리자', event: "작업자 '이선재' 배정" },
-  { dttm: '26/06/25 11:00', actor: '작업자_이선재', event: '배정 취소', reason: '그날 다른 회의가 있습니다.' },
-  { dttm: '26/06/25 11:30', actor: '정윤실_관리자', event: "작업자 '김혜리' 배정" },
-  { dttm: '26/06/25 12:00', actor: '김혜리_작업자', event: '배정 취소', reason: '개인 일정이 있습니다.' },
+  { dttm: '26/06/25 10:00', actor: '정윤실_관리자', target: '이선재', action: '배정' },
+  { dttm: '26/06/25 11:00', actor: '정윤실_관리자', target: '이선재', action: '배정취소', reason: '그날 다른 회의가 있습니다.' },
+  { dttm: '26/06/25 11:30', actor: '정윤실_관리자', target: '김혜리', action: '배정' },
+  { dttm: '26/06/25 12:00', actor: '정윤실_관리자', target: '김혜리', action: '배정취소', reason: '개인 일정이 있습니다.' },
 ];
+
+// 배정 이력 한 건을 "행위자가 대상자를 ~했습니다." 형태의 문장으로 조합
+function buildAssignLogSentence({ actor, target, action }) {
+  const targetLabel = target ? `${target}_작업자` : '';
+  if (action === '배정') return `${actor}가 ${targetLabel}를 배정했습니다.`;
+  if (action === '배정취소') return `${actor}가 ${targetLabel}의 배정을 취소했습니다.`;
+  if (action === '업체알림발송') return `${actor}가 ${targetLabel} 배정을 업체에 알림 발송했습니다.`;
+  return `${actor}가 ${targetLabel} 배정 건을 처리했습니다.`;
+}
 
 function stgNowStamp() {
   const d = new Date();
@@ -4231,9 +4242,6 @@ function stgNowStamp() {
 function StenographyAssignTab({ s }) {
   const [worker, setWorker] = useState(() => s?.assignWorker || '-');
   const [workerStatus, setWorkerStatus] = useState(() => s?.assignStatus || (s?.assignWorker ? '배정완료' : '미배정'));
-  const [workTime, setWorkTime] = useState('');
-  const [editingTime, setEditingTime] = useState(false);
-  const [timeDraft, setTimeDraft] = useState('');
   const [assignHistory, setAssignHistory] = useState(() =>
     s?.assignHistory ? s.assignHistory.map(r => ({ ...r })) : STG_ASSIGN_HISTORY_SEED.map(r => ({ ...r }))
   );
@@ -4244,7 +4252,7 @@ function StenographyAssignTab({ s }) {
   const confirmAssign = (name) => {
     if (!name) return;
     const dttm = stgNowStamp();
-    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `작업자 '${name}' 배정` }];
+    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', target: name, action: '배정' }];
     setWorker(name);
     setWorkerStatus('배정완료');
     setAssignHistory(newHistory);
@@ -4255,7 +4263,7 @@ function StenographyAssignTab({ s }) {
   const confirmCancel = () => {
     const reason = cancelReason.trim();
     const dttm = stgNowStamp();
-    const newHistory = [...assignHistory, { dttm, actor: `${worker}_작업자`, event: '배정 취소', reason: reason || undefined }];
+    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', target: worker, action: '배정취소', reason: reason || undefined }];
     setWorkerStatus('배정취소');
     setAssignHistory(newHistory);
     setCancelModal(false);
@@ -4265,7 +4273,7 @@ function StenographyAssignTab({ s }) {
 
   const handleNotify = () => {
     const dttm = stgNowStamp();
-    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', event: `업체 알림 발송 — '${worker}' 업체전달완료 처리` }];
+    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', target: worker, action: '업체알림발송' }];
     setWorkerStatus('업체전달완료');
     setAssignHistory(newHistory);
     if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '업체전달완료', assignHistory: newHistory });
@@ -4289,7 +4297,6 @@ function StenographyAssignTab({ s }) {
           <thead>
             <tr>
               <th className="text-center">작업자</th>
-              <th className="text-center">작업시간</th>
               <th className="text-center">상태</th>
               <th className="text-center">업체알림</th>
             </tr>
@@ -4297,32 +4304,6 @@ function StenographyAssignTab({ s }) {
           <tbody>
             <tr>
               <td className="text-center" style={{ fontSize: '13px' }}>{isCancelled ? '-' : worker}</td>
-              <td className="text-center" style={{ fontSize: '13px', minWidth: '120px' }}>
-                {editingTime ? (
-                  <span style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
-                    <input
-                      className="proto-note-inline-input"
-                      style={{ width: '90px', textAlign: 'center' }}
-                      value={timeDraft}
-                      onChange={e => setTimeDraft(e.target.value)}
-                      placeholder="HH:MM"
-                      autoFocus
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') { setWorkTime(timeDraft); setEditingTime(false); }
-                        if (e.key === 'Escape') setEditingTime(false);
-                      }}
-                    />
-                    <button className="proto-note-save-btn" onClick={() => { setWorkTime(timeDraft); setEditingTime(false); }}>저장</button>
-                    <button className="proto-note-cancel-btn" onClick={() => setEditingTime(false)}>취소</button>
-                  </span>
-                ) : (
-                  <span
-                    style={{ cursor: 'pointer', color: workTime ? 'var(--text-primary)' : 'var(--text-muted)' }}
-                    title="클릭하여 수정"
-                    onClick={() => { setTimeDraft(workTime); setEditingTime(true); }}
-                  >{workTime || '수기 입력'}</span>
-                )}
-              </td>
               <td className="text-center">
                 {workerStatus === '배정취소'
                   ? <span className="proto-badge-cancel" style={{ fontSize: '12px' }}>배정취소</span>
@@ -4357,33 +4338,19 @@ function StenographyAssignTab({ s }) {
         <table className="proto-table">
           <thead>
             <tr>
-              <th className="text-center" style={{ width: '130px' }}>등록일시</th>
-              <th className="text-center" style={{ width: '100px' }}>상태</th>
-              <th>배정 이력</th>
+              <th className="text-center" style={{ width: '130px' }}>일시</th>
+              <th>로그</th>
               <th style={{ width: '220px' }}>사유</th>
             </tr>
           </thead>
           <tbody>
-            {assignHistory.map((h, i) => {
-              const isCancelRow = h.event.includes('취소');
-              const isNotifyRow = h.event.includes('업체전달완료') || h.event.includes('업체 알림');
-              const statusBadgeEl = isCancelRow
-                ? <span className="proto-badge-cancel" style={{ fontSize: '11px' }}>배정취소</span>
-                : isNotifyRow
-                ? <span className="proto-badge-done" style={{ fontSize: '11px' }}>업체전달완료</span>
-                : <span className="proto-status-badge proto-status-done" style={{ fontSize: '11px' }}>배정완료</span>;
-              return (
-                <tr key={i}>
-                  <td className="text-center" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.dttm}</td>
-                  <td className="text-center">{statusBadgeEl}</td>
-                  <td style={{ fontSize: '13px' }}>
-                    <span style={{ color: '#60a5fa', marginRight: '8px' }}>{h.actor}</span>
-                    {h.event.replace(/\s*\([^)]*\)$/, '')}
-                  </td>
-                  <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{h.reason || '-'}</td>
-                </tr>
-              );
-            })}
+            {assignHistory.map((h, i) => (
+              <tr key={i}>
+                <td className="text-center" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{h.dttm}</td>
+                <td style={{ fontSize: '13px' }}>{buildAssignLogSentence(h)}</td>
+                <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{h.reason || ''}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
