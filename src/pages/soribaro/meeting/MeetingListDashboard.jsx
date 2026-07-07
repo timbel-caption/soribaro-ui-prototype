@@ -339,12 +339,24 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   // - markOverdue=true(진행 전체 탭)일 때만 납품 일정 확인 대상 건의 의뢰일자 앞에 📝 메모 아이콘을 표시한다.
   const mergedTable = (items, showProgress, markOverdue = false) => {
     const colCount = (isRecordingType ? 12 : 13) + (isStenographyType ? 2 : 0) + (showProgress ? 1 : 0);
+    const isAllSelected = items.length > 0 && items.every((it) => selectedIds.has(it.id));
+    const toggleSelectAll = (checked) => {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        items.forEach((it) => (checked ? next.add(it.id) : next.delete(it.id)));
+        return next;
+      });
+    };
     return (
       <div className="proto-table-wrap" style={{ marginBottom: 0 }}>
         <table className="proto-table">
           <thead>
             <tr>
-              {isStenographyType && <th style={{ width: '32px' }}></th>}
+              {isStenographyType && (
+                <th className="text-center" style={{ width: '32px' }}>
+                  <input type="checkbox" checked={isAllSelected} onChange={(e) => toggleSelectAll(e.target.checked)} />
+                </th>
+              )}
               <th className="text-center">의뢰일자</th>
               <th>{isRecordingType ? '의뢰자' : '업체명'}</th>
               <th className="text-center">계약구분</th>
@@ -705,12 +717,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       </div>
 
       <div className="proto-dash-projects">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <p className="proto-dash-section-title" style={{ marginBottom: 0 }}>진행 의뢰 현황</p>
-          {isStenographyType && (
-            <button className="btn-primary" style={{ fontSize: '13px' }} onClick={handleOpenBulkAssign}>일괄배정</button>
-          )}
-        </div>
+        <p className="proto-dash-section-title" style={{ marginBottom: '8px' }}>진행 의뢰 현황</p>
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           {REQUEST_TABS.map((t) => {
             const count = t.key === 'all' ? filtered.length : t.key === 'today' ? alerts.todayDue : alerts.overdue;
@@ -754,6 +761,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             </select>
             <input className="filter-input" type="text" value={pendingSearch} onChange={(e) => setPendingSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} placeholder="검색어" />
             <button className="btn-primary" style={{ height: '32px', fontSize: '13px', padding: '0 14px' }} onClick={handleSearch}>검색</button>
+          </div>
+        )}
+        {activeTab === 'all' && isStenographyType && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+            <button className="btn-primary" style={{ fontSize: '13px' }} onClick={handleOpenBulkAssign}>일괄배정</button>
           </div>
         )}
         {activeTab === 'all' && mergedTable(filtered, false, true)}
