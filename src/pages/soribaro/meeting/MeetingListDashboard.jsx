@@ -318,6 +318,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   // 속기사 전날 일정 알림: 이미 즉시발송/예약등록 처리한 건은 중복 등록하지 않는다 (프로토타입 세션 내 유지)
   const [nextDayNotifiedIds, setNextDayNotifiedIds] = useState(new Set());
   const [nextDayScheduledIds, setNextDayScheduledIds] = useState(new Set());
+  // 차주 배정 알림: 발송된 건을 기록해 업체명/작업자 알림 상태 아이콘에 반영한다
+  const [nextWeekNotifiedIds, setNextWeekNotifiedIds] = useState(new Set());
 
   const closeNotifyFlow = () => { setNotifyStep(null); setNotifyType(null); };
 
@@ -362,6 +364,63 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     }),
   };
 
+  // 익일 일정 알림 상태 + (예약인 경우) 회의 전날 발송 예정일시
+  const getNextDayNotifyStatus = (s) => {
+    if (nextDayNotifiedIds.has(s.id)) return { label: '발송' };
+    if (nextDayScheduledIds.has(s.id)) {
+      const meetingDate = toDateOnly(s.regDttm);
+      if (meetingDate) {
+        const sendAt = new Date(meetingDate);
+        sendAt.setDate(sendAt.getDate() - 1);
+        return { label: '예약', sendAt: fmtDateOnly(sendAt) };
+      }
+      return { label: '예약' };
+    }
+    return { label: '미발송' };
+  };
+
+  // 업체명 옆 알림 상태 아이콘 대상: 차주 배정 알림 / 작업자 배정 알림(업체알림 발송완료 여부)
+  const getCompanyNotifyStatus = (s, isNotified) => ({
+    nextWeek: nextWeekNotifiedIds.has(s.id) ? '발송' : '미발송',
+    assign: isNotified ? '발송' : '미발송',
+  });
+
+  // 작업자 옆 알림 상태 아이콘 대상: 차주 배정 알림 / 익일 일정 알림
+  const getWorkerNotifyStatus = (s) => ({
+    nextWeek: nextWeekNotifiedIds.has(s.id) ? '발송' : '미발송',
+    nextDay: getNextDayNotifyStatus(s),
+  });
+
+  // 미발송/일부(예약 포함)/모두 발송 3단계로 아이콘 색상을 구분한다
+  const NOTIFY_ICON_BY_LEVEL = {
+    none: { icon: '🔕', color: 'var(--text-muted)' },
+    partial: { icon: '🔔', color: '#f59e0b' },
+    done: { icon: '🔔', color: '#4ade80' },
+  };
+
+  const companyNotifyIcon = (s, isNotified) => {
+    const status = getCompanyNotifyStatus(s, isNotified);
+    const sentCount = [status.nextWeek === '발송', status.assign === '발송'].filter(Boolean).length;
+    const level = sentCount === 0 ? 'none' : sentCount === 2 ? 'done' : 'partial';
+    const { icon, color } = NOTIFY_ICON_BY_LEVEL[level];
+    const tooltip = `${buildVenueTooltip(s)}\n\n차주 배정 알림 : ${status.nextWeek}\n작업자 배정 알림 : ${status.assign}`;
+    return <span style={{ color, marginLeft: '4px' }} title={tooltip}>{icon}</span>;
+  };
+
+  const workerNotifyIcon = (s) => {
+    const status = getWorkerNotifyStatus(s);
+    const nextDayDone = status.nextDay.label === '발송';
+    const nextDayNone = status.nextDay.label === '미발송';
+    const sentCount = [status.nextWeek === '발송', nextDayDone].filter(Boolean).length;
+    const level = sentCount === 2 ? 'done' : (status.nextWeek === '발송' || !nextDayNone) ? 'partial' : 'none';
+    const { icon, color } = NOTIFY_ICON_BY_LEVEL[level];
+    const nextDayLine = status.nextDay.sendAt
+      ? `익일 일정 알림 : ${status.nextDay.label} (발송 예정일시: ${status.nextDay.sendAt})`
+      : `익일 일정 알림 : ${status.nextDay.label}`;
+    const tooltip = `차주 배정 알림 : ${status.nextWeek}\n${nextDayLine}`;
+    return <span style={{ color, marginLeft: '4px' }} title={tooltip}>{icon}</span>;
+  };
+
   const confirmNotifySend = () => {
     if (notifyType === 'assign') {
       let count = 0;
@@ -382,6 +441,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       });
       window.alert(count > 0 ? `${count}건에 작업자 배정 알림을 발송했습니다.` : '배정완료 상태인 의뢰가 없어 발송하지 않았습니다.');
     } else if (notifyType === 'nextWeek') {
+      setNextWeekNotifiedIds((prev) => new Set([...prev, ...nextWeekTargets.map((sm) => sm.id)]));
       window.alert(`${fmtDateOnly(nextWeekRange.start)} ~ ${fmtDateOnly(nextWeekRange.end)} 일정의 업체·작업자 ${nextWeekTargets.length}건에 차주 배정 알림을 발송했습니다.`);
     } else if (notifyType === 'nextDay') {
       setNextDayNotifiedIds((prev) => new Set([...prev, ...nextDayTargets.immediate.map((sm) => sm.id)]));
@@ -512,7 +572,10 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     <td className="text-center">
                       {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
                     </td>
-                    <td style={{ fontWeight: 600 }} title={isStenography ? buildVenueTooltip(s) : undefined}>{isRecordingType ? s.membNm : s.entNm}</td>
+                    <td style={{ fontWeight: 600 }}>
+                      {isRecordingType ? s.membNm : s.entNm}
+                      {isStenography && companyNotifyIcon(s, isNotified)}
+                    </td>
                     <td className="text-center">{contractBadge(s.contractType)}</td>
                     {!isRecordingType && <td className="text-center">{s.round || '-'}</td>}
                     {isStenographyType && <td className="text-center">{s.sessionTime || '-'}</td>}
@@ -540,6 +603,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                             <span style={{ color: 'var(--text-secondary)' }}>
                               {effWorker}
                               {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
+                              {workerNotifyIcon(s)}
                             </span>
                           )
                           : <span style={{ color: 'var(--text-muted)' }}>-</span>
@@ -637,7 +701,10 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
               <td className="text-center">{formatRegDate(s.regDttm)}</td>
-              <td style={{ fontWeight: 600 }} title={isStenography ? buildVenueTooltip(s) : undefined}>{isRecordingType ? s.membNm : s.entNm}</td>
+              <td style={{ fontWeight: 600 }}>
+                {isRecordingType ? s.membNm : s.entNm}
+                {isStenography && companyNotifyIcon(s, isNotified)}
+              </td>
               <td className="text-center">{contractBadge(s.contractType)}</td>
               {!isRecordingType && <td className="text-center">{s.round || '-'}</td>}
               <td className="text-center" style={{ maxWidth: '100px', fontSize: '13px' }}>
@@ -654,6 +721,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         <span style={{ color: 'var(--text-secondary)' }}>
                           {effWorker}
                           {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
+                          {workerNotifyIcon(s)}
                         </span>
                       )
                       : <span style={{ color: 'var(--text-muted)' }}>-</span>)
@@ -885,6 +953,13 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         {activeTab === 'today' && mergedTable(alerts.todayDueItems, false)}
         {activeTab === 'overdue' && mergedTable(alerts.overdueItems, workType === 'meeting')}
         {activeTab === 'all' && pagination}
+        {isStenographyType && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+            <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.none.color }}>{NOTIFY_ICON_BY_LEVEL.none.icon}</span> 미발송</span>
+            <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.partial.color }}>{NOTIFY_ICON_BY_LEVEL.partial.icon}</span> 일부 발송·예약</span>
+            <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.done.color }}>{NOTIFY_ICON_BY_LEVEL.done.icon}</span> 발송 완료</span>
+          </div>
+        )}
       </div>
       {assignModalJsx}
 
