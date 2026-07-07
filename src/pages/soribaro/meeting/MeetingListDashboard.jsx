@@ -111,10 +111,24 @@ function getNextWeekRange(today) {
 }
 
 const NOTIFY_TYPES = [
-  { key: 'assign', label: '작업자 배정 알림' },
-  { key: 'nextWeek', label: '차주 배정 알림' },
-  { key: 'nextDay', label: '속기사 전날 일정 알림' },
+  { key: 'assign', label: '작업자 배정 알림', desc: '업체 대상' },
+  { key: 'nextWeek', label: '차주 배정 알림', desc: '차주 회의 일정 안내 (업체·작업자 대상)' },
+  { key: 'nextDay', label: '작업자 익일 회의 알림', desc: '익일 회의 안내 (작업자 대상)' },
 ];
+
+// 2026년 대한민국 공휴일(프로토타입 예시 더미 데이터) — 작업자 익일 회의 알림의 회의 전날 자동 예약 발송 판정에 사용
+const HOLIDAYS_2026 = new Set([
+  '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18',
+  '2026-03-01', '2026-05-05', '2026-05-24', '2026-06-06',
+  '2026-08-15', '2026-09-24', '2026-09-25', '2026-09-26',
+  '2026-10-03', '2026-10-09', '2026-12-25',
+]);
+
+function isWeekendOrHoliday(d) {
+  const day = d.getDay();
+  if (day === 0 || day === 6) return true;
+  return HOLIDAYS_2026.has(fmtDateOnly(d));
+}
 
 // 진행의뢰현황 > 상세보기 > 프로젝트 관리(workProgress)의 파일별 진행률을 전체 대비 100 기준으로 환산
 function computeOverallProgress(s) {
@@ -342,7 +356,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     const d = toDateOnly(sm.regDttm);
     return d && d >= nextWeekRange.start && d <= nextWeekRange.end;
   });
-  // 익일 일정: 회의 전날(오늘=회의일-1)이면 즉시 발송, 그 이전이면 회의 전날 자동 발송을 위해 예약 등록
+  // 작업자 익일 회의 알림 대상: 발송 버튼을 누른 날짜 기준 익일(diffDays===1) 회의만 즉시 발송하고,
+  // 그보다 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
   const nextDayCandidates = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
     const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
@@ -359,12 +374,16 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       return diffDays === 1 && !nextDayNotifiedIds.has(sm.id);
     }),
     scheduled: nextDayCandidates.filter((sm) => {
-      const diffDays = Math.round((toDateOnly(sm.regDttm) - today) / 86400000);
-      return diffDays > 1 && !nextDayScheduledIds.has(sm.id);
+      const meetingDate = toDateOnly(sm.regDttm);
+      const diffDays = Math.round((meetingDate - today) / 86400000);
+      if (diffDays <= 1 || nextDayScheduledIds.has(sm.id)) return false;
+      const dayBefore = new Date(meetingDate);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      return isWeekendOrHoliday(dayBefore);
     }),
   };
 
-  // 익일 일정 알림 상태 + (예약인 경우) 회의 전날 발송 예정일시
+  // 작업자 익일 회의 알림 상태 + (예약인 경우) 회의 전날 발송 예정일시
   const getNextDayNotifyStatus = (s) => {
     if (nextDayNotifiedIds.has(s.id)) return { label: '발송' };
     if (nextDayScheduledIds.has(s.id)) {
@@ -385,12 +404,6 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     assign: isNotified ? '발송' : '미발송',
   });
 
-  // 작업자 옆 알림 상태 아이콘 대상: 차주 배정 알림 / 익일 일정 알림
-  const getWorkerNotifyStatus = (s) => ({
-    nextWeek: nextWeekNotifiedIds.has(s.id) ? '발송' : '미발송',
-    nextDay: getNextDayNotifyStatus(s),
-  });
-
   // 미발송/일부(예약 포함)/모두 발송 3단계로 아이콘 색상을 구분한다
   const NOTIFY_ICON_BY_LEVEL = {
     none: { icon: '🔕', color: 'var(--text-muted)' },
@@ -407,17 +420,21 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     return <span style={{ color, marginLeft: '4px' }} title={tooltip}>{icon}</span>;
   };
 
-  const workerNotifyIcon = (s) => {
-    const status = getWorkerNotifyStatus(s);
-    const nextDayDone = status.nextDay.label === '발송';
-    const nextDayNone = status.nextDay.label === '미발송';
-    const sentCount = [status.nextWeek === '발송', nextDayDone].filter(Boolean).length;
-    const level = sentCount === 2 ? 'done' : (status.nextWeek === '발송' || !nextDayNone) ? 'partial' : 'none';
+  // 작업자 옆 차주 배정 알림 아이콘 — 업체명 아이콘과 별개로 작업자 발송 상태만 표시
+  const workerNextWeekIcon = (s) => {
+    const sent = nextWeekNotifiedIds.has(s.id);
+    const { icon, color } = NOTIFY_ICON_BY_LEVEL[sent ? 'done' : 'none'];
+    return <span style={{ color, marginLeft: '4px' }} title={`차주 배정 알림 : ${sent ? '발송' : '미발송'}`}>{icon}</span>;
+  };
+
+  // 작업자 옆 작업자 익일 회의 알림 아이콘 — 미발송/예약/발송 상태를 별도 아이콘으로 표시
+  const workerNextDayIcon = (s) => {
+    const status = getNextDayNotifyStatus(s);
+    const level = status.label === '발송' ? 'done' : status.label === '예약' ? 'partial' : 'none';
     const { icon, color } = NOTIFY_ICON_BY_LEVEL[level];
-    const nextDayLine = status.nextDay.sendAt
-      ? `익일 일정 알림 : ${status.nextDay.label} (발송 예정일시: ${status.nextDay.sendAt})`
-      : `익일 일정 알림 : ${status.nextDay.label}`;
-    const tooltip = `차주 배정 알림 : ${status.nextWeek}\n${nextDayLine}`;
+    const tooltip = status.sendAt
+      ? `작업자 익일 회의 알림 : ${status.label} (발송 예정일시: ${status.sendAt})`
+      : `작업자 익일 회의 알림 : ${status.label}`;
     return <span style={{ color, marginLeft: '4px' }} title={tooltip}>{icon}</span>;
   };
 
@@ -446,7 +463,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     } else if (notifyType === 'nextDay') {
       setNextDayNotifiedIds((prev) => new Set([...prev, ...nextDayTargets.immediate.map((sm) => sm.id)]));
       setNextDayScheduledIds((prev) => new Set([...prev, ...nextDayTargets.scheduled.map((sm) => sm.id)]));
-      window.alert(`즉시 발송 ${nextDayTargets.immediate.length}건, 회의 전날 자동 발송 예약 ${nextDayTargets.scheduled.length}건을 등록했습니다.`);
+      window.alert(`익일 회의 즉시 발송 ${nextDayTargets.immediate.length}건, 회의 전날(주말·공휴일) 자동 발송 예약 ${nextDayTargets.scheduled.length}건을 등록했습니다.`);
     }
     closeNotifyFlow();
   };
@@ -603,7 +620,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                             <span style={{ color: 'var(--text-secondary)' }}>
                               {effWorker}
                               {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
-                              {workerNotifyIcon(s)}
+                              {workerNextWeekIcon(s)}{workerNextDayIcon(s)}
                             </span>
                           )
                           : <span style={{ color: 'var(--text-muted)' }}>-</span>
@@ -721,7 +738,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         <span style={{ color: 'var(--text-secondary)' }}>
                           {effWorker}
                           {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
-                          {workerNotifyIcon(s)}
+                          {workerNextWeekIcon(s)}{workerNextDayIcon(s)}
                         </span>
                       )
                       : <span style={{ color: 'var(--text-muted)' }}>-</span>)
@@ -976,9 +993,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                 <button
                   key={t.key}
                   className="proto-log-btn"
-                  style={{ textAlign: 'left', padding: '10px 14px', fontSize: '13px' }}
+                  style={{ textAlign: 'left', padding: '10px 14px', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '2px' }}
                   onClick={() => handleSelectNotifyType(t.key)}
-                >{t.label}</button>
+                >
+                  <span>{t.label}</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>{t.desc}</span>
+                </button>
               ))}
             </div>
           </div>
@@ -994,6 +1014,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <button className="preg-x-btn" onClick={closeNotifyFlow}>✕</button>
             </div>
             <div style={{ padding: '16px 20px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                {NOTIFY_TYPES.find((t) => t.key === notifyType)?.desc}
+              </p>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
                 선택한 대상에게 알림을 발송하시겠습니까?
               </p>
@@ -1007,7 +1030,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               )}
               {notifyType === 'nextDay' && (
                 <p style={{ fontSize: '13px', fontWeight: 600 }}>
-                  즉시 발송 대상 {nextDayTargets.immediate.length}건 / 회의 전날 자동 발송 예약 대상 {nextDayTargets.scheduled.length}건
+                  익일 회의 즉시 발송 대상 {nextDayTargets.immediate.length}건 / 회의 전날(주말·공휴일) 자동 예약 발송 대상 {nextDayTargets.scheduled.length}건
                 </p>
               )}
             </div>
