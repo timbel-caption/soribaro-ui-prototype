@@ -469,7 +469,7 @@ export default function ManageEnterpriseDetailPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">단가 (원)</label>
+                  <label className="preg-label">단가 (원/시간)</label>
                   <input className="preg-input" type="number" value={quoteForm.unitPrice} onChange={e => setQuoteForm(p => ({ ...p, unitPrice: +e.target.value }))} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -481,11 +481,11 @@ export default function ManageEnterpriseDetailPage() {
                   <input className="preg-input" type="number" value={quoteForm.roundUnit} onChange={e => setQuoteForm(p => ({ ...p, roundUnit: +e.target.value }))} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">n시간 이후 단가 (원)</label>
+                  <label className="preg-label">n시간 이후 단가 (원/시간)</label>
                   <input className="preg-input" type="number" value={quoteForm.overtimePrice} onChange={e => setQuoteForm(p => ({ ...p, overtimePrice: +e.target.value }))} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">기본 단가 적용 시간 (시간)</label>
+                  <label className="preg-label">기본 단가 적용 (분)</label>
                   <input className="preg-input" type="number" value={quoteForm.baseRateHours} onChange={e => setQuoteForm(p => ({ ...p, baseRateHours: +e.target.value }))} />
                 </div>
               </div>
