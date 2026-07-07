@@ -96,6 +96,16 @@ function fmtDateOnly(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// 알림 발송 시각 표기(예: 26-07-09 17:00) — 업체명/작업자 알림 툴팁에 발송 일시로 표시
+function fmtDateTime(d) {
+  const yy = String(d.getFullYear()).slice(2);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${yy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
 // 현재 주를 제외한 다음 주(월~일) 범위
 function getNextWeekRange(today) {
   const day = today.getDay();
@@ -334,6 +344,10 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const [nextDayScheduledIds, setNextDayScheduledIds] = useState(new Set());
   // 차주 배정 알림: 발송된 건을 기록해 업체명/작업자 알림 상태 아이콘에 반영한다
   const [nextWeekNotifiedIds, setNextWeekNotifiedIds] = useState(new Set());
+  // 알림별 발송 일시(id -> 'YY-MM-DD HH:mm') — 업체명/작업자 알림 툴팁에 발송 시각을 함께 표시한다
+  const [nextWeekNotifiedAt, setNextWeekNotifiedAt] = useState({});
+  const [nextDayNotifiedAt, setNextDayNotifiedAt] = useState({});
+  const [assignNotifiedAt, setAssignNotifiedAt] = useState({});
 
   const closeNotifyFlow = () => { setNotifyStep(null); setNotifyType(null); };
 
@@ -398,49 +412,69 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     return { label: '미발송' };
   };
 
-  // 업체명 옆 알림 상태 아이콘 대상: 차주 배정 알림 / 작업자 배정 알림(업체알림 발송완료 여부)
-  const getCompanyNotifyStatus = (s, isNotified) => ({
-    nextWeek: nextWeekNotifiedIds.has(s.id) ? '발송' : '미발송',
-    assign: isNotified ? '발송' : '미발송',
-  });
-
-  // 미발송/일부(예약 포함)/모두 발송 3단계로 아이콘 색상을 구분한다
+  // 업체명·작업자 알림 아이콘 1개는 대표 알림의 발송 여부에 따라 미발송/발송 완료 2단계로 색상을 구분한다
   const NOTIFY_ICON_BY_LEVEL = {
     none: { icon: '🔕', color: 'var(--text-muted)' },
-    partial: { icon: '🔔', color: '#f59e0b' },
     done: { icon: '🔔', color: '#4ade80' },
   };
 
+  // 업체명 옆 알림 아이콘 1개 — 차주 회의면 차주 배정 알림, 금주 회의(차주 배정 알림 미발송 대상)면 작업자 배정 알림 발송 상태를 대표로 표시.
+  // 툴팁에는 회의장 정보와 함께 실제 발송된 알림 목록을 발송 일시와 함께 보여준다.
   const companyNotifyIcon = (s, isNotified) => {
-    const status = getCompanyNotifyStatus(s, isNotified);
-    const sentCount = [status.nextWeek === '발송', status.assign === '발송'].filter(Boolean).length;
-    const level = sentCount === 0 ? 'none' : sentCount === 2 ? 'done' : 'partial';
-    const { icon, color } = NOTIFY_ICON_BY_LEVEL[level];
-    const tooltip = `${buildVenueTooltip(s)}\n\n차주 배정 알림 : ${status.nextWeek}\n작업자 배정 알림 : ${status.assign}`;
+    const d = toDateOnly(s.regDttm);
+    const isNextWeekMeeting = d && d >= nextWeekRange.start && d <= nextWeekRange.end;
+    const primarySent = isNextWeekMeeting ? nextWeekNotifiedIds.has(s.id) : isNotified;
+    const { icon, color } = NOTIFY_ICON_BY_LEVEL[primarySent ? 'done' : 'none'];
+
+    const sentItems = [];
+    if (nextWeekNotifiedIds.has(s.id)) sentItems.push({ label: '차주 배정 알림', at: nextWeekNotifiedAt[s.id] });
+    if (isNotified) sentItems.push({ label: '작업자 배정 알림', at: assignNotifiedAt[s.id] });
+
+    let sentSection;
+    if (sentItems.length === 0) {
+      sentSection = '발송된 알림 없음';
+    } else {
+      const groups = new Map();
+      sentItems.forEach(({ label, at }) => {
+        const key = at || '';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(label);
+      });
+      const groupLines = [...groups.entries()].map(([at, labels]) => `발송 ${labels.join('/')}${at ? ` ${at}` : ''}`);
+      sentSection = ['발송된 알림', ...groupLines].join('\n');
+    }
+
+    const tooltip = `${buildVenueTooltip(s)}\n\n${sentSection}`;
     return <span style={{ color, marginLeft: '4px' }} title={tooltip}>{icon}</span>;
   };
 
-  // 작업자 옆 차주 배정 알림 아이콘 — 업체명 아이콘과 별개로 작업자 발송 상태만 표시
-  const workerNextWeekIcon = (s) => {
+  // 작업자 옆 알림 아이콘 1개(차주 배정 알림 기준) — 작업자 익일 회의 알림 아이콘은 별도로 표시하지 않고,
+  // 툴팁에서 차주 배정 알림·작업자 익일 회의 알림 상태를 발송 일시와 함께 보여준다.
+  const workerNotifyIcon = (s) => {
     const sent = nextWeekNotifiedIds.has(s.id);
     const { icon, color } = NOTIFY_ICON_BY_LEVEL[sent ? 'done' : 'none'];
-    return <span style={{ color, marginLeft: '4px' }} title={`차주 배정 알림 : ${sent ? '발송' : '미발송'}`}>{icon}</span>;
-  };
+    const nextWeekAt = nextWeekNotifiedAt[s.id];
+    const line1 = `차주 배정 알림 : ${sent ? '발송' : '미발송'}${sent && nextWeekAt ? ` ${nextWeekAt}` : ''}`;
 
-  // 작업자 옆 작업자 익일 회의 알림 아이콘 — 미발송/예약/발송 상태를 별도 아이콘으로 표시
-  const workerNextDayIcon = (s) => {
-    const status = getNextDayNotifyStatus(s);
-    const level = status.label === '발송' ? 'done' : status.label === '예약' ? 'partial' : 'none';
-    const { icon, color } = NOTIFY_ICON_BY_LEVEL[level];
-    const tooltip = status.sendAt
-      ? `작업자 익일 회의 알림 : ${status.label} (발송 예정일시: ${status.sendAt})`
-      : `작업자 익일 회의 알림 : ${status.label}`;
-    return <span style={{ color, marginLeft: '4px' }} title={tooltip}>{icon}</span>;
+    const nextDayStatus = getNextDayNotifyStatus(s);
+    const nextDayAt = nextDayNotifiedAt[s.id];
+    let line2;
+    if (nextDayStatus.label === '발송') {
+      line2 = `작업자 익일 회의 알림 : 발송${nextDayAt ? ` ${nextDayAt}` : ''}`;
+    } else if (nextDayStatus.label === '예약') {
+      line2 = `작업자 익일 회의 알림 : 예약${nextDayStatus.sendAt ? ` (발송 예정일시: ${nextDayStatus.sendAt})` : ''}`;
+    } else {
+      line2 = '작업자 익일 회의 알림 : 미발송';
+    }
+
+    return <span style={{ color, marginLeft: '4px' }} title={`${line1}\n${line2}`}>{icon}</span>;
   };
 
   const confirmNotifySend = () => {
+    const now = fmtDateTime(new Date());
     if (notifyType === 'assign') {
       let count = 0;
+      const sentIds = [];
       setWorkerOverrides((prev) => {
         const next = { ...prev };
         selectedIds.forEach((id) => {
@@ -452,16 +486,22 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             next[id] = { worker: w, status: '업체전달완료' };
             updateStenographyWorkerAssign(id, { assignWorker: w, assignStatus: '업체전달완료' });
             count += 1;
+            sentIds.push(id);
           }
         });
         return next;
       });
+      if (sentIds.length > 0) {
+        setAssignNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(sentIds.map((id) => [id, now])) }));
+      }
       window.alert(count > 0 ? `${count}건에 작업자 배정 알림을 발송했습니다.` : '배정완료 상태인 의뢰가 없어 발송하지 않았습니다.');
     } else if (notifyType === 'nextWeek') {
       setNextWeekNotifiedIds((prev) => new Set([...prev, ...nextWeekTargets.map((sm) => sm.id)]));
+      setNextWeekNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(nextWeekTargets.map((sm) => [sm.id, now])) }));
       window.alert(`${fmtDateOnly(nextWeekRange.start)} ~ ${fmtDateOnly(nextWeekRange.end)} 일정의 업체·작업자 ${nextWeekTargets.length}건에 차주 배정 알림을 발송했습니다.`);
     } else if (notifyType === 'nextDay') {
       setNextDayNotifiedIds((prev) => new Set([...prev, ...nextDayTargets.immediate.map((sm) => sm.id)]));
+      setNextDayNotifiedAt((prev) => ({ ...prev, ...Object.fromEntries(nextDayTargets.immediate.map((sm) => [sm.id, now])) }));
       setNextDayScheduledIds((prev) => new Set([...prev, ...nextDayTargets.scheduled.map((sm) => sm.id)]));
       window.alert(`익일 회의 즉시 발송 ${nextDayTargets.immediate.length}건, 회의 전날(주말·공휴일) 자동 발송 예약 ${nextDayTargets.scheduled.length}건을 등록했습니다.`);
     }
@@ -620,7 +660,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                             <span style={{ color: 'var(--text-secondary)' }}>
                               {effWorker}
                               {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
-                              {workerNextWeekIcon(s)}{workerNextDayIcon(s)}
+                              {workerNotifyIcon(s)}
                             </span>
                           )
                           : <span style={{ color: 'var(--text-muted)' }}>-</span>
@@ -738,7 +778,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         <span style={{ color: 'var(--text-secondary)' }}>
                           {effWorker}
                           {isNotified && <span style={{ color: '#4ade80', marginLeft: '4px' }} title="업체알림 발송완료">✔</span>}
-                          {workerNextWeekIcon(s)}{workerNextDayIcon(s)}
+                          {workerNotifyIcon(s)}
                         </span>
                       )
                       : <span style={{ color: 'var(--text-muted)' }}>-</span>)
@@ -973,7 +1013,6 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         {isStenographyType && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
             <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.none.color }}>{NOTIFY_ICON_BY_LEVEL.none.icon}</span> 미발송</span>
-            <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.partial.color }}>{NOTIFY_ICON_BY_LEVEL.partial.icon}</span> 일부 발송·예약</span>
             <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.done.color }}>{NOTIFY_ICON_BY_LEVEL.done.icon}</span> 발송 완료</span>
           </div>
         )}
