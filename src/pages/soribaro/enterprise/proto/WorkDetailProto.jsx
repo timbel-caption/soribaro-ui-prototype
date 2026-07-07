@@ -4271,14 +4271,6 @@ function StenographyAssignTab({ s }) {
     if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '배정취소', assignHistory: newHistory });
   };
 
-  const handleNotify = () => {
-    const dttm = stgNowStamp();
-    const newHistory = [...assignHistory, { dttm, actor: '정윤실_관리자', target: worker, action: '업체알림발송' }];
-    setWorkerStatus('업체전달완료');
-    setAssignHistory(newHistory);
-    if (s?.id) updateStenographyWorkerAssign(s.id, { assignWorker: worker, assignStatus: '업체전달완료', assignHistory: newHistory });
-  };
-
   const isCancelled = workerStatus === '배정취소';
   const isNotified = workerStatus === '업체전달완료';
 
@@ -4322,16 +4314,6 @@ function StenographyAssignTab({ s }) {
           </tbody>
         </table>
       </div>
-
-      {worker && worker !== '-' && !isCancelled && !isNotified && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
-          <button
-            className="proto-log-btn proto-log-btn--save"
-            style={{ fontSize: '12px', padding: '5px 16px' }}
-            onClick={handleNotify}
-          >알림</button>
-        </div>
-      )}
 
       <p className="proto-section-title">배정 이력</p>
       <div className="proto-table-wrap">

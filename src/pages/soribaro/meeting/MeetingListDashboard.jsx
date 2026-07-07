@@ -83,6 +83,39 @@ function buildVenueTooltip(s) {
   return `회의장 주소 : ${s.venueAddress || '미입력'}\n회의 장소 : ${s.venueName || '미입력'}`;
 }
 
+// 진행의뢰현황 알림 발송 — 날짜 계산용 헬퍼
+function toDateOnly(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date((dateStr || '').slice(0, 10));
+  if (Number.isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function fmtDateOnly(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// 현재 주를 제외한 다음 주(월~일) 범위
+function getNextWeekRange(today) {
+  const day = today.getDay();
+  const daysSinceMonday = (day + 6) % 7;
+  const thisMonday = new Date(today);
+  thisMonday.setHours(0, 0, 0, 0);
+  thisMonday.setDate(today.getDate() - daysSinceMonday);
+  const nextMonday = new Date(thisMonday);
+  nextMonday.setDate(thisMonday.getDate() + 7);
+  const nextSunday = new Date(nextMonday);
+  nextSunday.setDate(nextMonday.getDate() + 6);
+  return { start: nextMonday, end: nextSunday };
+}
+
+const NOTIFY_TYPES = [
+  { key: 'assign', label: '작업자 배정 알림' },
+  { key: 'nextWeek', label: '차주 배정 알림' },
+  { key: 'nextDay', label: '속기사 전날 일정 알림' },
+];
+
 // 진행의뢰현황 > 상세보기 > 프로젝트 관리(workProgress)의 파일별 진행률을 전체 대비 100 기준으로 환산
 function computeOverallProgress(s) {
   if (!s.workProgress || s.workProgress.length === 0) return 0;
@@ -277,6 +310,85 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     const effWorker = workerOverrides[s.id]?.worker ?? s.assignWorker;
     setWorkerOverrides((prev) => ({ ...prev, [s.id]: { worker: effWorker, status: '배정취소' } }));
     updateStenographyWorkerAssign(s.id, { assignWorker: effWorker, assignStatus: '배정취소' });
+  };
+
+  // 진행의뢰현황 알림 발송 — 1) 알림 유형 선택 → 2) 발송 대상 확인 2단계 팝업
+  const [notifyStep, setNotifyStep] = useState(null); // null | 'select' | 'confirm'
+  const [notifyType, setNotifyType] = useState(null); // 'assign' | 'nextWeek' | 'nextDay'
+  // 속기사 전날 일정 알림: 이미 즉시발송/예약등록 처리한 건은 중복 등록하지 않는다 (프로토타입 세션 내 유지)
+  const [nextDayNotifiedIds, setNextDayNotifiedIds] = useState(new Set());
+  const [nextDayScheduledIds, setNextDayScheduledIds] = useState(new Set());
+
+  const closeNotifyFlow = () => { setNotifyStep(null); setNotifyType(null); };
+
+  const handleOpenNotify = () => setNotifyStep('select');
+
+  const handleSelectNotifyType = (type) => {
+    if (type === 'assign' && selectedIds.size === 0) {
+      window.alert('알림을 보낼 의뢰를 선택해 주세요.');
+      return;
+    }
+    setNotifyType(type);
+    setNotifyStep('confirm');
+  };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextWeekRange = getNextWeekRange(today);
+  const nextWeekTargets = samples.filter((sm) => {
+    if (sm.bssTypeName !== '현장속기') return false;
+    const d = toDateOnly(sm.regDttm);
+    return d && d >= nextWeekRange.start && d <= nextWeekRange.end;
+  });
+  // 익일 일정: 회의 전날(오늘=회의일-1)이면 즉시 발송, 그 이전이면 회의 전날 자동 발송을 위해 예약 등록
+  const nextDayCandidates = samples.filter((sm) => {
+    if (sm.bssTypeName !== '현장속기') return false;
+    const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
+    const effStatus = workerOverrides[sm.id]?.status ?? sm.assignStatus;
+    if (!effWorker || (effStatus !== '배정완료' && effStatus !== '업체전달완료')) return false;
+    const meetingDate = toDateOnly(sm.regDttm);
+    if (!meetingDate) return false;
+    const diffDays = Math.round((meetingDate - today) / 86400000);
+    return diffDays >= 1;
+  });
+  const nextDayTargets = {
+    immediate: nextDayCandidates.filter((sm) => {
+      const diffDays = Math.round((toDateOnly(sm.regDttm) - today) / 86400000);
+      return diffDays === 1 && !nextDayNotifiedIds.has(sm.id);
+    }),
+    scheduled: nextDayCandidates.filter((sm) => {
+      const diffDays = Math.round((toDateOnly(sm.regDttm) - today) / 86400000);
+      return diffDays > 1 && !nextDayScheduledIds.has(sm.id);
+    }),
+  };
+
+  const confirmNotifySend = () => {
+    if (notifyType === 'assign') {
+      let count = 0;
+      setWorkerOverrides((prev) => {
+        const next = { ...prev };
+        selectedIds.forEach((id) => {
+          const sample = samples.find((sm) => sm.id === id);
+          if (!sample || sample.bssTypeName !== '현장속기') return;
+          const w = next[id]?.worker ?? sample.assignWorker;
+          const st = next[id]?.status ?? sample.assignStatus;
+          if (w && st === '배정완료') {
+            next[id] = { worker: w, status: '업체전달완료' };
+            updateStenographyWorkerAssign(id, { assignWorker: w, assignStatus: '업체전달완료' });
+            count += 1;
+          }
+        });
+        return next;
+      });
+      window.alert(count > 0 ? `${count}건에 작업자 배정 알림을 발송했습니다.` : '배정완료 상태인 의뢰가 없어 발송하지 않았습니다.');
+    } else if (notifyType === 'nextWeek') {
+      window.alert(`${fmtDateOnly(nextWeekRange.start)} ~ ${fmtDateOnly(nextWeekRange.end)} 일정의 업체·작업자 ${nextWeekTargets.length}건에 차주 배정 알림을 발송했습니다.`);
+    } else if (notifyType === 'nextDay') {
+      setNextDayNotifiedIds((prev) => new Set([...prev, ...nextDayTargets.immediate.map((sm) => sm.id)]));
+      setNextDayScheduledIds((prev) => new Set([...prev, ...nextDayTargets.scheduled.map((sm) => sm.id)]));
+      window.alert(`즉시 발송 ${nextDayTargets.immediate.length}건, 회의 전날 자동 발송 예약 ${nextDayTargets.scheduled.length}건을 등록했습니다.`);
+    }
+    closeNotifyFlow();
   };
 
   const toDetailPath = (protoPath) => {
@@ -764,8 +876,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           </div>
         )}
         {activeTab === 'all' && isStenographyType && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '12px' }}>
             <button className="btn-primary" style={{ fontSize: '13px' }} onClick={handleOpenBulkAssign}>일괄배정</button>
+            <button className="btn-primary" style={{ fontSize: '13px' }} onClick={handleOpenNotify}>알림 발송</button>
           </div>
         )}
         {activeTab === 'all' && mergedTable(filtered, false, true)}
@@ -774,6 +887,62 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         {activeTab === 'all' && pagination}
       </div>
       {assignModalJsx}
+
+      {/* 알림 발송 1단계 — 알림 유형 선택 */}
+      {notifyStep === 'select' && (
+        <div className="pm-overlay" onClick={closeNotifyFlow}>
+          <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">알림 발송</span>
+              <button className="preg-x-btn" onClick={closeNotifyFlow}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {NOTIFY_TYPES.map((t) => (
+                <button
+                  key={t.key}
+                  className="proto-log-btn"
+                  style={{ textAlign: 'left', padding: '10px 14px', fontSize: '13px' }}
+                  onClick={() => handleSelectNotifyType(t.key)}
+                >{t.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 알림 발송 2단계 — 발송 대상 확인 */}
+      {notifyStep === 'confirm' && (
+        <div className="pm-overlay" onClick={closeNotifyFlow}>
+          <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">{NOTIFY_TYPES.find((t) => t.key === notifyType)?.label}</span>
+              <button className="preg-x-btn" onClick={closeNotifyFlow}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                선택한 대상에게 알림을 발송하시겠습니까?
+              </p>
+              {notifyType === 'assign' && (
+                <p style={{ fontSize: '13px', fontWeight: 600 }}>선택한 {selectedIds.size}건 중 배정완료 상태인 의뢰에 발송됩니다.</p>
+              )}
+              {notifyType === 'nextWeek' && (
+                <p style={{ fontSize: '13px', fontWeight: 600 }}>
+                  발송 대상 기간: {fmtDateOnly(nextWeekRange.start)} ~ {fmtDateOnly(nextWeekRange.end)} ({nextWeekTargets.length}건)
+                </p>
+              )}
+              {notifyType === 'nextDay' && (
+                <p style={{ fontSize: '13px', fontWeight: 600 }}>
+                  즉시 발송 대상 {nextDayTargets.immediate.length}건 / 회의 전날 자동 발송 예약 대상 {nextDayTargets.scheduled.length}건
+                </p>
+              )}
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={closeNotifyFlow}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={confirmNotifySend}>확인</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
