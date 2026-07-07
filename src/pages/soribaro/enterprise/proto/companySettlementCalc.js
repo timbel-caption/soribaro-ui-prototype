@@ -22,6 +22,16 @@ export function fmtHM(m) {
 // n시간 이후 단가가 입력된 업체만 기본 단가 적용(분)을 기준으로 구간별 단가를 나눠 계산하고,
 // 미입력이면 작업시간 전체에 단가(원/시간)를 적용한다. 계산서 발행 형태는 세액 처리 방식만 결정한다.
 export function calcCompanySettlement(s) {
+  // 최종 정산(수기 입력)이 저장된 경우 자동 계산 금액보다 우선 적용한다
+  if (s.finalSettlement) {
+    return {
+      calcMin: parseMinutes(s.totalPlayTm),
+      totalSupply: s.finalSettlement.supply,
+      totalTax: s.finalSettlement.tax,
+      noData: false,
+    };
+  }
+
   const qs = getCompanyQuoteSettingsByType(s.entNm, s.bssTypeName, s.contractType);
   const { invoiceType, unitPrice, baseUnit, roundUnit, overtimePrice, baseRateHours } = qs;
 

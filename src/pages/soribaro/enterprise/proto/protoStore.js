@@ -80,6 +80,9 @@ export const updateSampleDraftUploadDate = (id, draftUploadDate) => _updateSampl
 // 녹취록 기본정보: 입금정보(입금자명/입금날짜/현금영수증·계산서 발급/우편발송일) 수기 입력 값 저장
 export const updateSampleDepositInfo = (id, patch) => _updateSampleField(id, patch);
 
+// 업체정산: 최종 정산(공급가액/세액/총합) 수기 입력값 — 저장된 경우 자동 계산 금액보다 우선 적용된다
+export const updateSampleFinalSettlement = (id, finalSettlement) => _updateSampleField(id, { finalSettlement });
+
 export const updateSampleNoteEntries = (id, noteEntries) => _updateSampleField(id, { noteEntries });
 export const updateSampleMemoEntries = (id, memoEntries) => _updateSampleField(id, { memoEntries });
 export const updateSamplePlayTime = (id, totalPlayTm) => _updateSampleField(id, { totalPlayTm });

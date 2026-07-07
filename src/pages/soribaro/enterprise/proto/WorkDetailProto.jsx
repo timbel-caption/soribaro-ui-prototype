@@ -1,5 +1,5 @@
 import { useState, useRef, Fragment } from 'react';
-import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty, updateSampleOverallStatus, updateSampleDraftUploadDate, updateSampleDepositInfo } from './protoStore';
+import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty, updateSampleOverallStatus, updateSampleDraftUploadDate, updateSampleDepositInfo, updateSampleFinalSettlement } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
@@ -4839,12 +4839,40 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   // pendingReapply: '견적서 다시 적용' 이후 재확인 전 상태
   const [pendingReapply, setPendingReapply] = useState(false);
 
+  // 최종 정산(공급가액/세액/총합 수기 입력) — 저장되면 업체정산 확인·엑셀 다운로드 시 자동 계산 금액보다 우선 적용된다
+  const [showFinalSettlement, setShowFinalSettlement] = useState(false);
+  const [savedFinal, setSavedFinal] = useState(s.finalSettlement || null);
+  const [finalForm, setFinalForm] = useState(() => (
+    s.finalSettlement
+      ? { supply: String(s.finalSettlement.supply), tax: String(s.finalSettlement.tax), total: String(s.finalSettlement.total) }
+      : { supply: '', tax: '', total: '' }
+  ));
+
   // 실제 표시할 견적:
   // - 확인 완료 & 재적용 대기 아님: frozenQs (고정)
   // - 이전 버튼으로 복원한 경우: restoredQs
   // - 그 외: liveQs (견적서 관리 최신값)
   const qs = (isConfirmed && !pendingReapply) ? (frozenQs || liveQs)
            : (restoredQs || liveQs);
+
+  const handleSaveFinal = () => {
+    // 소수점이 발생하면 올림 처리한다
+    const supply = Math.ceil(Number(finalForm.supply) || 0);
+    const tax = Math.ceil(Number(finalForm.tax) || 0);
+    const total = Math.ceil(Number(finalForm.total) || 0);
+    const next = { supply, tax, total };
+    setFinalForm({ supply: String(supply), tax: String(tax), total: String(total) });
+    setSavedFinal(next);
+    if (s?.id) updateSampleFinalSettlement(s.id, next);
+    // 이미 업체정산 확인이 완료된 상태였다면, 최종 정산 금액 기준으로 다시 확인할 수 있도록 재확인 대기 상태로 전환한다
+    if (isConfirmed && !pendingReapply) {
+      setPrevQs(frozenQs || qs);
+      setRestoredQs(null);
+      setPendingReapply(true);
+      onReapply();
+    }
+    window.alert('최종 정산 금액이 저장되었습니다. 업체정산 확인을 다시 진행해 주세요.');
+  };
 
   const totalMin = parseMinutes(s.totalPlayTm);
   const { invoiceType, unitPrice, baseUnit, roundUnit, overtimePrice, baseRateHours } = qs;
@@ -4998,8 +5026,11 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           )}
           {/* 하단 액션 버튼 영역 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
-            {/* 왼쪽: 견적서 다시 적용 / 이전 버튼 */}
+            {/* 왼쪽: 최종 정산 수정 / 견적서 다시 적용 / 이전 버튼 */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button className="proto-log-btn" onClick={() => setShowFinalSettlement((v) => !v)}>
+                {showFinalSettlement ? '최종 정산 닫기' : '최종 정산 수정'}
+              </button>
               {isConfirmed && !pendingReapply && (
                 <button className="proto-log-btn" onClick={handleReapply}>
                   견적서 다시 적용
@@ -5030,6 +5061,39 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           </div>
         </div>
       </div>
+
+      {/* 최종 정산 — 공급가액/세액/총합을 수기로 입력해 자동 계산 금액을 덮어쓴다 (업체 견적 세부 내용은 그대로 유지) */}
+      {showFinalSettlement && (
+        <div className="proto-section-card" style={{ marginTop: '16px' }}>
+          <div className="proto-section-card-header">
+            <span className="proto-section-card-title">최종 정산</span>
+            {savedFinal && (
+              <span style={{ marginLeft: '8px', fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>
+                ✓ 저장된 최종 정산 금액이 업체정산·계산서 발행·엑셀 다운로드에 우선 적용됩니다
+              </span>
+            )}
+          </div>
+          <div className="proto-section-card-body" style={{ padding: '16px 20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="preg-label">공급가액</label>
+                <input className="preg-input" type="number" value={finalForm.supply} onChange={e => setFinalForm(p => ({ ...p, supply: e.target.value }))} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="preg-label">세액</label>
+                <input className="preg-input" type="number" value={finalForm.tax} onChange={e => setFinalForm(p => ({ ...p, tax: e.target.value }))} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="preg-label">총합</label>
+                <input className="preg-input" type="number" value={finalForm.total} onChange={e => setFinalForm(p => ({ ...p, total: e.target.value }))} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '14px' }}>
+              <button className="proto-log-btn proto-log-btn--save" onClick={handleSaveFinal}>저장</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
