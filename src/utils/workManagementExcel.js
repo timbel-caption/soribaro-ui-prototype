@@ -53,19 +53,38 @@ function toHmsDisplay(workTime) {
   return `${String(Number(h) || 0).padStart(2, '0')}:${String(Number(m) || 0).padStart(2, '0')}:00`;
 }
 
+// 프로젝트 관리 탭에 등록된 프로젝트(subjects)가 아직 없을 때 정산확인에 표시되는 기본 프로젝트
+// — WorkDetailProto.jsx getDefaultProjects()와 동일(엑셀에는 이름·작업시간만 필요)
+function getDefaultProjects(bssTypeName) {
+  if (bssTypeName !== '회의록' && bssTypeName !== '녹취록') return [];
+  const isRec = bssTypeName === '녹취록';
+  return [
+    { worker: isRec ? '오세훈' : '홍길동', workTime: '1:00' },
+    { worker: isRec ? '문가은' : '김나리', workTime: '0:58' },
+  ];
+}
+
 // 정산확인 탭의 "작업자 정산 내역" 워커 목록(이름+작업시간) — WorkDetailProto.jsx MtgSettlementTab 초기 상태 계산과 동일한 로직
 function getSettlementWorkerRows(s) {
   const isRecordingSettle = s.bssTypeName === '녹취록';
-  // MtgSettlementTab과 동일하게 회의록/현장속기는 모두 회의록 샘플 저장소를 기준으로 subjects를 조회한다.
+  const isStenography = s.bssTypeName === '현장속기';
+  if (isStenography) {
+    // 현장속기는 배정 관리에서 작업자 1명만 배정하므로 정산확인도 1명만 표시한다.
+    return [{ worker: SETTLE_WORKER_SEED[0].worker, workTime: SETTLE_WORKER_SEED[0].workTime }];
+  }
   const store = isRecordingSettle ? getRecordingSamples() : getMeetingSamples();
-  const subjects = store.find((v) => v.id === s.id)?.subjects || [];
-  return SETTLE_WORKER_SEED.map((r) => {
-    const proj = subjects.find((p) => p.worker === r.worker);
-    const workTime = isRecordingSettle
-      ? (proj ? secToHms(sumWorkTimeSec(proj.projFiles)) : toHmsDisplay(r.workTime))
-      : (proj?.workTime ?? r.workTime);
-    return { worker: r.worker, workTime };
-  });
+  const cur = store.find((v) => v.id === s.id);
+  // subjects가 저장된 적 없으면(프로젝트 관리를 아직 방문하지 않은 샘플) 기본 프로젝트를, 저장돼 있으면(빈 배열 포함) 그 값을 그대로 따른다.
+  const subjects = cur?.subjects !== undefined ? cur.subjects : getDefaultProjects(s.bssTypeName);
+  if (isRecordingSettle) {
+    return SETTLE_WORKER_SEED.map((r) => {
+      const proj = subjects.find((p) => p.worker === r.worker);
+      const workTime = proj ? secToHms(sumWorkTimeSec(proj.projFiles)) : toHmsDisplay(r.workTime);
+      return { worker: r.worker, workTime };
+    });
+  }
+  // 회의록: 프로젝트 관리에 등록된 프로젝트(작업자 배정 내역)를 그대로 사용한다.
+  return subjects.map((proj) => ({ worker: proj.worker || '-', workTime: proj.workTime || '' }));
 }
 
 // 상세보기 > 업체정산 견적 계산 결과 — CompanySettlementTab과 동일한 소스(getCompanyQuoteSettingsByType + calcCompanySettlement)를 사용한다.
@@ -109,30 +128,30 @@ const MTG_STG_COLUMNS = [
 function buildMtgStgRows(s, reviewerNm) {
   const quote = getCompanyQuoteRow(s);
   const workerRows = getSettlementWorkerRows(s);
-  return workerRows.map((wr, i) => {
-    if (i === 0) {
-      return [
-        formatReqDate(s.regDttm),
-        s.entNm || '',
-        s.contractType || '',
-        s.round ?? '',
-        reviewerNm || '',
-        wr.workTime,
-        wr.worker,
-        s.totalPlayTm || '',
-        quote.invoiceType || '',
-        quote.unitPrice ?? '',
-        quote.baseUnit ?? '',
-        quote.roundUnit ?? '',
-        quote.calcTime,
-        quote.totalSupply,
-        quote.totalTax,
-        quote.total,
-        s.actualDeliveryDate || '',
-      ];
-    }
-    return ['', '', '', '', '', wr.workTime, wr.worker, '', '', '', '', '', '', '', '', '', ''];
-  });
+  const baseRow = (wr) => [
+    formatReqDate(s.regDttm),
+    s.entNm || '',
+    s.contractType || '',
+    s.round ?? '',
+    reviewerNm || '',
+    wr?.workTime || '',
+    wr?.worker || '',
+    s.totalPlayTm || '',
+    quote.invoiceType || '',
+    quote.unitPrice ?? '',
+    quote.baseUnit ?? '',
+    quote.roundUnit ?? '',
+    quote.calcTime,
+    quote.totalSupply,
+    quote.totalTax,
+    quote.total,
+    s.actualDeliveryDate || '',
+  ];
+  // 프로젝트 관리에 등록된 작업자가 없는 경우(정산확인 작업자 목록이 비어 있음)에도 의뢰 정보는 한 행으로 남긴다.
+  if (workerRows.length === 0) return [baseRow(null)];
+  return workerRows.map((wr, i) => (
+    i === 0 ? baseRow(wr) : ['', '', '', '', '', wr.workTime, wr.worker, '', '', '', '', '', '', '', '', '', '']
+  ));
 }
 
 export async function downloadMeetingWorkExcel(samples, filename = '회의록_작업관리.xlsx') {

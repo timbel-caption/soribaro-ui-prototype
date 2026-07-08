@@ -4433,21 +4433,66 @@ function toHmsDisplay(workTime) {
   return `${String(Number(h) || 0).padStart(2, '0')}:${String(Number(m) || 0).padStart(2, '0')}:00`;
 }
 
+// 회의록 정산확인 작업자 등급별 분당 단가
+const MTG_GRADE_RATE_PER_MIN = { Pro: 633, Elite: 600, Rookie: 567 };
+// 등급 표시 순환값 — 실제 등급 관리 기능과의 연동은 없는 프로토타입 단계라, 프로젝트 순서대로 임의 배정한다.
+const MTG_GRADE_CYCLE = ['Pro', 'Elite', 'Rookie'];
+
+// 정산확인 작업자 등급 배지 — Pro(보라)/Elite(하늘색)/Rookie(주황)로 색상 구분
+function settleGradeBadge(grade) {
+  const cls = grade === 'Pro' ? 'settle-grade-pro' : grade === 'Elite' ? 'settle-grade-elite' : 'settle-grade-rookie';
+  return <span className={`settle-grade-badge ${cls}`}>{grade}</span>;
+}
+
+// 프로젝트 관리 탭에 등록된 프로젝트(subjects)가 아직 없을 때 보여줄 기본 프로젝트 — ProjectManageTab.initProjects()의 기본값과 동일하게 맞춘다.
+function getDefaultProjects(s) {
+  if (s.bssTypeName !== '회의록' && s.bssTypeName !== '녹취록') return [];
+  const isRec = s.bssTypeName === '녹취록';
+  return [
+    { worker: isRec ? '오세훈' : '홍길동', workTime: '1:00', accuracy: '99.61%', errors: 1, projFiles: isRec ? SEED_REC_PROJ1_FILES : SEED_MTG_PROJ1_FILES },
+    { worker: isRec ? '문가은' : '김나리', workTime: '0:58', accuracy: '98.27%', errors: 5, projFiles: isRec ? SEED_REC_PROJ2_FILES : SEED_MTG_PROJ2_FILES },
+  ];
+}
+
 function MtgSettlementTab({ s }) {
   const isStenography = s.bssTypeName === '현장속기';
   const isRecordingSettle = s.bssTypeName === '녹취록';
   const [workers, setWorkers] = useState(() => {
     if (s.settlement?.workerRows) return s.settlement.workerRows;
+    if (isStenography) {
+      // 현장속기는 배정 관리에서 작업자 1명만 배정하므로 정산확인도 1명만 표시하고, 등급은 Elite로 고정한다.
+      return [{ ...SETTLE_WORKER_SEED[0], grade: 'Elite' }];
+    }
     const store = isRecordingSettle ? getRecordingSamples() : getMeetingSamples();
     const cur = store.find((v) => v.id === s.id);
-    const subjects = cur?.subjects || [];
-    return SETTLE_WORKER_SEED.map((r) => {
-      const proj = subjects.find((p) => p.worker === r.worker);
-      // 녹취록: 프로젝트 관리에 표시되는 작업시간(파일 작업시간 합산값)과 동일하게 맞춘다
-      const workTime = isRecordingSettle
-        ? (proj ? calcProjWorkTime(proj.projFiles) : toHmsDisplay(r.workTime))
-        : (proj?.workTime ?? r.workTime);
-      return { ...r, workTime };
+    // subjects가 저장된 적 없으면(프로젝트 관리를 아직 방문하지 않은 샘플) 기본 프로젝트를, 저장돼 있으면(빈 배열 포함) 그 값을 그대로 따른다.
+    const subjects = cur?.subjects !== undefined ? cur.subjects : getDefaultProjects(s);
+    if (isRecordingSettle) {
+      // 녹취록은 등급을 Elite로 고정하고, 작업시간은 프로젝트 관리에 표시되는 값(파일 작업시간 합산값)과 동일하게 맞춘다.
+      return SETTLE_WORKER_SEED.map((r) => {
+        const proj = subjects.find((p) => p.worker === r.worker);
+        const workTime = proj ? calcProjWorkTime(proj.projFiles) : toHmsDisplay(r.workTime);
+        return { ...r, workTime, grade: 'Elite' };
+      });
+    }
+    // 회의록: 정산확인 작업자 목록을 프로젝트 관리에 등록된 프로젝트(작업자 배정 내역)와 동일하게 구성한다.
+    return subjects.map((proj, i) => {
+      const grade = MTG_GRADE_CYCLE[i % MTG_GRADE_CYCLE.length];
+      const workTime = proj.workTime || calcProjWorkTime(proj.projFiles);
+      const amount = Math.round(parseWorkTimeHours(workTime) * 60 * MTG_GRADE_RATE_PER_MIN[grade]);
+      return {
+        worker: proj.worker || '-',
+        grade,
+        workTime,
+        accuracy: proj.accuracy || '-',
+        errors: proj.errors ?? 0,
+        remark: '',
+        amount,
+        payRate: '100%',
+        executor: '',
+        netAmount: amount,
+        status: '정산대기',
+      };
     });
   });
   const [reviewers, setReviewers] = useState(() =>
@@ -4686,7 +4731,7 @@ function MtgSettlementTab({ s }) {
             {isStenography ? workers.map((row, i) => (
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{row.worker}</td>
-                <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
+                <td className="text-center">{settleGradeBadge(row.grade)}</td>
                 <td className="text-center">
                   <input
                     className="proto-log-input"
@@ -4714,7 +4759,7 @@ function MtgSettlementTab({ s }) {
             )) : isRecordingSettle ? workers.map((row, i) => (
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{row.worker}</td>
-                <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
+                <td className="text-center">{settleGradeBadge(row.grade)}</td>
                 <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
@@ -4726,7 +4771,7 @@ function MtgSettlementTab({ s }) {
             )) : workers.map((row, i) => (
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{row.worker}</td>
-                <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
+                <td className="text-center">{settleGradeBadge(row.grade)}</td>
                 <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
@@ -4761,7 +4806,7 @@ function MtgSettlementTab({ s }) {
                 {reviewers.map((row, i) => (
                   <tr key={i}>
                     <td style={{ fontWeight: 600 }}>{row.worker}</td>
-                    <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
+                    <td className="text-center">{settleGradeBadge(row.grade)}</td>
                     <td className="text-center">
                       {isStenography ? (
                         <input

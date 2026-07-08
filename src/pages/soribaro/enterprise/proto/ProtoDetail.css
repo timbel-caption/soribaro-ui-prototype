@@ -4855,6 +4855,18 @@
 .ws-grade-elite  { background: rgba(99,102,241,0.16);    color: #a5b4fc; }
 .ws-grade-pro    { background: rgba(234,179,8,0.18);     color: #facc15; }
 
+/* 정산확인 작업자 등급 배지 — Pro(보라)/Elite(하늘색)/Rookie(주황) */
+.settle-grade-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.settle-grade-pro    { background: rgba(168,85,247,0.16); color: #c084fc; }
+.settle-grade-elite  { background: rgba(56,189,248,0.16); color: #38bdf8; }
+.settle-grade-rookie { background: rgba(251,146,60,0.16); color: #fb923c; }
+
 /* 상태 배지 */
 .ws-status-badge {
   display: inline-block;
