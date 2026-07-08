@@ -792,13 +792,22 @@ function secToDuration(sec) {
   return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
 }
 
-// 시/분/초 3칸 입력 (파일 분할 설정 모달용)
-function TimeHmsInput({ seconds, onChange, min = 0, max = 359999 }) {
+// 시/분/초 3칸 입력 (파일 분할 설정 모달용). tint 지정 시 시작(blue)/종료(orange) 구간을 색으로 구분한다.
+const TIME_HMS_TINT = {
+  blue:   { border: '#60a5fa', background: 'rgba(96,165,250,0.08)' },
+  orange: { border: '#fb923c', background: 'rgba(251,146,60,0.08)' },
+};
+function TimeHmsInput({ seconds, onChange, min = 0, max = 359999, tint }) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
   const commit = (nh, nm, ns) => onChange(Math.max(min, Math.min(max, nh * 3600 + nm * 60 + ns)));
-  const unitStyle = { width: '32px', textAlign: 'center', padding: '4px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '13px' };
+  const c = TIME_HMS_TINT[tint];
+  const unitStyle = {
+    width: '32px', textAlign: 'center', padding: '4px', borderRadius: '4px', fontSize: '13px',
+    border: `1px solid ${c ? c.border : 'var(--border-color)'}`,
+    background: c ? c.background : undefined,
+  };
   const numInput = (val, onCommit) => (
     <input
       type="text"
@@ -818,6 +827,20 @@ function TimeHmsInput({ seconds, onChange, min = 0, max = 359999 }) {
       {numInput(s, (v) => commit(h, m, v))}
     </div>
   );
+}
+
+// 파일 분할 설정 모달의 장식용 파형 막대 높이(0~1) 배열 — 실제 오디오 분석 없이 파일명 기반 고정 패턴으로 생성한다.
+function buildWaveformBars(seed, count = 90) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const bars = [];
+  for (let i = 0; i < count; i++) {
+    h = (h * 1103515245 + 12345) >>> 0;
+    const noise = (h % 1000) / 1000;
+    const wave = Math.abs(Math.sin(i * 0.35) * 0.6 + Math.sin(i * 0.09) * 0.4);
+    bars.push(Math.max(0.12, Math.min(1, wave * 0.75 + noise * 0.25)));
+  }
+  return bars;
 }
 
 // 회의록 파일관리: 파일 분할 설정 모달. 작업자 배정 시(disabled) 조회만 가능하다.
@@ -843,6 +866,7 @@ export function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
   const [segments, setSegments] = useState(file.splits || []);
   const [startSec, setStartSec] = useState(0);
   const [endSec, setEndSec] = useState(maxSec);
+  const waveformBars = buildWaveformBars(String(file.fileName || file.fileNo || 'file'));
 
   const handleAddSegment = () => {
     if (startSec >= endSec) return;
@@ -879,12 +903,11 @@ export function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
             </p>
           )}
 
-          {/* 분할 구간 시각화: 전체 재생시간 바 위에 저장된 모든 구간 + (수정 가능 시) 현재 선택 중인 구간을 함께 표시 */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-            <span>{secToDuration(0)}</span>
-            <span>{secToDuration(maxSec)}</span>
-          </div>
-          <div style={{ position: 'relative', height: '10px', background: 'var(--bg-hover)', borderRadius: '3px', marginBottom: '16px' }}>
+          {/* 분할 구간 시각화: 파형(장식용, 실제 오디오 분석 없이 생성된 고정 패턴) 위에 저장된 모든 구간 + (수정 가능 시) 현재 선택 중인 구간을 함께 표시 */}
+          <div style={{ position: 'relative', height: '56px', display: 'flex', alignItems: 'center', gap: '1px', padding: '0 6px', background: '#0b2036', borderRadius: '6px', marginBottom: '4px', overflow: 'hidden' }}>
+            {waveformBars.map((barH, idx) => (
+              <span key={idx} style={{ flex: 1, height: `${Math.round(barH * 100)}%`, background: 'rgba(56,189,248,0.85)', borderRadius: '1px' }} />
+            ))}
             {segments.map((seg, idx) => (
               <div
                 key={idx}
@@ -893,7 +916,7 @@ export function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
                   position: 'absolute', top: 0, bottom: 0,
                   left: `${maxSec ? (seg.start / maxSec) * 100 : 0}%`,
                   width: `${maxSec ? ((seg.end - seg.start) / maxSec) * 100 : 0}%`,
-                  background: 'rgba(59,130,246,0.35)', border: '1px solid var(--accent-color)', borderRadius: '3px',
+                  background: 'rgba(96,165,250,0.25)', border: '1px solid #60a5fa',
                 }}
               />
             ))}
@@ -902,31 +925,39 @@ export function FileSplitSettingModal({ file, disabled, onClose, onSave }) {
                 position: 'absolute', top: 0, bottom: 0,
                 left: `${maxSec ? (startSec / maxSec) * 100 : 0}%`,
                 width: `${maxSec ? ((endSec - startSec) / maxSec) * 100 : 0}%`,
-                background: 'var(--accent-color)', borderRadius: '3px',
+                background: 'rgba(59,130,246,0.2)', border: '2px solid var(--accent-color)',
               }} />
             )}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+            <span>{secToDuration(0)}</span>
+            <span>{secToDuration(maxSec)}</span>
           </div>
 
           {!disabled && (
             <>
               <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block' }}>시작 - {secToDuration(startSec)}</label>
+                  <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block' }}>
+                    시작 - <strong style={{ color: '#60a5fa' }}>{secToDuration(startSec)}</strong>
+                  </label>
                   <input
                     type="range" min={0} max={maxSec} step={1} value={startSec}
                     onChange={(e) => { const v = Number(e.target.value); setStartSec(v < endSec ? v : Math.max(0, endSec - 1)); }}
                     style={{ width: '100%' }}
                   />
-                  <TimeHmsInput seconds={startSec} max={Math.max(0, endSec - 1)} onChange={setStartSec} />
+                  <TimeHmsInput seconds={startSec} max={Math.max(0, endSec - 1)} onChange={setStartSec} tint="blue" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block' }}>종료 - {secToDuration(endSec)}</label>
+                  <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block' }}>
+                    종료 - <strong style={{ color: '#fb923c' }}>{secToDuration(endSec)}</strong>
+                  </label>
                   <input
                     type="range" min={Math.min(startSec + 1, maxSec)} max={maxSec} step={1} value={endSec}
                     onChange={(e) => setEndSec(Number(e.target.value))}
                     style={{ width: '100%' }}
                   />
-                  <TimeHmsInput seconds={endSec} min={startSec + 1} max={maxSec} onChange={setEndSec} />
+                  <TimeHmsInput seconds={endSec} min={startSec + 1} max={maxSec} onChange={setEndSec} tint="orange" />
                 </div>
               </div>
 
