@@ -395,24 +395,30 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const nextWeekRange = getNextWeekRange(today);
-  // 차주 배정 알림 대상: 작업자가 배정된(배정취소 제외) 현장속기 건만 발송 가능
-  const nextWeekTargets = samples.filter((sm) => {
+  // 차주 배정 알림 발송 대상 기간에 속한 현장속기 건 전체(배정 여부 무관)
+  const nextWeekPopulation = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
-    if (!isWorkerAssigned(sm)) return false;
     const d = toDateOnly(sm.regDttm);
     return d && d >= nextWeekRange.start && d <= nextWeekRange.end;
   });
-  // 작업자 익일 회의 알림 대상: 작업자가 배정된 건만 발송 가능하며,
-  // 발송 버튼을 누른 날짜 기준 익일(diffDays===1) 회의만 즉시 발송하고,
-  // 그보다 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
-  const nextDayCandidates = samples.filter((sm) => {
+  // 차주 배정 알림 대상: 작업자가 배정된(배정취소 제외) 건 중 아직 발송하지 않은 건만 재발송 시 중복 없이 발송
+  const nextWeekTargets = nextWeekPopulation.filter((sm) => isWorkerAssigned(sm) && !nextWeekNotifiedIds.has(sm.id));
+  // 배정이 완료되지 않아 차주 배정 알림 대상에서 제외되는 건
+  const nextWeekUnassigned = nextWeekPopulation.filter((sm) => !isWorkerAssigned(sm));
+  // 작업자 익일 회의 알림 발송 대상 기간(익일 이후)에 속한 현장속기 건 전체(배정 여부 무관)
+  const nextDayPopulation = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
-    if (!isWorkerAssigned(sm)) return false;
     const meetingDate = toDateOnly(sm.regDttm);
     if (!meetingDate) return false;
     const diffDays = Math.round((meetingDate - today) / 86400000);
     return diffDays >= 1;
   });
+  // 작업자 익일 회의 알림 대상: 작업자가 배정된 건만 발송 가능하며,
+  // 발송 버튼을 누른 날짜 기준 익일(diffDays===1) 회의만 즉시 발송하고,
+  // 그보다 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
+  const nextDayCandidates = nextDayPopulation.filter((sm) => isWorkerAssigned(sm));
+  // 배정이 완료되지 않아 작업자 익일 회의 알림 대상에서 제외되는 건
+  const nextDayUnassigned = nextDayPopulation.filter((sm) => !isWorkerAssigned(sm));
   const nextDayTargets = {
     immediate: nextDayCandidates.filter((sm) => {
       const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
@@ -1059,9 +1065,49 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                 {NOTIFY_TYPES.find((t) => t.key === notifyType)?.desc}
               </p>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                선택한 대상에게 알림을 발송하시겠습니까?
-              </p>
+              {(() => {
+                const unassigned = notifyType === 'nextWeek' ? nextWeekUnassigned : notifyType === 'nextDay' ? nextDayUnassigned : [];
+                if (unassigned.length === 0) {
+                  return (
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                      선택한 대상에게 알림을 발송하시겠습니까?
+                    </p>
+                  );
+                }
+                return (
+                  <>
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                      배정이 완료되지 않은 작업물이 있습니다.<br />
+                      제외 후 나머지 작업물에 대해 알림을 발송하시겠습니까?
+                    </p>
+                    <p style={{ fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>제외 작업물 정보</p>
+                    <div className="proto-table-wrap proto-table-wrap--scroll" style={{ marginBottom: '10px', maxHeight: '160px' }}>
+                      <table className="proto-table">
+                        <thead>
+                          <tr>
+                            <th className="text-center">의뢰일자</th>
+                            <th>업체명</th>
+                            <th className="text-center">계약구분</th>
+                            <th className="text-center">회차</th>
+                            <th className="text-center">시작~종료 시간</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {unassigned.map((sm) => (
+                            <tr key={sm.id}>
+                              <td className="text-center">{formatRegDate(sm.regDttm)}</td>
+                              <td>{sm.entNm}</td>
+                              <td className="text-center">{contractBadge(sm.contractType)}</td>
+                              <td className="text-center">{sm.round || '-'}</td>
+                              <td className="text-center">{sm.sessionTime || '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                );
+              })()}
               {notifyType === 'assign' && (
                 <p style={{ fontSize: '13px', fontWeight: 600 }}>선택한 {selectedIds.size}건 중 작업자가 배정된 의뢰에 발송됩니다.</p>
               )}
