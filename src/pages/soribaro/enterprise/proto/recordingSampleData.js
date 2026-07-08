@@ -8,7 +8,7 @@ export const RECORDING_SAMPLES = [
     membNm: '정도윤',
     bssType: '녹취록',
     bssTypeName: '녹취록',
-    totalPlayTm: '1:12',
+    totalPlayTm: '01:12:00',
     totalDuration: '72분',
     overallStatus: 'WORKING',
     subfileStatus: '요청',
@@ -48,8 +48,8 @@ export const RECORDING_SAMPLES = [
     ],
     protoPath: '/soribaro/recording/detail/PROTO-REC-001',
     files: [
-      { fileNo: 1, fileName: '계약분쟁_조정회의_1부.wav', duration: '0:36', size: '198 MB', uploadDttm: '2026-06-18' },
-      { fileNo: 2, fileName: '계약분쟁_조정회의_2부.wav', duration: '0:36', size: '201 MB', uploadDttm: '2026-06-18' },
+      { fileNo: 1, fileName: '계약분쟁_조정회의_1부.wav', duration: '00:36:00', size: '198 MB', uploadDttm: '2026-06-18' },
+      { fileNo: 2, fileName: '계약분쟁_조정회의_2부.wav', duration: '00:36:00', size: '201 MB', uploadDttm: '2026-06-18' },
     ],
     assignments: [
       { fileNo: 1, fileName: '계약분쟁_조정회의_1부.wav', worker: '오세훈', role: '전사', assignDttm: '2026-06-18', status: '작업중' },
@@ -90,7 +90,7 @@ export const RECORDING_SAMPLES = [
     membNm: '류지호',
     bssType: '녹취록',
     bssTypeName: '녹취록',
-    totalPlayTm: '2:05',
+    totalPlayTm: '02:05:00',
     totalDuration: '125분',
     overallStatus: 'CHECKING',
     subfileStatus: '수령',
@@ -129,7 +129,7 @@ export const RECORDING_SAMPLES = [
     ],
     protoPath: '/soribaro/recording/detail/PROTO-REC-002',
     files: [
-      { fileNo: 1, fileName: '하도급_협의_전체.wav', duration: '2:05', size: '980 MB', uploadDttm: '2026-06-19' },
+      { fileNo: 1, fileName: '하도급_협의_전체.wav', duration: '02:05:00', size: '980 MB', uploadDttm: '2026-06-19' },
     ],
     assignments: [
       { fileNo: 1, fileName: '하도급_협의_전체.wav', worker: '문가은', role: '전사', assignDttm: '2026-06-19', status: '완료' },

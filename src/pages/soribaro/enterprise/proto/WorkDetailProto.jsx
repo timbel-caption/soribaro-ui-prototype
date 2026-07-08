@@ -1492,10 +1492,10 @@ const SEED_MTG_PROJ2_FILES = [
 
 // 녹취록 — subjects 미보유 샘플의 프로젝트 관리 탭 기본 시드(SEED_MTG_PROJ*와 동일한 용도, 녹취록 전용 별도 데이터)
 const SEED_REC_PROJ1_FILES = [
-  { fileNo: 'rec1-1', fileName: '계약분쟁_조정회의_1부.wav', split: '-', range: '', workTime: '0:36', status: '작업중', progress: 55, lastWork: '2026-06-19 11:00', worker: '오세훈', reviewer: '' },
+  { fileNo: 'rec1-1', fileName: '계약분쟁_조정회의_1부.wav', split: '-', range: '', workTime: '00:36:00', status: '작업중', progress: 55, lastWork: '2026-06-19 11:00', worker: '오세훈', reviewer: '' },
 ];
 const SEED_REC_PROJ2_FILES = [
-  { fileNo: 'rec2-1', fileName: '하도급_협의_전체.wav', split: '-', range: '', workTime: '2:05', status: '작업중', progress: 100, lastWork: '2026-06-19 20:00', worker: '문가은', reviewer: '' },
+  { fileNo: 'rec2-1', fileName: '하도급_협의_전체.wav', split: '-', range: '', workTime: '02:05:00', status: '작업중', progress: 100, lastWork: '2026-06-19 20:00', worker: '문가은', reviewer: '' },
 ];
 
 const SEED_PROJ_FILES = [
@@ -4423,6 +4423,14 @@ function parseWorkTimeHours(workTime) {
   return h + m / 60 + sec / 3600;
 }
 
+// 녹취록 작업시간 표시 형식을 'HH:MM:SS'로 맞춘다(초 단위가 없는 값은 00초로 보정)
+function toHmsDisplay(workTime) {
+  const parts = (workTime || '').split(':');
+  if (parts.length >= 3) return workTime;
+  const [h, m] = parts;
+  return `${String(Number(h) || 0).padStart(2, '0')}:${String(Number(m) || 0).padStart(2, '0')}:00`;
+}
+
 function MtgSettlementTab({ s }) {
   const isStenography = s.bssTypeName === '현장속기';
   const isRecordingSettle = s.bssTypeName === '녹취록';
@@ -4435,7 +4443,7 @@ function MtgSettlementTab({ s }) {
       const proj = subjects.find((p) => p.worker === r.worker);
       // 녹취록: 프로젝트 관리에 표시되는 작업시간(파일 작업시간 합산값)과 동일하게 맞춘다
       const workTime = isRecordingSettle
-        ? (proj ? calcProjWorkTime(proj.projFiles) : r.workTime)
+        ? (proj ? calcProjWorkTime(proj.projFiles) : toHmsDisplay(r.workTime))
         : (proj?.workTime ?? r.workTime);
       return { ...r, workTime };
     });
