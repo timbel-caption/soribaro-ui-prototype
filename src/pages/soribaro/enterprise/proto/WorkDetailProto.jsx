@@ -4414,6 +4414,8 @@ function sumWorkTime(rows) {
 // 현장속기 작업자/검수자 정산 시간 단가
 const STG_WORKER_RATE_PER_HOUR = 80000;
 const STG_REVIEWER_RATE_PER_HOUR = 24000;
+// 녹취록 작업자 정산 시간 단가
+const REC_WORKER_RATE_PER_HOUR = 48000;
 
 // "H:MM" 또는 "H:MM:SS" 형식의 작업시간 문자열 → 시간(number)
 function parseWorkTimeHours(workTime) {
@@ -4716,7 +4718,7 @@ function MtgSettlementTab({ s }) {
                 <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
-                <td className="text-center" style={{ fontSize: '12px' }}>{row.amount.toLocaleString()}원</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{Math.round(parseWorkTimeHours(row.workTime) * REC_WORKER_RATE_PER_HOUR).toLocaleString()}원</td>
                 <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'worker')}</td>
                 <td className="text-center">{statusCell(row, i, 'worker')}</td>
                 {remarkCell(row, i)}

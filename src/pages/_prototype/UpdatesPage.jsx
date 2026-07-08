@@ -9,6 +9,13 @@ import './UpdatesPage.css';
 const UPDATES = [
   {
     date: '2026-07-08',
+    author: '정윤실',
+    title: '녹취록 정산확인 작업자 단가를 시간당 48,000원으로 적용',
+    description:
+      '소리바로 > 녹취록 > 녹취록 작업관리 > 상세보기 > 정산 확인에서 작업자 실지급액이 작업시간 × 시간당 48,000원으로 계산되도록 수정했습니다.',
+  },
+  {
+    date: '2026-07-08',
     author: 'jybae',
     title: '녹취록·회의록·현장속기 전체보기 엑셀 다운로드 항목 개편',
     description:
