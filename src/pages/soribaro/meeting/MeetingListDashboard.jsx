@@ -78,6 +78,12 @@ function formatRegDate(regDttm) {
   return regDttm.replace(/-/g, '').slice(2, 8);
 }
 
+// 녹취록 의뢰일자 옆에 표기할 의뢰 요청 시간(HH:MM)
+function formatRegTime(regDttm) {
+  const time = (regDttm || '').split(' ')[1];
+  return time ? time.slice(0, 5) : '';
+}
+
 // 현장속기 업체명 hover 툴팁 — 회의장 주소/회의 장소 표시, 미입력 시 "미입력"으로 표기
 function buildVenueTooltip(s) {
   return `회의장 주소 : ${s.venueAddress || '미입력'}\n회의 장소 : ${s.venueName || '미입력'}`;
@@ -642,6 +648,9 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     )}
                     <td className="text-center">
                       {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
+                      {isRecordingType && formatRegTime(s.regDttm) && (
+                        <span style={{ marginLeft: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>{formatRegTime(s.regDttm)}</span>
+                      )}
                     </td>
                     <td style={{ fontWeight: 600 }}>
                       {isRecordingType ? s.membNm : s.entNm}
@@ -770,7 +779,12 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           const isNotified = isStenography && effStatus === '업체전달완료';
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
-              <td className="text-center">{formatRegDate(s.regDttm)}</td>
+              <td className="text-center">
+                {formatRegDate(s.regDttm)}
+                {isRecordingType && formatRegTime(s.regDttm) && (
+                  <span style={{ marginLeft: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>{formatRegTime(s.regDttm)}</span>
+                )}
+              </td>
               <td style={{ fontWeight: 600 }}>
                 {isRecordingType ? s.membNm : s.entNm}
                 {isStenography && companyNotifyIcon(s, isNotified)}
