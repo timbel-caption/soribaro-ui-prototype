@@ -447,39 +447,29 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     return { label: '미발송' };
   };
 
-  // 알림 아이콘은 미발송 상태에서만 노출되고(none), 발송 완료 후에는 벨 아이콘 대신 완료 표시(done)로 바뀐다.
+  // 알림 아이콘은 미발송 상태에서만 노출되고(none), 발송 완료 후에는 아이콘 자체를 표시하지 않는다.
   const NOTIFY_ICON_BY_LEVEL = {
     none: { icon: '🔔', color: 'var(--text-muted)' },
-    done: { icon: '✔', color: '#4ade80' },
   };
 
-  // 업체명 옆 알림 아이콘 — 수동 배정 알림·차주 배정 알림 중 하나도 발송되지 않았으면 미발송 아이콘만 노출하고,
-  // 하나라도 발송 완료되면 벨 아이콘을 숨기고 완료 표시로 바뀌며 툴팁에 알림별 발송 완료 일시를 보여준다.
+  // 업체명 옆 알림 아이콘 — 수동 배정 알림·차주 배정 알림 중 하나도 발송되지 않았으면 미발송 아이콘을 노출하고,
+  // 하나라도 발송 완료되면 아이콘을 표시하지 않는다.
   const companyNotifyIcon = (s, isNotified) => {
     const nextWeekSent = nextWeekNotifiedIds.has(s.id);
     const assignSent = isNotified;
     const anySent = nextWeekSent || assignSent;
 
-    if (!anySent) {
-      const tooltip = `${buildVenueTooltip(s)}\n\n발송된 알림 없음`;
-      return <span style={{ color: NOTIFY_ICON_BY_LEVEL.none.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.none.icon}</span>;
-    }
+    if (anySent) return null;
 
-    const doneLines = [];
-    if (nextWeekSent) doneLines.push(`차주 배정 알림 완료 : ${nextWeekNotifiedAt[s.id] || '-'}`);
-    if (assignSent) doneLines.push(`수동 배정 알림 완료 : ${assignNotifiedAt[s.id] || '-'}`);
-    const tooltip = `${buildVenueTooltip(s)}\n\n${doneLines.join('\n')}`;
-    return <span style={{ color: NOTIFY_ICON_BY_LEVEL.done.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.done.icon}</span>;
+    const tooltip = `${buildVenueTooltip(s)}\n\n발송된 알림 없음`;
+    return <span style={{ color: NOTIFY_ICON_BY_LEVEL.none.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.none.icon}</span>;
   };
 
   // 작업자 옆 알림 아이콘 — 익일 배정 알림만 표시한다. 미발송·예약 상태는 벨 아이콘을 노출하고,
-  // 발송 완료 후에는 벨 아이콘을 숨기고 완료 표시로 바뀌며 툴팁에 발송 완료 일시를 보여준다.
+  // 발송 완료 후에는 아이콘을 표시하지 않는다.
   const workerNotifyIcon = (s) => {
     const status = getNextDayNotifyStatus(s);
-    if (status.label === '발송') {
-      const tooltip = `익일 배정 알림 완료 : ${status.at || '-'}`;
-      return <span style={{ color: NOTIFY_ICON_BY_LEVEL.done.color, marginLeft: '4px' }} title={tooltip}>{NOTIFY_ICON_BY_LEVEL.done.icon}</span>;
-    }
+    if (status.label === '발송') return null;
     const tooltip = status.label === '예약' && status.sendAt
       ? `익일 배정 알림 : 예약 (발송 예정일시: ${status.sendAt})`
       : '익일 배정 알림 : 미발송';
@@ -1027,7 +1017,6 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         {isStenographyType && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '14px', marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
             <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.none.color }}>{NOTIFY_ICON_BY_LEVEL.none.icon}</span> 미발송</span>
-            <span><span style={{ color: NOTIFY_ICON_BY_LEVEL.done.color }}>{NOTIFY_ICON_BY_LEVEL.done.icon}</span> 발송 완료</span>
           </div>
         )}
       </div>
