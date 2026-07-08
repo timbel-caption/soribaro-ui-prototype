@@ -45,14 +45,6 @@ function secToHms(sec) {
   return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
 }
 
-// 'H:MM' 형식 시간을 'HH:MM:SS'로 맞춘다(초 단위 없는 값 00초로 보정) — WorkDetailProto.jsx toHmsDisplay와 동일
-function toHmsDisplay(workTime) {
-  const parts = (workTime || '').split(':');
-  if (parts.length >= 3) return workTime;
-  const [h, m] = parts;
-  return `${String(Number(h) || 0).padStart(2, '0')}:${String(Number(m) || 0).padStart(2, '0')}:00`;
-}
-
 // 프로젝트 관리 탭에 등록된 프로젝트(subjects)가 아직 없을 때 정산확인에 표시되는 기본 프로젝트
 // — WorkDetailProto.jsx getDefaultProjects()와 동일(엑셀에는 이름·작업시간만 필요)
 function getDefaultProjects(bssTypeName) {
@@ -77,11 +69,13 @@ function getSettlementWorkerRows(s) {
   // subjects가 저장된 적 없으면(프로젝트 관리를 아직 방문하지 않은 샘플) 기본 프로젝트를, 저장돼 있으면(빈 배열 포함) 그 값을 그대로 따른다.
   const subjects = cur?.subjects !== undefined ? cur.subjects : getDefaultProjects(s.bssTypeName);
   if (isRecordingSettle) {
-    return SETTLE_WORKER_SEED.map((r) => {
-      const proj = subjects.find((p) => p.worker === r.worker);
-      const workTime = proj ? secToHms(sumWorkTimeSec(proj.projFiles)) : toHmsDisplay(r.workTime);
-      return { worker: r.worker, workTime };
+    // 녹취록: 프로젝트 관리에 배정된 작업자 기준으로 작업자별 작업시간을 합산한다(동일 작업자가 여러 프로젝트에 배정된 경우 합산).
+    const secByWorker = new Map();
+    subjects.forEach((proj) => {
+      if (!proj.worker) return;
+      secByWorker.set(proj.worker, (secByWorker.get(proj.worker) || 0) + sumWorkTimeSec(proj.projFiles));
     });
+    return [...secByWorker.entries()].map(([worker, sec]) => ({ worker, workTime: secToHms(sec) }));
   }
   // 회의록: 프로젝트 관리에 등록된 프로젝트(작업자 배정 내역)를 그대로 사용한다.
   return subjects.map((proj) => ({ worker: proj.worker || '-', workTime: proj.workTime || '' }));

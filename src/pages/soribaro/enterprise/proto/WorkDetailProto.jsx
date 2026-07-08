@@ -4425,14 +4425,6 @@ function parseWorkTimeHours(workTime) {
   return h + m / 60 + sec / 3600;
 }
 
-// 녹취록 작업시간 표시 형식을 'HH:MM:SS'로 맞춘다(초 단위가 없는 값은 00초로 보정)
-function toHmsDisplay(workTime) {
-  const parts = (workTime || '').split(':');
-  if (parts.length >= 3) return workTime;
-  const [h, m] = parts;
-  return `${String(Number(h) || 0).padStart(2, '0')}:${String(Number(m) || 0).padStart(2, '0')}:00`;
-}
-
 // 회의록 정산확인 작업자 등급별 분당 단가
 const MTG_GRADE_RATE_PER_MIN = { Pro: 633, Elite: 600, Rookie: 567 };
 // 등급 표시 순환값 — 실제 등급 관리 기능과의 연동은 없는 프로토타입 단계라, 프로젝트 순서대로 임의 배정한다.
@@ -4468,12 +4460,29 @@ function MtgSettlementTab({ s }) {
     // subjects가 저장된 적 없으면(프로젝트 관리를 아직 방문하지 않은 샘플) 기본 프로젝트를, 저장돼 있으면(빈 배열 포함) 그 값을 그대로 따른다.
     const subjects = cur?.subjects !== undefined ? cur.subjects : getDefaultProjects(s);
     if (isRecordingSettle) {
-      // 녹취록은 등급을 Elite로 고정하고, 작업시간은 프로젝트 관리에 표시되는 값(파일 작업시간 합산값)과 동일하게 맞춘다.
-      return SETTLE_WORKER_SEED.map((r) => {
-        const proj = subjects.find((p) => p.worker === r.worker);
-        const workTime = proj ? calcProjWorkTime(proj.projFiles) : toHmsDisplay(r.workTime);
-        return { ...r, workTime, grade: 'Elite' };
+      // 녹취록: 프로젝트 관리에 배정된 작업자를 기준으로 작업자별 정산 내역을 만든다.
+      // 동일 작업자가 여러 프로젝트에 배정된 경우 각 프로젝트의 작업시간을 합산해 총 작업시간으로 반영하고, 등급은 Elite로 고정한다.
+      const infoByWorker = new Map();
+      subjects.forEach((proj) => {
+        if (!proj.worker) return;
+        const sec = (proj.projFiles || []).reduce((acc, f) => acc + durationToSec(f.workTime), 0);
+        const prev = infoByWorker.get(proj.worker);
+        if (prev) prev.sec += sec;
+        else infoByWorker.set(proj.worker, { sec, accuracy: proj.accuracy || '-', errors: proj.errors ?? 0 });
       });
+      return [...infoByWorker.entries()].map(([worker, info]) => ({
+        worker,
+        grade: 'Elite',
+        workTime: secToDuration(info.sec),
+        accuracy: info.accuracy,
+        errors: info.errors,
+        remark: '',
+        amount: 0,
+        payRate: '100%',
+        executor: '',
+        netAmount: 0,
+        status: '정산대기',
+      }));
     }
     // 회의록: 정산확인 작업자 목록을 프로젝트 관리에 등록된 프로젝트(작업자 배정 내역)와 동일하게 구성한다.
     return subjects.map((proj, i) => {
