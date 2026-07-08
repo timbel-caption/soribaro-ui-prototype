@@ -4390,7 +4390,7 @@ const SETTLEMENT_SHEET_SEED = [
 // 회의록 — 작업자/검수자/이력 시드
 const SETTLE_WORKER_SEED = [
   { worker: '홍길동', grade: 'Pro', workTime: '00:00', accuracy: '99.61%', errors: 1, remark: '', amount: 415800, payRate: '90%', executor: '정윤실_관리자', netAmount: 374220, status: '완료' },
-  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '50%', executor: '', netAmount: 45000, status: '정산대기' },
+  { worker: '김나리', grade: 'Elite', workTime: '00:00', accuracy: '98.27%', errors: 5, remark: '-1% 감점\n(99.27%)', amount: 90000, payRate: '70%', executor: '', netAmount: 63000, status: '정산대기' },
 ];
 const SETTLE_REVIEWER_SEED = [
   { worker: '김철수', grade: 'Elite', workTime: '00:00', executor: '정윤실_관리자', netAmount: 415800, status: '완료' },
@@ -4659,7 +4659,7 @@ function MtgSettlementTab({ s }) {
                 <th className="text-center">작업시간</th>
                 <th className="text-center">정확도</th>
                 <th className="text-center">오류 수</th>
-                <th className="text-center">정산금액</th>
+                <th className="text-center">실지급액</th>
                 <th>집행자</th>
                 <th className="text-center">상태</th>
                 <th>비고</th>
