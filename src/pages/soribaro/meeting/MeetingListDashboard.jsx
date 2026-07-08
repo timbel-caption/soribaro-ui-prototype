@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { updateSampleSpecialNote, updateSampleSubfileStatus, updateSamplePlayTime, updateStenographyWorkerAssign, getMeetingSamples, getStenographySamples, getRecordingSamples } from '../enterprise/proto/protoStore';
 import StenographyWorkerAssignModal from '../enterprise/proto/StenographyWorkerAssignModal';
-import { downloadMeetingWorkExcel, downloadStenographyWorkExcel } from '../../../utils/workManagementExcel';
+import { downloadMeetingWorkExcel, downloadRecordingWorkExcel, downloadStenographyWorkExcel } from '../../../utils/workManagementExcel';
 import { getRequestTypes } from '../manage/manageProtoStore';
 
 const STATUS_LABEL = {
@@ -241,8 +241,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const handleSearch = () => setSearchText(pendingSearch);
 
   const handleExportExcel = () => {
-    if (workType === 'stenography') downloadStenographyWorkExcel(filtered);
-    else downloadMeetingWorkExcel(filtered);
+    // 진행의뢰현황 "검수자"는 관리자가 직접 입력하는 화면 전용 값이라 store에 저장되지 않으므로, 엑셀 다운로드 시 함께 넘겨준다.
+    const rows = filtered.map((s) => ({ ...s, _reviewerNm: managerOverrides[s.id] ?? '' }));
+    if (workType === 'stenography') downloadStenographyWorkExcel(rows);
+    else if (workType === 'recording') downloadRecordingWorkExcel(rows);
+    else downloadMeetingWorkExcel(rows);
   };
 
   const filtered = samples.filter((s) =>
