@@ -5038,7 +5038,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
             <table style={{ borderCollapse: 'collapse', minWidth: '100%', tableLayout: 'auto' }}>
               <thead>
                 <tr>
-                  <th style={thStyle}>작업시간</th>
+                  <th style={thStyle}>의뢰시간</th>
                   <th style={thStyle}>계산서 발행</th>
                   <th style={thStyle}>단가</th>
                   <th style={thStyle}>기본 단위(분)</th>
