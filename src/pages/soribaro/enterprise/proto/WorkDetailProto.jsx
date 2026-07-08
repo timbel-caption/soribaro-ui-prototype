@@ -4644,6 +4644,18 @@ function MtgSettlementTab({ s }) {
                 <th className="text-center">상태</th>
                 <th>비고</th>
               </tr>
+            ) : isRecordingSettle ? (
+              <tr>
+                <th>작업자</th>
+                <th className="text-center">등급</th>
+                <th className="text-center">작업시간</th>
+                <th className="text-center">정확도</th>
+                <th className="text-center">오류 수</th>
+                <th className="text-center">정산금액</th>
+                <th>집행자</th>
+                <th className="text-center">상태</th>
+                <th>비고</th>
+              </tr>
             ) : (
               <tr>
                 <th>작업자</th>
@@ -4686,6 +4698,18 @@ function MtgSettlementTab({ s }) {
                 </td>
                 <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'worker')}</td>
                 <td className="text-center" style={{ fontSize: '12px', fontWeight: 600 }}>{row.netAmount.toLocaleString()}원</td>
+                <td className="text-center">{statusCell(row, i, 'worker')}</td>
+                {remarkCell(row, i)}
+              </tr>
+            )) : isRecordingSettle ? workers.map((row, i) => (
+              <tr key={i}>
+                <td style={{ fontWeight: 600 }}>{row.worker}</td>
+                <td className="text-center"><span className="proto-badge-done" style={{ fontSize: '11px' }}>{row.grade}</span></td>
+                <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{row.amount.toLocaleString()}원</td>
+                <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'worker')}</td>
                 <td className="text-center">{statusCell(row, i, 'worker')}</td>
                 {remarkCell(row, i)}
               </tr>
