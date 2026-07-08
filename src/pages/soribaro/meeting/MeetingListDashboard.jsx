@@ -140,6 +140,16 @@ function isWeekendOrHoliday(d) {
   return HOLIDAYS_2026.has(fmtDateOnly(d));
 }
 
+// 기준일의 다음 영업일(주말·공휴일 제외, 연속되는 경우 모두 건너뜀)
+function getNextBusinessDay(from) {
+  const d = new Date(from);
+  d.setDate(d.getDate() + 1);
+  while (isWeekendOrHoliday(d)) {
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+
 // 진행의뢰현황 > 상세보기 > 프로젝트 관리(workProgress)의 파일별 진행률을 전체 대비 100 기준으로 환산
 function computeOverallProgress(s) {
   if (!s.workProgress || s.workProgress.length === 0) return 0;
@@ -414,22 +424,23 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     return diffDays >= 1;
   });
   // 작업자 익일 회의 알림 대상: 작업자가 배정된 건만 발송 가능하며,
-  // 발송 버튼을 누른 날짜 기준 익일(diffDays===1) 회의만 즉시 발송하고,
-  // 그보다 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
+  // 발송 버튼을 누른 날짜 기준 "다음 영업일"(주말·공휴일 제외, 연속되면 모두 건너뜀)에 열리는 회의만 즉시 발송한다.
+  // 예) 금요일 발송 → 월요일 회의 대상 / 공휴일 전날 발송 → 공휴일 이후 첫 영업일 회의 대상
+  // 다음 영업일보다 더 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
   const nextDayCandidates = nextDayPopulation.filter((sm) => isWorkerAssigned(sm));
   // 배정이 완료되지 않아 작업자 익일 회의 알림 대상에서 제외되는 건
   const nextDayUnassigned = nextDayPopulation.filter((sm) => !isWorkerAssigned(sm));
+  const nextBusinessDay = getNextBusinessDay(today);
   const nextDayTargets = {
     immediate: nextDayCandidates.filter((sm) => {
       const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
-      const diffDays = Math.round((toDateOnly(sm.regDttm) - today) / 86400000);
-      return diffDays === 1 && !nextDayNotifiedKeys.has(notifyKey(sm.id, effWorker));
+      const meetingDate = toDateOnly(sm.regDttm);
+      return meetingDate.getTime() === nextBusinessDay.getTime() && !nextDayNotifiedKeys.has(notifyKey(sm.id, effWorker));
     }),
     scheduled: nextDayCandidates.filter((sm) => {
       const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
       const meetingDate = toDateOnly(sm.regDttm);
-      const diffDays = Math.round((meetingDate - today) / 86400000);
-      if (diffDays <= 1 || nextDayScheduledKeys.has(notifyKey(sm.id, effWorker))) return false;
+      if (meetingDate.getTime() <= nextBusinessDay.getTime() || nextDayScheduledKeys.has(notifyKey(sm.id, effWorker))) return false;
       const dayBefore = new Date(meetingDate);
       dayBefore.setDate(dayBefore.getDate() - 1);
       return isWeekendOrHoliday(dayBefore);
@@ -1054,9 +1065,11 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
       )}
 
       {/* 알림 발송 2단계 — 발송 대상 확인 */}
-      {notifyStep === 'confirm' && (
+      {notifyStep === 'confirm' && (() => {
+        const unassigned = notifyType === 'nextWeek' ? nextWeekUnassigned : notifyType === 'nextDay' ? nextDayUnassigned : [];
+        return (
         <div className="pm-overlay" onClick={closeNotifyFlow}>
-          <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+          <div className={`pm-modal${unassigned.length === 0 ? ' pm-modal--sm' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="pm-modal-hd">
               <span className="pm-modal-title">{NOTIFY_TYPES.find((t) => t.key === notifyType)?.label}</span>
               <button className="preg-x-btn" onClick={closeNotifyFlow}>✕</button>
@@ -1065,49 +1078,43 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                 {NOTIFY_TYPES.find((t) => t.key === notifyType)?.desc}
               </p>
-              {(() => {
-                const unassigned = notifyType === 'nextWeek' ? nextWeekUnassigned : notifyType === 'nextDay' ? nextDayUnassigned : [];
-                if (unassigned.length === 0) {
-                  return (
-                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                      선택한 대상에게 알림을 발송하시겠습니까?
-                    </p>
-                  );
-                }
-                return (
-                  <>
-                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                      배정이 완료되지 않은 작업물이 있습니다.<br />
-                      제외 후 나머지 작업물에 대해 알림을 발송하시겠습니까?
-                    </p>
-                    <p style={{ fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>제외 작업물 정보</p>
-                    <div className="proto-table-wrap proto-table-wrap--scroll" style={{ marginBottom: '10px', maxHeight: '160px' }}>
-                      <table className="proto-table">
-                        <thead>
-                          <tr>
-                            <th className="text-center">의뢰일자</th>
-                            <th>업체명</th>
-                            <th className="text-center">계약구분</th>
-                            <th className="text-center">회차</th>
-                            <th className="text-center">시작~종료 시간</th>
+              {unassigned.length === 0 ? (
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                  선택한 대상에게 알림을 발송하시겠습니까?
+                </p>
+              ) : (
+                <>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                    배정이 완료되지 않은 작업물이 있습니다.<br />
+                    제외 후 나머지 작업물에 대해 알림을 발송하시겠습니까?
+                  </p>
+                  <p style={{ fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>알림 제외</p>
+                  <div className="proto-table-wrap proto-table-wrap--scroll" style={{ marginBottom: '10px', maxHeight: '160px', overflowX: 'auto' }}>
+                    <table className="proto-table" style={{ width: 'max-content', minWidth: '100%' }}>
+                      <thead>
+                        <tr>
+                          <th className="text-center" style={{ whiteSpace: 'nowrap' }}>의뢰일자</th>
+                          <th style={{ whiteSpace: 'nowrap' }}>업체명</th>
+                          <th className="text-center" style={{ whiteSpace: 'nowrap' }}>계약구분</th>
+                          <th className="text-center" style={{ whiteSpace: 'nowrap' }}>회차</th>
+                          <th className="text-center" style={{ whiteSpace: 'nowrap' }}>시작~종료 시간</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {unassigned.map((sm) => (
+                          <tr key={sm.id}>
+                            <td className="text-center" style={{ whiteSpace: 'nowrap' }}>{formatRegDate(sm.regDttm)}</td>
+                            <td style={{ whiteSpace: 'nowrap' }}>{sm.entNm}</td>
+                            <td className="text-center" style={{ whiteSpace: 'nowrap' }}>{contractBadge(sm.contractType)}</td>
+                            <td className="text-center" style={{ whiteSpace: 'nowrap' }}>{sm.round || '-'}</td>
+                            <td className="text-center" style={{ whiteSpace: 'nowrap' }}>{sm.sessionTime || '-'}</td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {unassigned.map((sm) => (
-                            <tr key={sm.id}>
-                              <td className="text-center">{formatRegDate(sm.regDttm)}</td>
-                              <td>{sm.entNm}</td>
-                              <td className="text-center">{contractBadge(sm.contractType)}</td>
-                              <td className="text-center">{sm.round || '-'}</td>
-                              <td className="text-center">{sm.sessionTime || '-'}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                );
-              })()}
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
               {notifyType === 'assign' && (
                 <p style={{ fontSize: '13px', fontWeight: 600 }}>선택한 {selectedIds.size}건 중 작업자가 배정된 의뢰에 발송됩니다.</p>
               )}
@@ -1128,7 +1135,8 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
