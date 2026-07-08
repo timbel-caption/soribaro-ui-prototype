@@ -415,36 +415,27 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const nextWeekTargets = nextWeekPopulation.filter((sm) => isWorkerAssigned(sm) && !nextWeekNotifiedIds.has(sm.id));
   // 배정이 완료되지 않아 차주 배정 알림 대상에서 제외되는 건
   const nextWeekUnassigned = nextWeekPopulation.filter((sm) => !isWorkerAssigned(sm));
-  // 작업자 익일 회의 알림 발송 대상 기간(익일 이후)에 속한 현장속기 건 전체(배정 여부 무관)
+  // 작업자 익일 회의 알림: 발송 버튼을 누른 날짜 기준 "다음 영업일"(주말·공휴일 제외, 연속되면 모두 건너뜀)에
+  // 열리는 현장속기 회의만 조회 대상으로 삼는다. 예) 금요일 발송 → 월요일 회의 대상 / 공휴일 전날 발송 → 공휴일 이후 첫 영업일 회의 대상
+  // 조회 순서: 전체 회의 조회 → 다음 영업일 회의만 필터링(nextDayPopulation) → 작업자 배정 여부로 발송 대상/알림 제외 분기
+  const nextBusinessDay = getNextBusinessDay(today);
   const nextDayPopulation = samples.filter((sm) => {
     if (sm.bssTypeName !== '현장속기') return false;
     const meetingDate = toDateOnly(sm.regDttm);
-    if (!meetingDate) return false;
-    const diffDays = Math.round((meetingDate - today) / 86400000);
-    return diffDays >= 1;
+    return meetingDate && meetingDate.getTime() === nextBusinessDay.getTime();
   });
-  // 작업자 익일 회의 알림 대상: 작업자가 배정된 건만 발송 가능하며,
-  // 발송 버튼을 누른 날짜 기준 "다음 영업일"(주말·공휴일 제외, 연속되면 모두 건너뜀)에 열리는 회의만 즉시 발송한다.
-  // 예) 금요일 발송 → 월요일 회의 대상 / 공휴일 전날 발송 → 공휴일 이후 첫 영업일 회의 대상
-  // 다음 영업일보다 더 먼 회의는 회의 전날이 주말·공휴일(직원이 출근하지 않아 그날 직접 발송할 수 없는 날)인 경우에만 미리 예약 등록한다.
+  // 다음 영업일 회의 중 작업자가 배정된 건 → 발송 대상
   const nextDayCandidates = nextDayPopulation.filter((sm) => isWorkerAssigned(sm));
-  // 배정이 완료되지 않아 작업자 익일 회의 알림 대상에서 제외되는 건
+  // 다음 영업일 회의 중 작업자가 배정되지 않은 건 → 알림 제외
   const nextDayUnassigned = nextDayPopulation.filter((sm) => !isWorkerAssigned(sm));
-  const nextBusinessDay = getNextBusinessDay(today);
   const nextDayTargets = {
     immediate: nextDayCandidates.filter((sm) => {
       const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
-      const meetingDate = toDateOnly(sm.regDttm);
-      return meetingDate.getTime() === nextBusinessDay.getTime() && !nextDayNotifiedKeys.has(notifyKey(sm.id, effWorker));
+      return !nextDayNotifiedKeys.has(notifyKey(sm.id, effWorker));
     }),
-    scheduled: nextDayCandidates.filter((sm) => {
-      const effWorker = workerOverrides[sm.id]?.worker ?? sm.assignWorker;
-      const meetingDate = toDateOnly(sm.regDttm);
-      if (meetingDate.getTime() <= nextBusinessDay.getTime() || nextDayScheduledKeys.has(notifyKey(sm.id, effWorker))) return false;
-      const dayBefore = new Date(meetingDate);
-      dayBefore.setDate(dayBefore.getDate() - 1);
-      return isWeekendOrHoliday(dayBefore);
-    }),
+    // 회의 전날이 주말·공휴일이라 그날 직접 발송할 수 없는 경우를 위한 예약 발송 대상.
+    // 조회 대상을 다음 영업일 회의로 한정했으므로(예약이 필요한, 그보다 먼 회의는 조회되지 않음) 항상 비어 있다.
+    scheduled: [],
   };
 
   // 작업자 익일 회의 알림 상태(현재 배정된 작업자 기준) + 발송 완료 일시 또는 (예약인 경우) 회의 전날 발송 예정일시
