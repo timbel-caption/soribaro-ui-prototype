@@ -10,9 +10,8 @@ const PERIOD_OPTS = ['주간', '월간', '연간', '기간 직접 선택'];
 function toHrsFmt(n) {
   const h = Math.floor(n / 60);
   const m = n % 60;
-  if (m === 0) return `${h}시간`;
-  if (h >= 10) return `약 ${Math.round(n / 60)}시간`;
-  return `${h}시간 ${m}분`;
+  if (m === 0) return `약 ${h}시간`;
+  return `약 ${h}시간 ${m}분`;
 }
 function minutesFmt(n) {
   return `${n.toLocaleString()}분 (${toHrsFmt(n)})`;
@@ -32,56 +31,62 @@ const SUMMARY_BY_TAB = {
 };
 
 // ── 더미 데이터 — 업체/기관별 현황 ──────────────────────────────────────────
+// inspectAssigned: 검수자 배정 분수. 관리자 작업/검수 분수는 렌더 시 파생 계산한다.
 const ORG_ROWS_BY_TAB = {
   전체: [
-    { org: '영성미디어',         total: 5840, assigned: 5210, inProgress: 4590, inspecting: 3920, delivered: 3240, rate: 55 },
-    { org: '법무법인 태평양',     total: 4210, assigned: 3980, inProgress: 3460, inspecting: 2940, delivered: 2520, rate: 60 },
-    { org: '강서구교육지원청',    total: 3750, assigned: 3480, inProgress: 2990, inspecting: 2550, delivered: 2140, rate: 57 },
-    { org: 'EBS',                total: 3320, assigned: 2960, inProgress: 2580, inspecting: 2210, delivered: 1870, rate: 56 },
-    { org: '국회사무처',          total: 3170, assigned: 2840, inProgress: 2450, inspecting: 2050, delivered: 1760, rate: 56 },
-    { org: '대검찰청',            total: 2980, assigned: 2670, inProgress: 2370, inspecting: 2010, delivered: 1720, rate: 58 },
-    { org: '스톰미디어',          total: 2540, assigned: 2230, inProgress: 1950, inspecting: 1650, delivered: 1360, rate: 54 },
-    { org: '한양사이버대학교',     total: 2410, assigned: 2120, inProgress: 1840, inspecting: 1570, delivered: 1310, rate: 54 },
+    { org: '영성미디어',         total: 5840, assigned: 5210, inspectAssigned: 3920, delivered: 3240, rate: 55 },
+    { org: '법무법인 태평양',     total: 4210, assigned: 3980, inspectAssigned: 2940, delivered: 2520, rate: 60 },
+    { org: '강서구교육지원청',    total: 3750, assigned: 3480, inspectAssigned: 2550, delivered: 2140, rate: 57 },
+    { org: 'EBS',                total: 3320, assigned: 2960, inspectAssigned: 2210, delivered: 1870, rate: 56 },
+    { org: '국회사무처',          total: 3170, assigned: 2840, inspectAssigned: 2050, delivered: 1760, rate: 56 },
+    { org: '대검찰청',            total: 2980, assigned: 2670, inspectAssigned: 2010, delivered: 1720, rate: 58 },
+    { org: '스톰미디어',          total: 2540, assigned: 2230, inspectAssigned: 1650, delivered: 1360, rate: 54 },
+    { org: '한양사이버대학교',     total: 2410, assigned: 2120, inspectAssigned: 1570, delivered: 1310, rate: 54 },
   ],
   녹취록: [
-    { org: '법무법인 태평양',   total: 2840, assigned: 2650, inProgress: 2280, inspecting: 1910, delivered: 1640, rate: 58 },
-    { org: '대검찰청',         total: 2180, assigned: 1970, inProgress: 1770, inspecting: 1510, delivered: 1290, rate: 59 },
-    { org: '국민건강보험공단',  total: 1420, assigned: 1340, inProgress: 1160, inspecting:  980, delivered:  830, rate: 58 },
-    { org: '서울중앙지법',      total: 1310, assigned: 1230, inProgress: 1060, inspecting:  890, delivered:  750, rate: 57 },
-    { org: '한국전력공사',      total:  820, assigned:  750, inProgress:  640, inspecting:  530, delivered:  450, rate: 55 },
-    { org: '금융감독원',        total:  640, assigned:  590, inProgress:  510, inspecting:  430, delivered:  380, rate: 59 },
+    { org: '법무법인 태평양',   total: 2840, assigned: 2650, inspectAssigned: 1910, delivered: 1640, rate: 58 },
+    { org: '대검찰청',         total: 2180, assigned: 1970, inspectAssigned: 1510, delivered: 1290, rate: 59 },
+    { org: '국민건강보험공단',  total: 1420, assigned: 1340, inspectAssigned:  980, delivered:  830, rate: 58 },
+    { org: '서울중앙지법',      total: 1310, assigned: 1230, inspectAssigned:  890, delivered:  750, rate: 57 },
+    { org: '한국전력공사',      total:  820, assigned:  750, inspectAssigned:  530, delivered:  450, rate: 55 },
+    { org: '금융감독원',        total:  640, assigned:  590, inspectAssigned:  430, delivered:  380, rate: 59 },
   ],
   회의록: [
-    { org: '강서구교육지원청',      total: 1820, assigned: 1680, inProgress: 1450, inspecting: 1220, delivered: 1040, rate: 57 },
-    { org: '강남서초교육지원청',     total: 1540, assigned: 1420, inProgress: 1230, inspecting: 1030, delivered:  870, rate: 57 },
-    { org: '서울시교육청',          total: 1260, assigned: 1160, inProgress: 1000, inspecting:  840, delivered:  720, rate: 57 },
-    { org: '경기도교육청',          total: 1080, assigned:  990, inProgress:  850, inspecting:  710, delivered:  600, rate: 56 },
-    { org: '인천시교육청',          total:  780, assigned:  700, inProgress:  600, inspecting:  490, delivered:  410, rate: 53 },
-    { org: '부산광역시교육청',       total:  680, assigned:  610, inProgress:  520, inspecting:  430, delivered:  360, rate: 53 },
-    { org: '충청남도교육청',         total:  520, assigned:  460, inProgress:  400, inspecting:  330, delivered:  280, rate: 54 },
+    { org: '강서구교육지원청',      total: 1820, assigned: 1680, inspectAssigned: 1220, delivered: 1040, rate: 57 },
+    { org: '강남서초교육지원청',     total: 1540, assigned: 1420, inspectAssigned: 1030, delivered:  870, rate: 57 },
+    { org: '서울시교육청',          total: 1260, assigned: 1160, inspectAssigned:  840, delivered:  720, rate: 57 },
+    { org: '경기도교육청',          total: 1080, assigned:  990, inspectAssigned:  710, delivered:  600, rate: 56 },
+    { org: '인천시교육청',          total:  780, assigned:  700, inspectAssigned:  490, delivered:  410, rate: 53 },
+    { org: '부산광역시교육청',       total:  680, assigned:  610, inspectAssigned:  430, delivered:  360, rate: 53 },
+    { org: '충청남도교육청',         total:  520, assigned:  460, inspectAssigned:  330, delivered:  280, rate: 54 },
   ],
   현장속기: [
-    { org: '국회사무처',      total: 2230, assigned: 1920, inProgress: 1650, inspecting: 1380, delivered: 1160, rate: 52 },
-    { org: '서울시의회',      total: 1180, assigned: 1010, inProgress:  870, inspecting:  720, delivered:  610, rate: 52 },
-    { org: '경기도의회',      total:  910, assigned:  780, inProgress:  670, inspecting:  550, delivered:  460, rate: 51 },
-    { org: '인천시의회',      total:  680, assigned:  580, inProgress:  490, inspecting:  400, delivered:  330, rate: 49 },
-    { org: '부산시의회',      total:  520, assigned:  440, inProgress:  370, inspecting:  300, delivered:  250, rate: 48 },
-    { org: '대전시의회',      total:  390, assigned:  330, inProgress:  280, inspecting:  230, delivered:  190, rate: 49 },
+    { org: '국회사무처',      total: 2230, assigned: 1920, inspectAssigned: 1380, delivered: 1160, rate: 52 },
+    { org: '서울시의회',      total: 1180, assigned: 1010, inspectAssigned:  720, delivered:  610, rate: 52 },
+    { org: '경기도의회',      total:  910, assigned:  780, inspectAssigned:  550, delivered:  460, rate: 51 },
+    { org: '인천시의회',      total:  680, assigned:  580, inspectAssigned:  400, delivered:  330, rate: 49 },
+    { org: '부산시의회',      total:  520, assigned:  440, inspectAssigned:  300, delivered:  250, rate: 48 },
+    { org: '대전시의회',      total:  390, assigned:  330, inspectAssigned:  230, delivered:  190, rate: 49 },
   ],
   VOD: [
-    { org: '영성미디어',         total: 4240, assigned: 3810, inProgress: 3290, inspecting: 2870, delivered: 2380, rate: 56 },
-    { org: 'EBS',                total: 3320, assigned: 2960, inProgress: 2580, inspecting: 2210, delivered: 1870, rate: 56 },
-    { org: '스톰미디어',          total: 2540, assigned: 2230, inProgress: 1950, inspecting: 1650, delivered: 1360, rate: 54 },
-    { org: '한양사이버대학교',     total: 2410, assigned: 2120, inProgress: 1840, inspecting: 1570, delivered: 1310, rate: 54 },
-    { org: '한국열린사이버대학교', total: 1980, assigned: 1730, inProgress: 1490, inspecting: 1260, delivered: 1040, rate: 53 },
-    { org: '에듀콥',             total: 1620, assigned: 1410, inProgress: 1210, inspecting: 1010, delivered:  830, rate: 51 },
+    { org: '영성미디어',         total: 4240, assigned: 3810, inspectAssigned: 2870, delivered: 2380, rate: 56 },
+    { org: 'EBS',                total: 3320, assigned: 2960, inspectAssigned: 2210, delivered: 1870, rate: 56 },
+    { org: '스톰미디어',          total: 2540, assigned: 2230, inspectAssigned: 1650, delivered: 1360, rate: 54 },
+    { org: '한양사이버대학교',     total: 2410, assigned: 2120, inspectAssigned: 1570, delivered: 1310, rate: 54 },
+    { org: '한국열린사이버대학교', total: 1980, assigned: 1730, inspectAssigned: 1260, delivered: 1040, rate: 53 },
+    { org: '에듀콥',             total: 1620, assigned: 1410, inspectAssigned: 1010, delivered:  830, rate: 51 },
   ],
   미디어: [
-    { org: '미디어로그',   total: 2640, assigned: 2340, inProgress: 2040, inspecting: 1340, delivered: 1040, rate: 39 },
-    { org: 'CGN',        total: 1960, assigned: 1740, inProgress: 1520, inspecting:  940, delivered:  680, rate: 35 },
-    { org: '서울시 유튜브', total: 1400, assigned: 1220, inProgress: 1040, inspecting:  720, delivered:  580, rate: 41 },
+    { org: '미디어로그',   total: 2640, assigned: 2340, inspectAssigned: 1340, delivered: 1040, rate: 39 },
+    { org: 'CGN',        total: 1960, assigned: 1740, inspectAssigned:  940, delivered:  680, rate: 35 },
+    { org: '서울시 유튜브', total: 1400, assigned: 1220, inspectAssigned:  720, delivered:  580, rate: 41 },
   ],
 };
+
+// 관리자 작업/검수 분수 파생 — 외부 배정하지 않고 관리자가 직접 처리한 분량
+// 관리자 작업 = 전체 입고 − 작업자 배정, 관리자 검수 = 검수자 배정 − 납품 완료
+const adminWorkOf   = (r) => Math.max(0, r.total - r.assigned);
+const adminReviewOf = (r) => Math.max(0, (r.inspectAssigned ?? 0) - r.delivered);
 
 // ── 더미 데이터 — 상세 목록 ──────────────────────────────────────────────
 const DETAIL_ROWS_BY_TAB = {
@@ -151,9 +156,9 @@ function DetailTableHead({ tab }) {
     <>
       <th className="text-right">전체 분수</th>
       <th className="text-right">작업자 배정</th>
-      <th className="text-right">작업 진행</th>
+      <th className="text-right">관리자 작업</th>
       <th className="text-right">검수자 배정</th>
-      <th className="text-right">검수 진행</th>
+      <th className="text-right">관리자 검수</th>
       <th className="text-right">납품 완료</th>
       <th className="text-center">상태</th>
     </>
@@ -213,9 +218,9 @@ function DetailTableRow({ tab, r }) {
     <>
       <td className="text-right ops-min-cell">{minutesFmt(r.total)}</td>
       <td className="text-right">{minCell(r.assigned)}</td>
-      <td className="text-right">{minCell(r.inProgress)}</td>
+      <td className="text-right">{minCell(adminWorkOf(r))}</td>
       <td className="text-right">{minCell(r.inspectAssigned)}</td>
-      <td className="text-right">{minCell(r.inspecting)}</td>
+      <td className="text-right">{minCell(adminReviewOf(r))}</td>
       <td className="text-right">{minCell(r.delivered)}</td>
       <td className="text-center"><StatusBadge status={r.status} /></td>
     </>
@@ -290,9 +295,9 @@ export default function ManageOperationsPage() {
   const summaryCards = [
     { label: '전체 입고 분수',   value: summary.total,           color: 'var(--text-primary)' },
     { label: '작업자 배정 분수', value: summary.assigned,        color: '#60a5fa' },
-    { label: '작업 진행 분수',   value: summary.inProgress,      color: '#34d399' },
+    { label: '관리자 작업 분수', value: adminWorkOf(summary),    color: '#34d399' },
     { label: '검수자 배정 분수', value: summary.inspectAssigned, color: '#a78bfa' },
-    { label: '검수 진행 분수',   value: summary.inspecting,      color: '#fbbf24' },
+    { label: '관리자 검수 분수', value: adminReviewOf(summary),  color: '#fbbf24' },
     { label: '납품 완료 분수',   value: summary.delivered,       color: '#4ade80' },
   ];
 
@@ -370,8 +375,9 @@ export default function ManageOperationsPage() {
                 <th>업체 / 기관명</th>
                 <th className="text-right">전체 입고</th>
                 <th className="text-right">작업자 배정</th>
-                <th className="text-right">작업 진행</th>
-                <th className="text-right">검수 진행</th>
+                <th className="text-right">관리자 작업</th>
+                <th className="text-right">검수자 배정</th>
+                <th className="text-right">관리자 검수</th>
                 <th className="text-right">납품 완료</th>
                 <th style={{ minWidth: 130 }}>납품률</th>
               </tr>
@@ -382,8 +388,9 @@ export default function ManageOperationsPage() {
                   <td className="ops-org-name">{r.org}</td>
                   <td className="text-right ops-min-cell">{minutesFmt(r.total)}</td>
                   <td className="text-right">{minCell(r.assigned)}</td>
-                  <td className="text-right">{minCell(r.inProgress)}</td>
-                  <td className="text-right">{minCell(r.inspecting)}</td>
+                  <td className="text-right">{minCell(adminWorkOf(r))}</td>
+                  <td className="text-right">{minCell(r.inspectAssigned)}</td>
+                  <td className="text-right">{minCell(adminReviewOf(r))}</td>
                   <td className="text-right">{minCell(r.delivered)}</td>
                   <td>
                     <div className="ops-rate-cell">
