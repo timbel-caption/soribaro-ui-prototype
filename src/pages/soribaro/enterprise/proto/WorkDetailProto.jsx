@@ -3878,8 +3878,7 @@ function DeliveryTab({ s }) {
   const [deliveryModal, setDeliveryModal]     = useState(null); // { targets: item[] }
   const [revisionModal, setRevisionModal]     = useState(null); // { item }
   const [redeliveryModal, setRedeliveryModal] = useState(null); // { item }
-  const [editingDueDate, setEditingDueDate]   = useState(null); // id
-  const [dueDateDraft, setDueDateDraft]       = useState('');
+  const [historyOpen, setHistoryOpen]         = useState(false); // 납품 이력 영역 접힘(기본)/펼침
   // 납품 이력 접기/펼치기: key = 'projectName::batchLabel', default all open
   const [historyExpanded, setHistoryExpanded] = useState(() => {
     const init = {};
@@ -3982,13 +3981,31 @@ function DeliveryTab({ s }) {
     setRedeliveryModal(null);
   };
 
-  const saveDueDate = (id) => {
-    setItems((prev) => prev.map((it) => it.id === id ? { ...it, dueDate: dueDateDraft } : it));
-    setEditingDueDate(null);
-    setDueDateDraft('');
-  };
-
   const focusedItemData = items.find((it) => it.id === focusedItem);
+
+  // 납품 대상 목록 그룹: 프로젝트 → 차수/주차 (items 순서 = 프로젝트 관리 seed 순서 유지)
+  const targetGroups = (() => {
+    const groups = [];
+    items.forEach((it) => {
+      let proj = groups.find((p) => p.projectName === it.projectName);
+      if (!proj) { proj = { projectName: it.projectName, batches: [] }; groups.push(proj); }
+      let b = proj.batches.find((x) => x.batchLabel === it.batchLabel);
+      if (!b) { b = { batchLabel: it.batchLabel, items: [] }; proj.batches.push(b); }
+      b.items.push(it);
+    });
+    return groups;
+  })();
+
+  // 차수/주차 요약 헬퍼
+  const isUnavailable = (it) => !['검수 완료', '납품 완료', '수정 요청'].includes(it.progressStatus);
+  const batchDue = (bItems) => {
+    const ds = bItems.map((i) => i.dueDate).filter(Boolean).sort();
+    return ds.length ? ds[ds.length - 1] : '-';
+  };
+  const deliverAll = (bItems) => {
+    const targets = bItems.filter(canDeliver);
+    if (targets.length > 0) setDeliveryModal({ targets });
+  };
 
   // 납품 이력 그룹: DELIVERY_ITEMS_SEED 기준 projectName → batchLabel 계층 도출
   const historyGroups = (() => {
@@ -4009,31 +4026,25 @@ function DeliveryTab({ s }) {
   return (
     <div className="proto-tab-panel">
 
-      {/* ── 1. 상단 요약 ── */}
-      <div className="vod-dlv-summary">
-        <div className="vod-dlv-summary-card vod-dlv-summary-card--review-done">
-          <span className="vod-dlv-summary-count">{cntReviewDone}</span>
-          <span className="vod-dlv-summary-label">검수 완료</span>
-        </div>
-        <div className="vod-dlv-summary-card vod-dlv-summary-card--delivered">
-          <span className="vod-dlv-summary-count">{cntDelivered}</span>
-          <span className="vod-dlv-summary-label">납품 완료</span>
-        </div>
-        <div className="vod-dlv-summary-card vod-dlv-summary-card--revision">
-          <span className="vod-dlv-summary-count">{cntRevision}</span>
-          <span className="vod-dlv-summary-label">수정 요청</span>
-        </div>
-        <div className="vod-dlv-summary-card vod-dlv-summary-card--unavailable">
-          <span className="vod-dlv-summary-count">{cntUnavailable}</span>
-          <span className="vod-dlv-summary-label">납품 불가</span>
-        </div>
+      {/* ── 1. 납품 현황 한 줄 요약 ── */}
+      <div className="vod-dlv-summary-line">
+        <span className="vod-dlv-sum-chip vod-dlv-sum-chip--ok">납품 가능 {cntReviewDone}건</span>
+        <span className="vod-dlv-sum-sep">·</span>
+        <span className="vod-dlv-sum-chip vod-dlv-sum-chip--done">납품 완료 {cntDelivered}건</span>
+        <span className="vod-dlv-sum-sep">·</span>
+        <span className="vod-dlv-sum-chip vod-dlv-sum-chip--rev">수정 요청 {cntRevision}건</span>
+        <span className="vod-dlv-sum-sep">·</span>
+        <span className="vod-dlv-sum-chip vod-dlv-sum-chip--no">납품 불가 {cntUnavailable}건</span>
       </div>
 
-      {/* ── 2. 납품 대상 및 상태 목록 ── */}
+      {/* ── 2. 납품 대상 목록 (프로젝트 → 차수/주차 그룹) ── */}
       <div className="vod-dlv-table-section">
         <div className="vod-dlv-table-header">
-          <p className="proto-section-title" style={{ margin: 0 }}>납품 대상 및 상태 목록</p>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          <p className="proto-section-title" style={{ margin: 0 }}>납품 대상 목록</p>
+          <div className="vod-dlv-target-actions">
+            {selectedItems.length > 0 && selectedItems.some((it) => !canDeliver(it)) && (
+              <span className="vod-dlv-select-notice">선택 항목에 납품 불가 파일이 포함되어 있습니다.</span>
+            )}
             <button
               className={`vod-dlv-action-btn${hasDeliverable ? '' : ' vod-dlv-action-btn--disabled'}`}
               disabled={!hasDeliverable}
@@ -4044,121 +4055,122 @@ function DeliveryTab({ s }) {
           </div>
         </div>
 
-        <div className="proto-table-wrap proto-table-wrap--scroll">
-          <table className="proto-table vod-dlv-table">
-            <thead>
-              <tr>
-                <th style={{ width: '32px' }}>
-                  <input type="checkbox" className="vod-pm-file-check"
-                    checked={selected.length === items.length && items.length > 0}
-                    onChange={toggleAll}
-                  />
-                </th>
-                <th className="text-center">의뢰/입고일</th>
-                <th>프로젝트명</th>
-                <th className="text-center">차수/주차</th>
-                <th>파일명</th>
-                <th className="text-center">작업자</th>
-                <th className="text-center">검수자</th>
-                <th className="text-center">현재 진행 상태</th>
-                <th className="text-center">납품 가능 여부</th>
-                <th className="text-center">검수완료일</th>
-                <th className="text-center">납품예정일</th>
-                <th className="text-center">납품일</th>
-                <th className="text-center">납품 형식</th>
-                <th className="text-center">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((it) => (
-                <tr
-                  key={it.id}
-                  className={`${selected.includes(it.id) ? 'vod-pm-row-checked' : ''}${focusedItem === it.id ? ' vod-dlv-row-focused' : ''}`}
-                  onClick={() => setFocusedItem((prev) => prev === it.id ? null : it.id)}
-                >
-                  <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
-                    <input type="checkbox" className="vod-pm-file-check"
-                      checked={selected.includes(it.id)}
-                      onChange={() => toggleSelect(it.id)}
-                    />
-                  </td>
-                  <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{it.receivedDate}</td>
-                  <td style={{ fontSize: '13px', fontWeight: 500 }}>{it.projectName}</td>
-                  <td className="text-center" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{it.batchLabel}</td>
-                  <td className="vod-pm-file-name-cell" title={it.fileName}>{it.fileName}</td>
-                  <td className="text-center" style={{ fontSize: '12px' }}>
-                    {it.worker ? <span className="vod-pm-assign-tag vod-pm-assign-tag--worker">{it.worker}</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
-                  </td>
-                  <td className="text-center" style={{ fontSize: '12px' }}>
-                    {it.reviewer ? <span className="vod-pm-assign-tag vod-pm-assign-tag--reviewer">{it.reviewer}</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
-                  </td>
-                  <td className="text-center">{dlvProgressBadge(it.progressStatus)}</td>
-                  <td className="text-center">{dlvAvailBadge(it.progressStatus)}</td>
-                  <td className="text-center" style={{ fontSize: '12px' }}>{it.reviewCompletedDate || '-'}</td>
-                  <td className="text-center" style={{ fontSize: '12px' }} onClick={(e) => e.stopPropagation()}>
-                    {editingDueDate === it.id ? (
-                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
-                        <input
-                          type="date"
-                          className="vod-dlv-date-input"
-                          value={dueDateDraft}
-                          onChange={(e) => setDueDateDraft(e.target.value)}
-                          autoFocus
-                        />
-                        <button className="vod-dlv-date-save-btn" onClick={() => saveDueDate(it.id)}>저장</button>
-                        <button className="vod-dlv-date-cancel-btn" onClick={() => setEditingDueDate(null)}>✕</button>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
-                        <span>{it.dueDate || '-'}</span>
-                        <button
-                          className="vod-dlv-date-edit-btn"
-                          title="납품예정일 수정"
-                          onClick={() => { setEditingDueDate(it.id); setDueDateDraft(it.dueDate || ''); }}
-                        >✎</button>
-                      </div>
-                    )}
-                  </td>
-                  <td className="text-center" style={{ fontSize: '12px' }}>{it.actualDeliveryDate || '-'}</td>
-                  <td className="text-center" style={{ fontSize: '12px' }}>{it.deliveryFormat || '-'}</td>
-                  <td className="text-center" onClick={(e) => e.stopPropagation()}>
-                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                      {canDeliver(it) && (
-                        <button className="vod-dlv-row-btn vod-dlv-row-btn--deliver"
-                          onClick={() => setDeliveryModal({ targets: [it] })}>
-                          납품 완료 처리
-                        </button>
-                      )}
-                      {canRevision(it) && (
-                        <button className="vod-dlv-row-btn vod-dlv-row-btn--revision"
-                          onClick={() => setRevisionModal({ item: it })}>
-                          수정 요청 등록
-                        </button>
-                      )}
-                      {canRedeliver(it) && (
-                        <button className="vod-dlv-row-btn vod-dlv-row-btn--redeliver"
-                          onClick={() => setRedeliveryModal({ item: it })}>
-                          재납품 완료 처리
-                        </button>
-                      )}
-                      {!canDeliver(it) && !canRevision(it) && !canRedeliver(it) && (
-                        <span className="vod-dlv-row-unavailable">납품 불가</span>
-                      )}
+        {targetGroups.map((proj) => (
+          <div key={proj.projectName} className="vod-dlv-proj-block">
+            <div className="vod-dlv-proj-title">{proj.projectName}</div>
+            {proj.batches.map((batch) => {
+              const possible = batch.items.filter(canDeliver).length;
+              const unavail  = batch.items.filter(isUnavailable).length;
+              const done     = batch.items.filter((it) => it.progressStatus === '납품 완료').length;
+              return (
+                <div key={batch.batchLabel} className="vod-dlv-batch-block">
+                  <div className="vod-dlv-batch-header">
+                    <div className="vod-dlv-batch-info">
+                      <span className="vod-dlv-batch-label">{batch.batchLabel}</span>
+                      <span className="vod-dlv-batch-meta">· 납품예정일 {batchDue(batch.items)}</span>
+                      {possible > 0 && <span className="vod-dlv-batch-badge vod-dlv-batch-badge--ok">납품 가능 {possible}건</span>}
+                      {unavail > 0 && <span className="vod-dlv-batch-badge vod-dlv-batch-badge--no">납품 불가 {unavail}건</span>}
+                      {done > 0 && <span className="vod-dlv-batch-badge vod-dlv-batch-badge--done">납품 완료 {done}건</span>}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <button
+                      className={`vod-dlv-batch-deliver-btn${possible > 0 ? '' : ' vod-dlv-batch-deliver-btn--disabled'}`}
+                      disabled={possible === 0}
+                      onClick={() => deliverAll(batch.items)}
+                    >
+                      가능 파일 전체 납품 완료
+                    </button>
+                  </div>
+
+                  <div className="proto-table-wrap">
+                    <table className="proto-table vod-dlv-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '32px' }} />
+                          <th>파일명</th>
+                          <th className="text-center">작업자</th>
+                          <th className="text-center">검수자</th>
+                          <th className="text-center">현재 상태</th>
+                          <th className="text-center">납품 상태</th>
+                          <th className="text-center">검수완료일</th>
+                          <th className="text-center">납품예정일</th>
+                          <th className="text-center">납품일</th>
+                          <th className="text-center">관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {batch.items.map((it) => (
+                          <tr
+                            key={it.id}
+                            className={selected.includes(it.id) ? 'vod-pm-row-checked' : ''}
+                          >
+                            <td style={{ textAlign: 'center' }}>
+                              <input type="checkbox" className="vod-pm-file-check"
+                                checked={selected.includes(it.id)}
+                                onChange={() => toggleSelect(it.id)}
+                              />
+                            </td>
+                            <td className="vod-pm-file-name-cell" title={it.fileName}>{it.fileName}</td>
+                            <td className="text-center" style={{ fontSize: '12px' }}>
+                              {it.worker ? <span className="vod-pm-assign-tag vod-pm-assign-tag--worker">{it.worker}</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                            </td>
+                            <td className="text-center" style={{ fontSize: '12px' }}>
+                              {it.reviewer ? <span className="vod-pm-assign-tag vod-pm-assign-tag--reviewer">{it.reviewer}</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                            </td>
+                            <td className="text-center">{dlvProgressBadge(it.progressStatus)}</td>
+                            <td className="text-center">{dlvAvailBadge(it.progressStatus)}</td>
+                            <td className="text-center" style={{ fontSize: '12px' }}>{it.reviewCompletedDate || '-'}</td>
+                            <td className="text-center" style={{ fontSize: '12px' }}>{it.dueDate || '-'}</td>
+                            <td className="text-center" style={{ fontSize: '12px' }}>{it.actualDeliveryDate || '-'}</td>
+                            <td className="text-center">
+                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                {canDeliver(it) && (
+                                  <button className="vod-dlv-row-btn vod-dlv-row-btn--deliver"
+                                    onClick={() => setDeliveryModal({ targets: [it] })}>
+                                    납품 완료
+                                  </button>
+                                )}
+                                {canRevision(it) && (
+                                  <button className="vod-dlv-row-btn vod-dlv-row-btn--revision"
+                                    onClick={() => setRevisionModal({ item: it })}>
+                                    수정 요청
+                                  </button>
+                                )}
+                                {canRedeliver(it) && (
+                                  <button className="vod-dlv-row-btn vod-dlv-row-btn--redeliver"
+                                    onClick={() => setRedeliveryModal({ item: it })}>
+                                    재납품 완료
+                                  </button>
+                                )}
+                                {!canDeliver(it) && !canRevision(it) && !canRedeliver(it) && (
+                                  <span className="vod-dlv-row-unavailable">-</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       {/* ── 3. 납품 이력 (프로젝트 → 차수/주차 그룹 구조) ── */}
-      <div className="vod-dlv-history-section">
-        <div className="vod-dlv-history-header">
-          <p className="proto-section-title" style={{ margin: 0 }}>납품 이력</p>
-        </div>
+      <div className="vod-dlv-history-section vod-dlv-history-section--muted">
+        <button
+          className="vod-dlv-history-toggle"
+          onClick={() => setHistoryOpen((v) => !v)}
+        >
+          <span className="pm-expand-icon">{historyOpen ? '▼' : '▶'}</span>
+          <span className="vod-dlv-history-toggle-label">납품 이력</span>
+          <span className="vod-dlv-history-toggle-count">{history.length}건</span>
+          <span className="vod-dlv-history-toggle-hint">{historyOpen ? '접기' : '펼치기'}</span>
+        </button>
 
+        {historyOpen && (
         <div className="vod-dlv-hist-group-list">
           {historyGroups.map((proj) => (
             <div key={proj.projectName} className="vod-dlv-hist-proj-card">
@@ -4231,6 +4243,7 @@ function DeliveryTab({ s }) {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* ── 납품 완료 처리 모달 ── */}
