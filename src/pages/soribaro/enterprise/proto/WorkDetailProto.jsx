@@ -344,6 +344,25 @@ function BasicInfoTab({ s }) {
   const quoteInputRef = useRef();
   const outputInputRef = useRef();
 
+  // 프로젝트 기본정보 수정 (VOD) — 조회값을 로컬 상태로 오버레이하여 수정 반영
+  const [info, setInfo] = useState(() => ({
+    bssTypeName:     s.bssTypeName,
+    entNm:           s.entNm,
+    servTitle:       s.servTitle,
+    orgNm:           s.orgNm || '',
+    regDate:         s.regDttm ? s.regDttm.split(' ')[0] : '',
+    dueDate:         s.dueDate || '',
+    managerNm:       s.managerNm || s.membNm || '',
+    deliveryFormats: s.deliveryFormats || '',
+    overallStatus:   s.overallStatus,
+    settleStatus:    s.settlement?.status || '',
+  }));
+  const [editInfoModal, setEditInfoModal] = useState(false);
+  const [infoForm, setInfoForm] = useState(info);
+  const openEditInfo = () => { setInfoForm(info); setEditInfoModal(true); };
+  const setInfoField = (k, v) => setInfoForm((prev) => ({ ...prev, [k]: v }));
+  const saveEditInfo = () => { setInfo(infoForm); setEditInfoModal(false); };
+
   // 탭 전환 후 재마운트 시 store 최신값으로 복원 (stale prop 스냅샷 방지)
   const [noteEntries, setNoteEntries] = useState(() => {
     const store = isVod ? getVodSamples() : s.bssTypeName === '현장속기' ? getStenographySamples() : s.bssTypeName === '녹취록' ? getRecordingSamples() : getMeetingSamples();
@@ -403,13 +422,13 @@ function BasicInfoTab({ s }) {
   };
 
   const row1 = isVod ? [
-    { label: '작업 유형', value: s.bssTypeName },
-    { label: '입체명', value: s.entNm },
-    { label: '프로젝트명', value: s.servTitle },
-    { label: '기관/학교명', value: s.orgNm || '-' },
-    { label: '의뢰일', value: s.regDttm ? s.regDttm.split(' ')[0] : '-' },
-    { label: '납품예정일', value: s.dueDate || '-' },
-    { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
+    { label: '작업 유형', value: info.bssTypeName },
+    { label: '업체명', value: info.entNm },
+    { label: '프로젝트명', value: info.servTitle },
+    { label: '기관/학교명', value: info.orgNm || '-' },
+    { label: '의뢰일', value: info.regDate || '-' },
+    { label: '납품예정일', value: info.dueDate || '-' },
+    { label: '납품일', value: s.actualDeliveryDate || '-' },
   ] : isRecording ? [
     { label: '작업유형', value: s.bssTypeName },
     { label: '계약구분', value: s.contractType || '-' },
@@ -425,12 +444,12 @@ function BasicInfoTab({ s }) {
     { label: '실제 납품일', value: s.actualDeliveryDate || '-' },
   ];
   const row2 = isVod ? [
-    { label: '담당 관리자', value: s.managerNm || s.membNm },
+    { label: '담당 관리자', value: info.managerNm },
     { label: '총 파일 수', value: `${s.files.length}개` },
     { label: '총 분량', value: s.totalDuration || s.totalPlayTm },
-    { label: '납품 형식', value: s.deliveryFormats || '-' },
-    { label: '프로젝트 상태', value: statusBadge(s.overallStatus), span2: true },
-    { label: '정산 상태', value: s.settlement?.status || '-' },
+    { label: '납품 형식', value: info.deliveryFormats || '-' },
+    { label: '프로젝트 상태', value: statusBadge(info.overallStatus), span2: true },
+    { label: '정산 상태', value: info.settleStatus || '-' },
   ] : isRecording ? [
     { label: '의뢰자', value: s.membNm || '-' },
     { label: '연락처', value: s.phone || '010-1234-5678' },
@@ -490,6 +509,11 @@ function BasicInfoTab({ s }) {
         <div className="proto-basic-card-header">
           <span>📋</span>
           <span>{isVod ? '프로젝트 기본정보' : '의뢰 기본 정보'}</span>
+          {isVod && (
+            <button className="proto-basic-edit-btn" onClick={openEditInfo}>
+              기본정보 수정
+            </button>
+          )}
         </div>
         {isRecording ? (
           <>
@@ -759,6 +783,78 @@ function BasicInfoTab({ s }) {
             <div className="pm-modal-ft">
               <button className="proto-log-btn" onClick={() => setNotifyModal(false)}>취소</button>
               <button className="proto-log-btn proto-log-btn--save pm-doc-btn--notify" style={{ border: 'none' }} onClick={() => { setNotifyModal(false); window.alert('[프로토타입 안내]\n알림이 발송되었습니다.'); }}>발송</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 기본정보 수정 모달 (VOD) */}
+      {isVod && editInfoModal && (
+        <div className="pm-overlay" onClick={() => setEditInfoModal(false)}>
+          <div className="pm-modal" style={{ maxWidth: '560px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">기본정보 수정</span>
+              <button className="preg-x-btn" onClick={() => setEditInfoModal(false)}>✕</button>
+            </div>
+            <div className="pm-modal-body proto-basic-edit-body">
+              <div className="proto-basic-edit-grid">
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">작업 유형</span>
+                  <input className="preg-input" value={infoForm.bssTypeName} onChange={(e) => setInfoField('bssTypeName', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">업체명</span>
+                  <input className="preg-input" value={infoForm.entNm} onChange={(e) => setInfoField('entNm', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field proto-basic-edit-field--full">
+                  <span className="preg-label">프로젝트명</span>
+                  <input className="preg-input" value={infoForm.servTitle} onChange={(e) => setInfoField('servTitle', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">기관/학교명</span>
+                  <input className="preg-input" value={infoForm.orgNm} onChange={(e) => setInfoField('orgNm', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">담당 관리자</span>
+                  <input className="preg-input" value={infoForm.managerNm} onChange={(e) => setInfoField('managerNm', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">의뢰일</span>
+                  <input type="date" className="preg-input" value={infoForm.regDate} onChange={(e) => setInfoField('regDate', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">납품예정일</span>
+                  <input type="date" className="preg-input" value={infoForm.dueDate} onChange={(e) => setInfoField('dueDate', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">납품 형식</span>
+                  <input className="preg-input" value={infoForm.deliveryFormats} onChange={(e) => setInfoField('deliveryFormats', e.target.value)} />
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">프로젝트 상태</span>
+                  <select className="preg-input" value={infoForm.overallStatus} onChange={(e) => setInfoField('overallStatus', e.target.value)}>
+                    <option value="WORKING">작업중</option>
+                    <option value="CHECKING">검수중</option>
+                    <option value="DONE">납품완료</option>
+                  </select>
+                </label>
+                <label className="proto-basic-edit-field">
+                  <span className="preg-label">정산 상태</span>
+                  <select className="preg-input" value={infoForm.settleStatus} onChange={(e) => setInfoField('settleStatus', e.target.value)}>
+                    <option value="정산대기">정산대기</option>
+                    <option value="작업자 정산대기">작업자 정산대기</option>
+                    <option value="업체 정산대기">업체 정산대기</option>
+                    <option value="정산완료">정산완료</option>
+                  </select>
+                </label>
+              </div>
+              <p className="proto-basic-edit-hint">
+                특이사항·내부 메모는 아래 전용 카드에서 수정할 수 있습니다.
+              </p>
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setEditInfoModal(false)}>취소</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={saveEditInfo}>저장</button>
             </div>
           </div>
         </div>
@@ -1052,6 +1148,20 @@ function FileManageTab({ s }) {
   });
   const fileInputRef = useRef();
 
+  // 납품예정일 (VOD) — 파일관리에서 설정, 공유 모듈 상태에 저장
+  const [dueTick, setDueTick] = useState(0);          // 납품예정일 변경 시 리렌더 트리거
+  const [bulkDueModal, setBulkDueModal] = useState(false);
+  const [bulkDueDate, setBulkDueDate] = useState('');
+  const [editingDueFileNo, setEditingDueFileNo] = useState(null);
+
+  const applyBulkDue = () => {
+    if (!bulkDueDate) return;
+    files.forEach((f) => { if (checked.has(f.fileNo)) setFileDue(f.fileNo, bulkDueDate); });
+    setBulkDueModal(false);
+    setBulkDueDate('');
+    setDueTick((v) => v + 1);
+  };
+
   const changeDifficulty = (value) => {
     setDifficulty(value);
     updateSampleFileDifficulty(s.id, value);
@@ -1187,6 +1297,16 @@ function FileManageTab({ s }) {
         >
           선택 삭제 {checked.size > 0 ? `(${checked.size})` : ''}
         </button>
+        {isVod && (
+          <button
+            className="proto-file-bulk-btn proto-file-bulk-btn--due"
+            onClick={() => { setBulkDueDate(''); setBulkDueModal(true); }}
+            disabled={checked.size === 0}
+            title="선택한 파일에 납품예정일을 일괄 적용합니다"
+          >
+            납품예정일 설정 {checked.size > 0 ? `(${checked.size})` : ''}
+          </button>
+        )}
         {isMeeting && (
           <span className="proto-file-diff-wrap">
             <select
@@ -1220,11 +1340,12 @@ function FileManageTab({ s }) {
               {isMeeting && <th className="text-center">파일분할</th>}
               <th className="text-center">파일크기</th>
               <th className="text-center">업로드일</th>
+              {isVod && <th className="text-center">납품예정일</th>}
             </tr>
           </thead>
-          <tbody>
+          <tbody data-due-tick={dueTick}>
             {files.length === 0 ? (
-              <tr><td colSpan={isMeeting ? 7 : 6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>등록된 파일이 없습니다.</td></tr>
+              <tr><td colSpan={isMeeting ? 7 : isVod ? 7 : 6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>등록된 파일이 없습니다.</td></tr>
             ) : (
               files.map((f) => {
                 const splitCount = f.splits?.length || 0;
@@ -1258,6 +1379,35 @@ function FileManageTab({ s }) {
                       )}
                       <td className="text-center">{f.size}</td>
                       <td className="text-center">{f.uploadDttm}</td>
+                      {isVod && (
+                        <td className="text-center">
+                          {editingDueFileNo === f.fileNo ? (
+                            <input
+                              type="date"
+                              className="proto-file-due-input"
+                              defaultValue={getFileDue(f.fileNo, '')}
+                              autoFocus
+                              onBlur={(e) => {
+                                if (e.target.value) setFileDue(f.fileNo, e.target.value);
+                                setEditingDueFileNo(null);
+                                setDueTick((v) => v + 1);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                            />
+                          ) : (
+                            <span className="proto-file-due-cell">
+                              <span className={getFileDue(f.fileNo) === '-' ? 'text-muted-cell' : ''}>{getFileDue(f.fileNo)}</span>
+                              <button
+                                className="proto-file-due-edit"
+                                onClick={() => setEditingDueFileNo(f.fileNo)}
+                                title="납품예정일 수정"
+                              >
+                                ✎
+                              </button>
+                            </span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                     {isMeeting && (f.splits || []).map((seg, idx) => (
                       <tr key={`${f.fileNo}-seg-${idx}`} className="proto-file-split-subrow">
@@ -1298,6 +1448,40 @@ function FileManageTab({ s }) {
           onClose={() => setSplitModalFile(null)}
           onSave={(segments) => handleSaveSplits(splitModalFile.fileNo, segments)}
         />
+      )}
+
+      {bulkDueModal && (
+        <div className="pm-overlay" onClick={() => setBulkDueModal(false)}>
+          <div className="pm-modal pm-modal--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-hd">
+              <span className="pm-modal-title">납품예정일 설정</span>
+              <button className="preg-x-btn" onClick={() => setBulkDueModal(false)}>✕</button>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+                선택한 {checked.size}개 파일에 납품예정일을 일괄 적용합니다.
+              </p>
+              <input
+                type="date"
+                className="proto-file-due-input"
+                style={{ width: '100%' }}
+                value={bulkDueDate}
+                onChange={(e) => setBulkDueDate(e.target.value)}
+              />
+            </div>
+            <div className="pm-modal-ft">
+              <button className="proto-log-btn" onClick={() => setBulkDueModal(false)}>취소</button>
+              <button
+                className="proto-log-btn proto-log-btn--save"
+                disabled={!bulkDueDate}
+                style={{ opacity: bulkDueDate ? 1 : 0.45 }}
+                onClick={applyBulkDue}
+              >
+                적용
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1617,6 +1801,34 @@ function findBatchByFileNo(fileNo) {
     }
   }
   return null;
+}
+
+// ── 파일별 납품예정일/납품일 — 파일관리에서 설정한 값을 프로젝트관리·납품관리·정산확인이 공유 (프로토타입용 모듈 상태) ──
+// 납품예정일: 고객사에 납품하기로 예정된 날짜 (파일관리에서 설정)
+// 납품일: 관리자가 납품 완료 처리한 날짜 (납품관리에서 기록) → 정산확인 작업내역서에 표시
+const VOD_FILE_DUE_SEED = {
+  1: '2026-06-15', 2: '2026-06-15', 3: '2026-06-15', 4: '2026-06-15', 5: '2026-06-15',
+  6: '2026-06-30', 7: '2026-06-30', 8: '2026-06-30', 9: '2026-06-30',
+};
+const VOD_FILE_DUE = { ...VOD_FILE_DUE_SEED };   // { [fileNo]: 'YYYY-MM-DD' } 납품예정일
+const VOD_FILE_DELIVERED = {};                   // { [fileNo]: 'YYYY-MM-DD' } 납품일 (완료 처리 시 기록)
+
+function getFileDue(fileNo, fallback = '-') {
+  return VOD_FILE_DUE[fileNo] ?? fallback;
+}
+function setFileDue(fileNo, date) {
+  VOD_FILE_DUE[fileNo] = date;
+}
+function getFileDelivered(fileNo) {
+  return VOD_FILE_DELIVERED[fileNo] ?? '-';
+}
+function setFileDelivered(fileNo, date) {
+  VOD_FILE_DELIVERED[fileNo] = date;
+}
+// 차수/주차 대표 납품예정일 — 소속 파일들의 납품예정일 (동일 주차는 같은 값)
+function getBatchDue(batch) {
+  const first = batch?.projFiles?.[0];
+  return first ? getFileDue(first.fileNo, '-') : '-';
 }
 
 const BATCH_STATUS_META = {
@@ -2201,6 +2413,9 @@ function VodProjectManageView({ s }) {
                       </div>
 
                       <div className="vod-pm-batch-actions">
+                        <span className="vod-pm-batch-due" title="파일관리에서 설정한 납품예정일">
+                          납품예정일: {getBatchDue(batch)}
+                        </span>
                         <button
                           className="pm-btn"
                           onClick={() => toggleFilesExpand(subj.id, batch.id)}
@@ -3849,7 +4064,7 @@ function DeliveryTab({ s }) {
                 <th className="text-center">납품 가능 여부</th>
                 <th className="text-center">검수완료일</th>
                 <th className="text-center">납품예정일</th>
-                <th className="text-center">실제 납품일</th>
+                <th className="text-center">납품일</th>
                 <th className="text-center">납품 형식</th>
                 <th className="text-center">관리</th>
               </tr>
@@ -4097,7 +4312,7 @@ function DeliveryConfirmModal({ targets, first, onConfirm, onClose }) {
             </div>
           </div>
           <div className="pm-workspy-field">
-            <label className="preg-label">실제 납품일</label>
+            <label className="preg-label">납품일</label>
             <input className="preg-input" readOnly value={DELIVERY_TODAY} style={{ color: 'var(--accent-color)', fontWeight: 600 }} />
           </div>
           <div className="pm-workspy-row">
@@ -5519,6 +5734,7 @@ const VOD_PROJECT_HISTORY = [
   { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-22 09:00', historyType: '프로젝트 등록',  actor: '관리자', detail: '지구과학개론 1주차 프로젝트 생성' },
   { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-05-28 14:30', historyType: '작업 배정 완료', actor: '관리자', detail: '1강~5강 작업자 배정 완료' },
   { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-07 16:20', historyType: '검수 완료',      actor: '정채원', detail: '1강~2강 검수 완료' },
+  { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-20 14:30', historyType: '일정 변경',      actor: '관리자', detail: '고객사 일정 조율 — 납품예정일 2026-06-20 → 2026-06-25로 변경' },
   { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-10 10:00', historyType: '납품 완료',      actor: '관리자', detail: '1강_오리엔테이션.mp4, 2강_기초개념.mp4 SRT 납품 완료' },
   { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-14 15:20', historyType: '수정 요청',      actor: '관리자', detail: '3강_핵심이론.mp4 자막 싱크 오류 수정 요청' },
   { projectName: '지구과학개론', batchLabel: '1주차 / 1차 입고', dttm: '2026-06-15 11:00', historyType: '재납품 완료',    actor: '관리자', detail: '3강_핵심이론.mp4 수정 반영 후 재납품 완료' },
@@ -5542,6 +5758,7 @@ const HIST_FILTER_MAP = {
   '전체':       null,
   '파일/프로젝트': ['파일 업로드', '프로젝트 등록'],
   '작업/검수':  ['작업 배정 완료', '검수 완료'],
+  '일정':       ['일정 변경'],
   '납품':       ['납품 완료', '수정 요청', '재납품 완료'],
   '정산':       ['정산 완료'],
 };
@@ -5553,6 +5770,7 @@ function histTypeBadge(type) {
     '프로젝트 등록':  { bg: 'rgba(167,139,250,0.12)', color: '#a78bfa',  border: 'rgba(167,139,250,0.3)' },
     '작업 배정 완료': { bg: 'rgba(251,191,36,0.12)',  color: '#fbbf24',  border: 'rgba(251,191,36,0.3)' },
     '검수 완료':      { bg: 'rgba(52,211,153,0.12)',  color: '#34d399',  border: 'rgba(52,211,153,0.3)' },
+    '일정 변경':      { bg: 'rgba(251,146,60,0.12)',  color: '#fb923c',  border: 'rgba(251,146,60,0.3)' },
     '납품 완료':      { bg: 'rgba(99,102,241,0.12)',  color: '#818cf8',  border: 'rgba(99,102,241,0.3)' },
     '수정 요청':      { bg: 'rgba(251,113,133,0.12)', color: '#fb7185',  border: 'rgba(251,113,133,0.3)' },
     '재납품 완료':    { bg: 'rgba(45,212,191,0.12)',  color: '#2dd4bf',  border: 'rgba(45,212,191,0.3)' },

@@ -250,6 +250,41 @@
   color: var(--text-primary);
 }
 
+/* 기본정보 수정 버튼 */
+.proto-basic-edit-btn {
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.proto-basic-edit-btn:hover { background: var(--accent-bg-subtle); }
+
+/* 기본정보 수정 모달 폼 */
+.proto-basic-edit-body { padding: 18px 20px; }
+.proto-basic-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+.proto-basic-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.proto-basic-edit-field--full { grid-column: 1 / -1; }
+.proto-basic-edit-hint {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .proto-basic-card-body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -1507,6 +1542,43 @@
 .proto-file-bulk-btn--sel:not(:disabled):hover {
   background: var(--accent-bg-subtle);
 }
+.proto-file-bulk-btn--due {
+  background: none;
+  border-color: #34d399;
+  color: #34d399;
+}
+.proto-file-bulk-btn--due:not(:disabled):hover {
+  background: rgba(52, 211, 153, 0.1);
+}
+
+/* 파일별 납품예정일 셀 */
+.proto-file-due-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+.proto-file-due-edit {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.proto-file-due-edit:hover { color: var(--accent-color); }
+.proto-file-due-input {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 4px 8px;
+  font-family: inherit;
+  outline: none;
+}
+.proto-file-due-input:focus { border-color: var(--accent-color); }
 
 .proto-file-diff-wrap {
   margin-left: auto;
@@ -3213,6 +3285,7 @@
 .dd-danger  { background: rgba(239, 68, 68, 0.18);  color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
 .dd-dday    { background: rgba(239, 68, 68, 0.28);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.55); font-weight: 800; }
 .dd-delayed { background: rgba(239, 68, 68, 0.22);  color: #ef4444; border: 1px solid rgba(239,68,68,0.5); }
+.dd-over    { background: rgba(148, 163, 184, 0.18); color: #94a3b8; border: 1px solid rgba(148,163,184,0.4); }
 
 /* ── 상태 배지 ──────────────────────────────────────── */
 .vod-status-badge {
@@ -3752,6 +3825,17 @@
   gap: 6px;
   flex-wrap: wrap;
   flex-shrink: 0;
+  align-items: center;
+}
+
+/* 차수/주차 납품예정일 (파일 보기 버튼 왼쪽) */
+.vod-pm-batch-due {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--bg-hover);
 }
 
 /* 파일 테이블 래퍼 */

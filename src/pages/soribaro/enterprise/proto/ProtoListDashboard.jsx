@@ -24,14 +24,11 @@ function dDayInfo(dueDateStr) {
   if (diff > 3)   return { label: `D-${diff}`,          cls: 'dd-caution' };
   if (diff > 0)   return { label: `D-${diff}`,          cls: 'dd-danger'  };
   if (diff === 0) return { label: 'D-Day',              cls: 'dd-dday'    };
-  return           { label: '일정 조율',                 cls: 'dd-adjust'  };
+  return           { label: `D+${-diff}`,               cls: 'dd-over'    };
 }
 
 function resolvedStatus(sample) {
-  const d    = parseDateStr(sample.dueDate);
-  const diff = dateDiffDays(d);
-  if (diff !== null && diff < 0 && sample.overallStatus !== 'DONE') return 'DELAYED';
-  if (diff !== null && diff <= 3 && sample.overallStatus === 'WORKING') return 'CAUTION';
+  // 일정 조율/주의 같은 날짜 파생 상태는 표시하지 않고, 실제 진행 상태만 반환한다.
   return sample.overallStatus;
 }
 
@@ -117,12 +114,12 @@ function computeUpcomingList(samples) {
       const rs   = resolvedStatus(s);
       const pct  = computeOverallProgress(s);
       const diff = dateDiffDays(parseDateStr(s.dueDate)) ?? 9999;
-      const isAdjust = rs === 'DELAYED';
+      const dd   = dDayInfo(s.dueDate);
       return {
         name:     s.servTitle,
         dueDate:  s.dueDate,
-        ddLabel:  isAdjust ? '일정 조율' : dDayInfo(s.dueDate).label,
-        ddCls:    isAdjust ? 'dd-adjust'  : dDayInfo(s.dueDate).cls,
+        ddLabel:  dd.label,
+        ddCls:    dd.cls,
         status:   rs,
         pct,
         diff,
@@ -250,11 +247,9 @@ export default function ProtoListDashboard({ samples }) {
                 const dd  = dDayInfo(s.dueDate);
                 const pct = computeOverallProgress(s);
                 const barColor = progressBarColor(pct, rs);
-                const ddDisplay = rs === 'DELAYED' ? { label: '일정 조율', cls: 'dd-adjust' } : dd;
                 return (
                   <tr
                     key={s.id}
-                    className={rs === 'DELAYED' ? 'vod-row-delayed' : rs === 'CAUTION' ? 'vod-row-caution' : ''}
                     style={{ cursor: 'pointer' }}
                     onClick={() => navigate(s.protoPath)}
                   >
@@ -263,7 +258,7 @@ export default function ProtoListDashboard({ samples }) {
                     <td className="text-center">{s.bssTypeName}</td>
                     <td className="text-center">{s.dueDate}</td>
                     <td className="text-center">
-                      <span className={`vod-dd-badge ${ddDisplay.cls}`}>{ddDisplay.label}</span>
+                      <span className={`vod-dd-badge ${dd.cls}`}>{dd.label}</span>
                     </td>
                     <td className="text-center">{statusBadge(s)}</td>
                     <td>
