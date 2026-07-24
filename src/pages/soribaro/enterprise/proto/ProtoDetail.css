@@ -4496,6 +4496,12 @@
   line-height: 1.7;
 }
 
+/* 웍스파이 프로젝트 설명 입력 (수정 가능) */
+.vod-wspy-desc-textarea {
+  line-height: 1.7;
+  resize: vertical;
+}
+
 /* 등록 방식 컬럼 배지 */
 .vod-pm-reg-method--bundle {
   background: rgba(99, 102, 241, 0.12);
