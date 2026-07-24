@@ -3,7 +3,7 @@ import '../../../../styles/notion-list.css';
 import './ManageOperationsPage.css';
 
 // ── 상수 ──────────────────────────────────────────────────────────────────
-const WORK_TABS   = ['전체', '녹취록', '회의록', '현장속기', 'VOD', '미디어'];
+const WORK_TABS   = ['전체', '녹취록', '회의록', '현장속기', 'VOD', '미디어', 'SDH'];
 const PERIOD_OPTS = ['주간', '월간', '연간', '기간 직접 선택'];
 
 // ── 분 → 시간 변환 헬퍼 ──────────────────────────────────────────────────
@@ -22,12 +22,13 @@ function minCell(n) {
 
 // ── 더미 데이터 — 요약 ─────────────────────────────────────────────────────
 const SUMMARY_BY_TAB = {
-  전체:   { total: 38420, assigned: 34340, inProgress: 29780, inspectAssigned: 25200, inspecting: 21450, delivered: 17830 },
+  전체:   { total: 43820, assigned: 39040, inProgress: 33880, inspectAssigned: 27800, inspecting: 23750, delivered: 19730 },
   녹취록:  { total:  9210, assigned:  8900, inProgress:  7820, inspectAssigned:  6870, inspecting:  5620, delivered:  4840 },
   회의록:  { total:  6380, assigned:  5950, inProgress:  5180, inspectAssigned:  4600, inspecting:  3980, delivered:  3210 },
   현장속기: { total:  4170, assigned:  3840, inProgress:  3250, inspectAssigned:  2740, inspecting:  2340, delivered:  1960 },
   VOD:   { total: 12660, assigned: 10350, inProgress:  8930, inspectAssigned:  7990, inspecting:  6710, delivered:  5820 },
   미디어:  { total:  6000, assigned:  5300, inProgress:  4600, inspectAssigned:  3000, inspecting:  2800, delivered:  2000 },
+  SDH:   { total:  5400, assigned:  4700, inProgress:  4100, inspectAssigned:  2600, inspecting:  2300, delivered:  1900 },
 };
 
 // ── 더미 데이터 — 업체/기관별 현황 ──────────────────────────────────────────
@@ -42,6 +43,8 @@ const ORG_ROWS_BY_TAB = {
     { org: '대검찰청',            total: 2980, assigned: 2670, inspectAssigned: 2010, delivered: 1720, rate: 58 },
     { org: '스톰미디어',          total: 2540, assigned: 2230, inspectAssigned: 1650, delivered: 1360, rate: 54 },
     { org: '한양사이버대학교',     total: 2410, assigned: 2120, inspectAssigned: 1570, delivered: 1310, rate: 54 },
+    { org: '쿠팡플레이',          total: 1680, assigned: 1470, inspectAssigned:  830, delivered:  620, rate: 37 },
+    { org: '티빙',               total: 1420, assigned: 1240, inspectAssigned:  700, delivered:  520, rate: 37 },
   ],
   녹취록: [
     { org: '법무법인 태평양',   total: 2840, assigned: 2650, inspectAssigned: 1910, delivered: 1640, rate: 58 },
@@ -81,6 +84,14 @@ const ORG_ROWS_BY_TAB = {
     { org: 'CGN',        total: 1960, assigned: 1740, inspectAssigned:  940, delivered:  680, rate: 35 },
     { org: '서울시 유튜브', total: 1400, assigned: 1220, inspectAssigned:  720, delivered:  580, rate: 41 },
   ],
+  SDH: [
+    { org: '쿠팡플레이',    total: 1680, assigned: 1470, inspectAssigned:  830, delivered:  620, rate: 37 },
+    { org: '티빙',         total: 1420, assigned: 1240, inspectAssigned:  700, delivered:  520, rate: 37 },
+    { org: '웨이브',        total:  980, assigned:  850, inspectAssigned:  480, delivered:  360, rate: 37 },
+    { org: '넷플릭스',      total:  720, assigned:  620, inspectAssigned:  350, delivered:  240, rate: 33 },
+    { org: '디즈니 플러스',  total:  360, assigned:  310, inspectAssigned:  160, delivered:  110, rate: 31 },
+    { org: '왓챠',         total:  240, assigned:  210, inspectAssigned:   80, delivered:   50, rate: 21 },
+  ],
 };
 
 // 관리자 작업/검수 분수 파생 — 외부 배정하지 않고 관리자가 직접 처리한 분량
@@ -99,6 +110,7 @@ const DETAIL_ROWS_BY_TAB = {
     { id: 6, org: '미디어로그',       title: 'U+오리지널 시리즈 SDH 자막',            type: '미디어',  total:  680, assigned:  610, inProgress: 530, inspectAssigned: 350, inspecting: 290, delivered: 210, status: '작업 중' },
     { id: 7, org: '대검찰청',         title: '특수부 2026 조사 녹취록',               type: '녹취록',  total:  490, assigned:  440, inProgress: 390, inspectAssigned: 330, inspecting: 270, delivered: 210, status: '작업 중' },
     { id: 8, org: '서울시의회',       title: '2026년 상반기 정례회',                  type: '현장속기', total: 580, assigned:  500, inProgress: 420, inspectAssigned: 350, inspecting: 280, delivered: 230, status: '납품완료' },
+    { id: 9, org: '쿠팡플레이',       title: '쿠팡플레이 오리지널 시리즈 SDH 자막',      type: 'SDH',    total:  680, assigned:  600, inProgress: 520, inspectAssigned: 340, inspecting: 280, delivered: 260, status: '작업 중' },
   ],
   녹취록: [
     { id: 1, org: '법무법인 태평양',  title: '2026 민사소송 녹취본',      files: 120, speaker: 8,  total: 560, assigned: 510, inProgress: 460, inspectAssigned: 390, inspecting: 330, delivered: 270, status: '검수 중' },
@@ -140,6 +152,14 @@ const DETAIL_ROWS_BY_TAB = {
     { id: 4, org: 'CGN',         title: '퍼스트러브 국문 제작',                 contentType: '방송',        episode: '9~16편',   total: 480, assigned: 430, inProgress: 370, inspectAssigned: 240, inspecting: 200, delivered: 140, status: '납품완료' },
     { id: 5, org: '서울시 유튜브', title: '서울시 유튜브 배리어프리 국문 자막', contentType: '유튜브/홍보', episode: '25~36편',  total: 420, assigned: 370, inProgress: 320, inspectAssigned: 210, inspecting: 180, delivered: 140, status: '검수 중' },
     { id: 6, org: '서울시 유튜브', title: '서울시 유튜브 배리어프리 국문 자막', contentType: '유튜브/홍보', episode: '37~48편',  total: 360, assigned: 310, inProgress: 270, inspectAssigned: 180, inspecting: 150, delivered: 100, status: '작업 중' },
+  ],
+  SDH: [
+    { id: 1, org: '쿠팡플레이',    title: '쿠팡플레이 오리지널 시리즈 SDH 자막', contentType: 'OTT 드라마',  episode: '1~8화',   total: 680, assigned: 600, inProgress: 520, inspectAssigned: 340, inspecting: 280, delivered: 260, status: '작업 중' },
+    { id: 2, org: '티빙',         title: '티빙 오리지널 드라마 SDH 자막',       contentType: 'OTT 드라마',  episode: '1~6화',   total: 560, assigned: 490, inProgress: 420, inspectAssigned: 280, inspecting: 230, delivered: 210, status: '검수 중' },
+    { id: 3, org: '웨이브',        title: '웨이브 예능 콘텐츠 SDH 자막',         contentType: 'OTT 예능',   episode: '12~20회', total: 480, assigned: 420, inProgress: 360, inspectAssigned: 240, inspecting: 190, delivered: 170, status: '작업 중' },
+    { id: 4, org: '넷플릭스',      title: '넷플릭스 영화 배리어프리 자막',        contentType: '영화',       episode: '1편',     total: 360, assigned: 310, inProgress: 260, inspectAssigned: 180, inspecting: 140, delivered: 120, status: '납품완료' },
+    { id: 5, org: '디즈니 플러스',  title: '디즈니+ 다큐멘터리 SDH 자막',         contentType: '다큐멘터리',  episode: '1~4부',   total: 300, assigned: 260, inProgress: 220, inspectAssigned: 150, inspecting: 120, delivered:  90, status: '검수 중' },
+    { id: 6, org: '왓챠',         title: '왓챠 독립영화 SDH 자막',              contentType: '영화',       episode: '1편',     total: 180, assigned: 150, inProgress: 120, inspectAssigned:  80, inspecting:  60, delivered:  50, status: '작업 중' },
   ],
 };
 
@@ -202,7 +222,7 @@ function DetailTableHead({ tab }) {
       {commonCols}
     </tr>
   );
-  if (tab === '미디어') return (
+  if (tab === '미디어' || tab === 'SDH') return (
     <tr>
       <th>업체명</th><th>프로젝트명</th>
       <th className="text-center">콘텐츠 유형</th>
@@ -269,7 +289,7 @@ function DetailTableRow({ tab, r }) {
       {minCols}
     </tr>
   );
-  if (tab === '미디어') return (
+  if (tab === '미디어' || tab === 'SDH') return (
     <tr key={r.id}>
       <td className="ops-org-name">{r.org}</td>
       <td className="ops-title-cell">{r.title}</td>
