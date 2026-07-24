@@ -1880,9 +1880,14 @@ function VodRegModalForm({ form, set, titles }) {
         <span className="vod-wspy-preview-hint">시스템 규칙에 따라 자동 생성됩니다. 파일명·내부 프로젝트명은 노출되지 않습니다.</span>
       </div>
       <div className="pm-workspy-field">
-        <label className="preg-label">웍스파이 설명 미리보기</label>
-        <div className="vod-wspy-desc-preview">{WORKSFY_DESC_TEMPLATE}</div>
-        <span className="vod-wspy-preview-hint">형태·분야·자격사항은 고정 입력되며, 기한은 모집 일정에 맞춰 입력합니다.</span>
+        <label className="preg-label">프로젝트 설명 *</label>
+        <textarea
+          className="pm-desc-textarea vod-wspy-desc-textarea"
+          value={form.desc}
+          onChange={(e) => set('desc', e.target.value)}
+          rows={5}
+        />
+        <span className="vod-wspy-preview-hint">형태·분야·자격사항이 기본 입력됩니다. 기한 등 안내 문구는 관리자가 직접 수정할 수 있습니다.</span>
       </div>
       <div className="pm-workspy-row">
         <div className="pm-workspy-field">
@@ -1940,7 +1945,7 @@ function initRegForm(batchLabel) {
   };
   return {
     name:         batchLabel,
-    desc:         batchLabel,
+    desc:         WORKSFY_DESC_TEMPLATE,
     workers:      '1',
     unitPrice:    '내부 기준 적용',
     recruitStart: fmtLocal(new Date(now.getTime())),
