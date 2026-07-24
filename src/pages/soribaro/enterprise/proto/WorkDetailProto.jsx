@@ -1846,23 +1846,43 @@ function batchStatusBadge(st) {
 const VOD_DUMMY_WORKERS   = ['이민정', '박정호', '현정은', '김지수', '오나연'];
 const VOD_DUMMY_REVIEWERS = ['정채원', '김검수', '최검수', '한지민'];
 
-function VodRegModalForm({ form, set }) {
+// ── 웍스파이 등록 제목/설명 자동 생성 (프로토타입) ──
+// 제목: [당일 등록 순번]_VOD(자막) / 재택 / [분량](분량) — 파일명·내부 프로젝트명 미노출
+// 오늘 이미 등록된 건수(seed) — 다음 등록 건은 이 값 +1 부터 시작
+const WORKSFY_TODAY_COUNT = 18;
+// 초 → 웍스파이 표시 분량 'H:MM' (초 단위 절삭, 반올림 없음). 예: 00:52:30 → 0:52, 01:15:50 → 1:15
+function secToWorksfyDur(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  return `${h}:${String(m).padStart(2, '0')}`;
+}
+function worksfyTitle(seq, durStr) {
+  return `${seq}_VOD(자막) / 재택 / ${durStr}(분량)`;
+}
+// 웍스파이 설명 고정 템플릿 — 형태·분야·자격사항 고정, 기한만 비워둠(관리자가 모집 일정에 맞춰 입력)
+const WORKSFY_DESC_TEMPLATE = [
+  '형태: 재택(소리바로)',
+  '기한: ',
+  '분야: VOD 자막 제작',
+  '자격사항: 소리바로 통합교육 수료자, VOD 연수 합격자',
+].join('\n');
+
+function VodRegModalForm({ form, set, titles }) {
   return (
     <>
       <div className="pm-workspy-field">
-        <label className="preg-label">프로젝트명 *</label>
-        <input className="preg-input" value={form.name} onChange={(e) => set('name', e.target.value)} />
+        <label className="preg-label">웍스파이 등록 제목 미리보기</label>
+        <div className="vod-wspy-title-preview">
+          {titles.map((t, i) => (
+            <div key={i} className="vod-wspy-title-item">{t}</div>
+          ))}
+        </div>
+        <span className="vod-wspy-preview-hint">시스템 규칙에 따라 자동 생성됩니다. 파일명·내부 프로젝트명은 노출되지 않습니다.</span>
       </div>
       <div className="pm-workspy-field">
-        <label className="preg-label">프로젝트 설명 *</label>
-        <div className="pm-desc-editor">
-          <div className="pm-desc-toolbar">
-            {['B', '/', 'S', 'H2', 'H3', '• 목록', '1. 목록', '" 인용'].map((t) => (
-              <button key={t} className="pm-desc-tool-btn" type="button">{t}</button>
-            ))}
-          </div>
-          <textarea className="pm-desc-textarea" value={form.desc} onChange={(e) => set('desc', e.target.value)} rows={3} />
-        </div>
+        <label className="preg-label">웍스파이 설명 미리보기</label>
+        <div className="vod-wspy-desc-preview">{WORKSFY_DESC_TEMPLATE}</div>
+        <span className="vod-wspy-preview-hint">형태·분야·자격사항은 고정 입력되며, 기한은 모집 일정에 맞춰 입력합니다.</span>
       </div>
       <div className="pm-workspy-row">
         <div className="pm-workspy-field">
@@ -1939,8 +1959,9 @@ function VodBundleRegModal({ batchLabel, files, bundleGroup, onConfirm, onClose 
 
   const totalSec = files.reduce((acc, f) => acc + durationToSec(f.workTime || '0:00:00'), 0);
   const totalTime = secToDuration(totalSec);
-  const totalMin = Math.ceil(totalSec / 60);
-  const [displayMin, setDisplayMin] = useState(String(totalMin || ''));
+  // 묶음 등록: 합산 RT 초 절삭 → 표시 분량, 제목 1개 (당일 순번 +1)
+  const displayDur = secToWorksfyDur(totalSec);
+  const titles = [worksfyTitle(WORKSFY_TODAY_COUNT + 1, displayDur)];
 
   return (
     <div className="pm-overlay" onClick={onClose}>
@@ -1977,24 +1998,17 @@ function VodBundleRegModal({ batchLabel, files, bundleGroup, onConfirm, onClose 
             <div className="vod-reg-time-summary">
               <span>합산 작업시간: <strong>{totalTime}</strong></span>
               <span style={{ marginLeft: '16px' }}>
-                웍스파이 표시 분량:
-                <input
-                  className="vod-reg-min-input"
-                  type="number"
-                  min="1"
-                  value={displayMin}
-                  onChange={(e) => setDisplayMin(e.target.value)}
-                />
-                분
+                웍스파이 표시 분량: <strong>{displayDur}</strong>
               </span>
             </div>
+            <span className="vod-wspy-file-note">파일명은 관리자 확인용이며, 웍스파이 등록 제목에는 노출되지 않습니다.</span>
           </div>
 
-          <VodRegModalForm form={form} set={set} />
+          <VodRegModalForm form={form} set={set} titles={titles} />
         </div>
         <div className="pm-modal-ft">
           <button className="proto-log-btn" onClick={onClose}>취소</button>
-          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form, displayMin)}>등록</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form, displayDur)}>등록</button>
         </div>
       </div>
     </div>
@@ -2004,9 +2018,11 @@ function VodBundleRegModal({ batchLabel, files, bundleGroup, onConfirm, onClose 
 function VodSingleRegModal({ batchLabel, files, onConfirm, onClose }) {
   const [form, setForm] = useState(() => initRegForm(batchLabel));
   const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
-  const [fileMinutes, setFileMinutes] = useState(() =>
-    Object.fromEntries(files.map((f) => [f.fileNo, String(Math.ceil(durationToSec(f.workTime || '0:00:00') / 60) || '')]))
+  // 개별 등록: 파일별 RT 초 절삭 → 표시 분량, 파일 수만큼 제목 생성 (당일 순번 +1씩 증가)
+  const fileDurs = Object.fromEntries(
+    files.map((f) => [f.fileNo, secToWorksfyDur(durationToSec(f.workTime || '0:00:00'))])
   );
+  const titles = files.map((f, i) => worksfyTitle(WORKSFY_TODAY_COUNT + 1 + i, fileDurs[f.fileNo]));
 
   return (
     <div className="pm-overlay" onClick={onClose}>
@@ -2038,25 +2054,19 @@ function VodSingleRegModal({ batchLabel, files, onConfirm, onClose }) {
                   <span className="vod-wspy-file-name">{f.fileName}</span>
                   <span className="vod-wspy-file-time">{f.workTime || '-'}</span>
                   <span className="vod-wspy-file-min-wrap">
-                    <input
-                      className="vod-reg-min-input"
-                      type="number"
-                      min="1"
-                      value={fileMinutes[f.fileNo] || ''}
-                      onChange={(e) => setFileMinutes((prev) => ({ ...prev, [f.fileNo]: e.target.value }))}
-                    />
-                    <span>분</span>
+                    <span className="vod-wspy-file-dur">표시 분량 {fileDurs[f.fileNo]}</span>
                   </span>
                 </div>
               ))}
             </div>
+            <span className="vod-wspy-file-note">파일명은 관리자 확인용이며, 웍스파이 등록 제목에는 노출되지 않습니다.</span>
           </div>
 
-          <VodRegModalForm form={form} set={set} />
+          <VodRegModalForm form={form} set={set} titles={titles} />
         </div>
         <div className="pm-modal-ft">
           <button className="proto-log-btn" onClick={onClose}>취소</button>
-          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form, fileMinutes)}>등록</button>
+          <button className="proto-log-btn proto-log-btn--save" onClick={() => onConfirm(form, fileDurs)}>등록</button>
         </div>
       </div>
     </div>
