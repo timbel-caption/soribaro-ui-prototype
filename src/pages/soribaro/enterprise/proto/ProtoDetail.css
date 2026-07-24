@@ -4445,6 +4445,57 @@
   white-space: nowrap;
 }
 
+/* 개별 등록 파일별 표시 분량 */
+.vod-wspy-file-dur {
+  font-size: 12px;
+  font-weight: 600;
+  color: #60a5fa;
+  white-space: nowrap;
+}
+
+/* 파일명 미노출 안내 */
+.vod-wspy-file-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 웍스파이 등록 제목 미리보기 */
+.vod-wspy-title-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vod-wspy-title-item {
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.10);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: monospace;
+}
+.vod-wspy-preview-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 웍스파이 설명 미리보기 */
+.vod-wspy-desc-preview {
+  white-space: pre-line;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
 /* 등록 방식 컬럼 배지 */
 .vod-pm-reg-method--bundle {
   background: rgba(99, 102, 241, 0.12);
