@@ -107,10 +107,11 @@ function formatRegDate(regDttm) {
   return regDttm.replace(/-/g, '').slice(2, 8);
 }
 
-// 현장속기 목록의 의뢰일자 컬럼 툴팁 — 해당 건의 신청일자를 "OO년 O월 O일" 형식으로 보여준다.
-function formatStgApplyTooltip(regDttm) {
-  if (!regDttm) return '신청일: -';
-  const [y, m, d] = regDttm.slice(0, 10).split('-');
+// 현장속기 목록의 의뢰일자 컬럼 툴팁 — 의뢰일자(실제 회의·녹음 등 작업 진행일)와는 별개로,
+// 의뢰를 접수한 신청일자(applyDate)를 "OO년 O월 O일" 형식으로 보여준다.
+function formatStgApplyTooltip(applyDate) {
+  if (!applyDate) return '신청일: -';
+  const [y, m, d] = applyDate.slice(0, 10).split('-');
   return `신청일: ${y.slice(2)}년 ${Number(m)}월 ${Number(d)}일`;
 }
 
@@ -721,7 +722,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         <input type="checkbox" checked={selectedIds.has(s.id)} onChange={() => toggleSelect(s.id)} />
                       </td>
                     )}
-                    <td className="text-center" title={isStenographyType ? formatStgApplyTooltip(s.regDttm) : undefined}>
+                    <td className="text-center" title={isStenographyType ? formatStgApplyTooltip(s.applyDate) : undefined}>
                       {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
                       {isRecordingType && formatRegTime(s.regDttm) && (
                         <span style={{ marginLeft: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>{formatRegTime(s.regDttm)}</span>
@@ -855,7 +856,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           const isNotified = isStenography && effStatus === '업체전달완료';
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
-              <td className="text-center" title={isStenographyType ? formatStgApplyTooltip(s.regDttm) : undefined}>
+              <td className="text-center" title={isStenographyType ? formatStgApplyTooltip(s.applyDate) : undefined}>
                 {formatRegDate(s.regDttm)}
                 {isRecordingType && formatRegTime(s.regDttm) && (
                   <span style={{ marginLeft: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>{formatRegTime(s.regDttm)}</span>

@@ -17,6 +17,8 @@ export const STENOGRAPHY_SAMPLES = [
     venueAddress: '서울특별시 중구 세종대로 110',
     venueName: '서울시의회 본회의장',
     regDttm: '2026-06-16 09:00',
+    // 신청일 — 의뢰(실제 회의 진행일)를 접수한 날짜. 의뢰일자(regDttm)와 다른 날짜다.
+    applyDate: '2026-06-01',
     dueDate: '2026-06-18',
     actualDeliveryDate: '-',
     remark: '',
@@ -91,6 +93,8 @@ export const STENOGRAPHY_SAMPLES = [
     venueAddress: '경기도 수원시 팔달구 효원로 1',
     venueName: '경기도의회 중회의실',
     regDttm: '2026-06-17 10:00',
+    // 신청일 — 의뢰(실제 회의 진행일)를 접수한 날짜. 의뢰일자(regDttm)와 다른 날짜다.
+    applyDate: '2026-06-02',
     dueDate: '2026-06-19',
     actualDeliveryDate: '-',
     remark: '',
