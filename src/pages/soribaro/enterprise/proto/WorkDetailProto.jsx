@@ -5159,6 +5159,12 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
       ? { total: String(s.finalSettlement.total) }
       : { total: '' }
   ));
+
+  // 업체정산 이력 — 정산 수정 / 상태 변경 / 견적서 다시 적용 등 업체정산 정보가 바뀔 때마다 자동으로 한 줄씩 쌓인다
+  const [companyHistory, setCompanyHistory] = useState([]);
+  const logCompanyHistory = (event, detail) => {
+    setCompanyHistory((prev) => [{ dttm: nowStamp(), actor: '정윤실_관리자', event, detail }, ...prev]);
+  };
   // 공급가액 = 총합 ÷ 1.1, 세액 = 총합 - 공급가액 (총합만 입력받아 자동 계산)
   const finalTotalInput = Number(finalForm.total) || 0;
   const finalSupplyPreview = Math.round(finalTotalInput / 1.1);
@@ -5179,6 +5185,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
     const next = { supply, tax, total };
     setFinalForm({ total: String(total) });
     setSavedFinal(next);
+    logCompanyHistory('정산 수정', `총합 ${fmt(total)}원 (공급가액 ${fmt(supply)}원 / 세액 ${fmt(tax)}원)으로 저장`);
     // 저장만으로는 적용되지 않는다 — 업체정산 확인을 눌러야 이 금액이 최종 확정된다.
     // 이미 확인 완료 상태였다면, 새 저장값으로 다시 확인할 수 있도록 재확인 대기 상태로 전환한다.
     if (isConfirmed && !pendingReapply) {
@@ -5243,6 +5250,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
     if (s?.id) updateSampleFinalSettlement(s.id, showFinalSettlement && savedFinal ? savedFinal : null);
     setRestoredQs(null);
     setPendingReapply(false);
+    logCompanyHistory('상태 변경', '정산대기 → 완료 (업체정산 확인)');
     onConfirm();
   };
 
@@ -5250,6 +5258,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
     setPrevQs(frozenQs || qs);  // 직전 견적 스냅샷 저장
     setRestoredQs(null);        // liveQs를 표시하도록 초기화
     setPendingReapply(true);
+    logCompanyHistory('견적서 다시 적용', '견적서 관리의 최신 견적 정보로 재적용, 재확인 대기 상태로 전환');
     onReapply();                // 부모: companySettled 해제
   };
 
@@ -5264,6 +5273,7 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
         setPrevQs(frozenQs || qs);
         setRestoredQs(null);
         setPendingReapply(true);
+        logCompanyHistory('견적서 다시 적용', '정산 수정 닫기 → 견적서 관리의 최신 견적 정보로 재적용, 재확인 대기 상태로 전환');
         onReapply();
       }
     }
@@ -5449,6 +5459,28 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           </div>
         </div>
       )}
+
+      {/* 업체정산 이력 — 정산 수정 / 상태 변경 / 견적서 다시 적용 등 업체정산 정보가 바뀔 때마다 자동으로 기록된다 */}
+      <div className="proto-section-card" style={{ marginTop: '16px' }}>
+        <div className="proto-section-card-header">
+          <span className="proto-section-card-title">업체정산 이력</span>
+        </div>
+        <div className="proto-section-card-body" style={{ padding: '16px 20px' }}>
+          <div className="settle-history-list">
+            {companyHistory.length === 0
+              ? <div className="proto-empty-state" style={{ padding: '16px' }}>업체정산 이력이 없습니다.</div>
+              : companyHistory.map((h, i) => (
+                <div key={i} className="settle-history-row">
+                  <span className="settle-history-dttm">{h.dttm}</span>
+                  <span className="settle-history-actor">{h.actor}</span>
+                  <span className="settle-history-event">{h.event}</span>
+                  {h.detail && <span className="settle-history-detail">{h.detail}</span>}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
