@@ -5154,6 +5154,9 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   const [restoredQs, setRestoredQs] = useState(null);
   // pendingReapply: '견적서 다시 적용' 이후 재확인 전 상태
   const [pendingReapply, setPendingReapply] = useState(false);
+  // confirmedViaManualEdit: 업체정산 확인이 "정산 수정"(수기 입력) 금액을 기준으로 이뤄졌는지 여부
+  // — 기존 견적서 상태 그대로 확인한 경우에만 '견적서 적용' 버튼을 노출한다.
+  const [confirmedViaManualEdit, setConfirmedViaManualEdit] = useState(() => isConfirmed && !!s.finalSettlement);
 
   // 정산 수정(총합 수기 입력, 공급가액/세액은 자동 계산) — 업체정산 확인을 눌러야 자동 계산 금액을 대신해 적용된다 (저장만으로는 미적용)
   const [showFinalSettlement, setShowFinalSettlement] = useState(false);
@@ -5251,7 +5254,9 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   const handleConfirm = () => {
     setFrozenQs({ ...qs });     // 현재 견적 고정
     // 최종 정산 영역이 열려 있고 저장된 금액이 있으면 그 금액을, 닫혀 있으면(자동 계산 결과 기준) null을 확정한다
-    if (s?.id) updateSampleFinalSettlement(s.id, showFinalSettlement && savedFinal ? savedFinal : null);
+    const usedManualEdit = showFinalSettlement && !!savedFinal;
+    if (s?.id) updateSampleFinalSettlement(s.id, usedManualEdit ? savedFinal : null);
+    setConfirmedViaManualEdit(usedManualEdit);
     setRestoredQs(null);
     setPendingReapply(false);
     logCompanyHistory('상태 변경', '정산대기 → 완료 (업체정산 확인)');
@@ -5389,12 +5394,12 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           )}
           {/* 하단 액션 버튼 영역 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
-            {/* 왼쪽: 정산 수정 / 견적서 적용 버튼 — 업체정산 수정 완료 후에는 견적서 적용 버튼이 함께 노출된다 */}
+            {/* 왼쪽: 정산 수정 / 견적서 적용 버튼 — 기존 견적서 상태 그대로 업체정산 확인을 완료한 경우에만 견적서 적용 버튼이 노출된다(정산 수정을 거쳐 확인한 경우는 제외) */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button className="proto-log-btn" onClick={toggleFinalSettlement}>
                 {showFinalSettlement ? '견적서 다시 적용' : '정산 수정'}
               </button>
-              {isConfirmed && !pendingReapply && (
+              {isConfirmed && !pendingReapply && !confirmedViaManualEdit && (
                 <button className="proto-log-btn" onClick={handleApplyQuote}>
                   견적서 적용
                 </button>
