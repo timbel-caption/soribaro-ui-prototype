@@ -5254,14 +5254,6 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
     onConfirm();
   };
 
-  const handleReapply = () => {
-    setPrevQs(frozenQs || qs);  // 직전 견적 스냅샷 저장
-    setRestoredQs(null);        // liveQs를 표시하도록 초기화
-    setPendingReapply(true);
-    logCompanyHistory('견적서 다시 적용', '견적서 관리의 최신 견적 정보로 재적용, 재확인 대기 상태로 전환');
-    onReapply();                // 부모: companySettled 해제
-  };
-
   const toggleFinalSettlement = () => {
     const next = !showFinalSettlement;
     setShowFinalSettlement(next);
@@ -5384,16 +5376,11 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           )}
           {/* 하단 액션 버튼 영역 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
-            {/* 왼쪽: 정산 수정 / 견적서 다시 적용 버튼 — 업체정산 확인 후에는 "견적서 다시 적용"을 1개만 노출한다(정산 수정 닫기와 동일한 기능이라 중복 노출하지 않는다) */}
+            {/* 왼쪽: 정산 수정 / 견적서 다시 적용 버튼 — 닫기와 동일한 기능이므로 "견적서 다시 적용" 버튼은 1개만 둔다 */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button className="proto-log-btn" onClick={toggleFinalSettlement}>
-                {showFinalSettlement ? '닫기' : '정산 수정'}
+                {showFinalSettlement ? '견적서 다시 적용' : '정산 수정'}
               </button>
-              {isConfirmed && !pendingReapply && (
-                <button className="proto-log-btn" onClick={handleReapply}>
-                  견적서 다시 적용
-                </button>
-              )}
             </div>
             {/* 오른쪽: 완료 표시 + 확인 버튼 (최종 정산 영역이 열려 있으면 그 안으로 이동) */}
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
