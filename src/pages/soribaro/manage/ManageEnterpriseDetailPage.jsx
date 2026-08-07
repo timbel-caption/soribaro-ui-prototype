@@ -13,6 +13,7 @@ import { toast } from '../../../stores/toastStore';
 import { useCommonCodeStore } from '../../../stores/commonCodeStore';
 import '../../../styles/notion-list.css';
 import './ManageEnterpriseDetailPage.css';
+import './ManageEnterpriseCustomerDetailPage.css';
 import '../enterprise/proto/ProtoDetail.css';
 
 const getInitialFormData = () => ({
@@ -40,6 +41,8 @@ export default function ManageEnterpriseDetailPage() {
 
   const isCreateMode = entNo === 'new';
   const bssTypeOptions = useCommonCodeStore((s) => s.getCodesByGroup('BSS_TYPE'));
+  // 의뢰 유형(BSS_TYPE)에 매칭되는 계약구분 후보 — manageProtoStore의 의뢰유형은 BSS_TYPE 코드와 동일하게 맞춰져 있다
+  const _requestTypes = getRequestTypes();
 
   const [loading, setLoading] = useState(!isCreateMode);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -153,6 +156,16 @@ export default function ManageEnterpriseDetailPage() {
 
   const handleBack = () => navigate(-1);
 
+  // 계약구분 다중 선택(의뢰 유형 옆) — 체크한 계약구분만 견적서 관리에서 편집할 수 있다
+  const [selectedContractTypes, setSelectedContractTypes] = useState([]);
+  const [contractDropdownOpen, setContractDropdownOpen] = useState(false);
+  const availableContractTypesForBssType = _requestTypes.find((rt) => rt.code === formData.bssType)?.contractTypes ?? [];
+
+  const handleBssTypeChange = (value) => {
+    handleChange('bssType', value);
+    setSelectedContractTypes([]);
+  };
+
   // 실무자 관리 팝업 — 스토어와 동기화
   const [managerModal, setManagerModal] = useState(false);
   const [managers, setManagers] = useState([]);
@@ -180,42 +193,32 @@ export default function ManageEnterpriseDetailPage() {
   };
 
   // 견적서 관리 팝업 — n시간 이후 단가가 입력된 업체는 계산서 발행 형태와 무관하게 자동으로 n시간 절가로 계산되므로 별도 선택 항목을 두지 않는다
+  // 의뢰유형은 이 팝업에서 별도로 선택하지 않고, 의뢰 유형 옆에서 체크한 계약구분(selectedContractTypes)에 대해서만 견적을 관리한다.
   const INVOICE_TYPES = ['계약업체', '세금계산서', '일반계산서'];
   const [quoteModal, setQuoteModal] = useState(false);
-  const [quoteReqType, setQuoteReqType] = useState('');
   const [quoteContractType, setQuoteContractType] = useState('');
   const [quoteForm, setQuoteForm] = useState({ invoiceType: '계약업체', unitPrice: 60000, baseUnit: 60, roundUnit: 30, overtimePrice: 45000, baseRateHours: 2 });
 
-  const _requestTypes = getRequestTypes();
+  // 견적 설정은 업체+의뢰유형+계약구분 복합키로 저장되므로, 현재 선택된 의뢰 유형(BSS_TYPE)에 대응하는 의뢰유형명을 사용한다
+  const quoteReqTypeName = _requestTypes.find((rt) => rt.code === formData.bssType)?.name || '';
 
   const openQuoteModal = () => {
     const entNm = originalData?.entNm || '';
-    const firstReqType = _requestTypes[0]?.name || '';
-    const firstContract = _requestTypes[0]?.contractTypes[0] || '';
-    setQuoteReqType(firstReqType);
+    const firstContract = selectedContractTypes[0] || '';
     setQuoteContractType(firstContract);
-    setQuoteForm(getCompanyQuoteSettingsByType(entNm, firstReqType, firstContract));
+    setQuoteForm(getCompanyQuoteSettingsByType(entNm, quoteReqTypeName, firstContract));
     setQuoteModal(true);
-  };
-
-  const handleQuoteReqTypeChange = (reqTypeName) => {
-    const entNm = originalData?.entNm || '';
-    const rt = _requestTypes.find((r) => r.name === reqTypeName);
-    const firstContract = rt?.contractTypes[0] || '';
-    setQuoteReqType(reqTypeName);
-    setQuoteContractType(firstContract);
-    setQuoteForm(getCompanyQuoteSettingsByType(entNm, reqTypeName, firstContract));
   };
 
   const handleQuoteContractTypeChange = (contractType) => {
     const entNm = originalData?.entNm || '';
     setQuoteContractType(contractType);
-    setQuoteForm(getCompanyQuoteSettingsByType(entNm, quoteReqType, contractType));
+    setQuoteForm(getCompanyQuoteSettingsByType(entNm, quoteReqTypeName, contractType));
   };
 
   const handleSaveQuote = () => {
     const entNm = originalData?.entNm || '';
-    setCompanyQuoteSettingsByType(entNm, quoteReqType, quoteContractType, quoteForm);
+    setCompanyQuoteSettingsByType(entNm, quoteReqTypeName, quoteContractType, quoteForm);
     setQuoteModal(false);
   };
 
@@ -268,7 +271,7 @@ export default function ManageEnterpriseDetailPage() {
       </PropRow>
       <PropRow label={t('manage.enterprise.detail.labelBssType')}>
         {isEditable ? (
-          <select value={formData.bssType} onChange={(e) => handleChange('bssType', e.target.value)}>
+          <select value={formData.bssType} onChange={(e) => handleBssTypeChange(e.target.value)}>
             <option value="">{t('manage.enterprise.detail.selectNone')}</option>
             {bssTypeOptions.map((o) => (
               <option key={o.dtlCd} value={o.dtlCd}>{o.dtlCdNm}</option>
@@ -276,6 +279,47 @@ export default function ManageEnterpriseDetailPage() {
           </select>
         ) : (originalData?.bssTypeNm || '-')}
       </PropRow>
+
+      {/* 계약구분 체크박스 다중 선택 — 의뢰 유형 옆, 견적서 관리에서 편집할 계약구분을 선택한다 */}
+      <div className="prop-item">
+        <span className="prop-label">계약구분</span>
+        <span className="prop-value">
+          <div className="proto-dropdown">
+            <button
+              type="button"
+              className="proto-dropdown-trigger"
+              onClick={() => setContractDropdownOpen((o) => !o)}
+              disabled={!formData.bssType}
+              title={!formData.bssType ? '의뢰 유형을 먼저 선택하세요' : undefined}
+            >
+              <span className={selectedContractTypes.length > 0 ? '' : 'proto-dropdown-placeholder'}>
+                {selectedContractTypes.length > 0 ? selectedContractTypes.join(', ') : '계약구분을 선택하세요.'}
+              </span>
+              <span className="proto-dropdown-arrow">▼</span>
+            </button>
+            <div className="proto-dropdown-hint">*중복 선택 가능</div>
+            {contractDropdownOpen && (
+              <>
+                <div className="proto-dropdown-backdrop" onClick={() => setContractDropdownOpen(false)} />
+                <div className="proto-dropdown-menu">
+                  {availableContractTypesForBssType.map((ct) => (
+                    <label key={ct} className="proto-dropdown-checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={selectedContractTypes.includes(ct)}
+                        onChange={() => setSelectedContractTypes((prev) =>
+                          prev.includes(ct) ? prev.filter((c) => c !== ct) : [...prev, ct]
+                        )}
+                      />
+                      <span>{ct}</span>
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </span>
+      </div>
       <PropRow label={t('manage.enterprise.detail.labelUseYn')}>
         {isEditable ? (
           <select value={formData.useYn} onChange={(e) => handleChange('useYn', e.target.value)}>
@@ -442,64 +486,62 @@ export default function ManageEnterpriseDetailPage() {
               <span className="pm-modal-title">견적서 관리{originalData?.entNm ? ` — ${originalData.entNm}` : ''}</span>
               <button className="preg-x-btn" onClick={() => setQuoteModal(false)}>✕</button>
             </div>
-            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {/* 의뢰유형 + 계약구분 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">의뢰유형</label>
-                  <select className="preg-select" value={quoteReqType} onChange={e => handleQuoteReqTypeChange(e.target.value)}>
-                    {_requestTypes.map(rt => <option key={rt.id} value={rt.name}>{rt.name}</option>)}
-                  </select>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {selectedContractTypes.length === 0 ? (
+              <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  의뢰 유형 옆 계약구분에서 견적을 관리할 계약구분을 먼저 선택하세요.
+                </p>
+              </div>
+            ) : (
+              <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {/* 계약구분 — 체크한 계약구분 중 편집할 하나를 선택한다 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
                   <label className="preg-label">계약구분</label>
                   <select className="preg-select" value={quoteContractType} onChange={e => handleQuoteContractTypeChange(e.target.value)}>
-                    {(_requestTypes.find(r => r.name === quoteReqType)?.contractTypes || []).map(ct => (
-                      <option key={ct} value={ct}>{ct}</option>
-                    ))}
+                    {selectedContractTypes.map(ct => <option key={ct} value={ct}>{ct}</option>)}
                   </select>
                 </div>
+                {/* 견적 정보 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label className="preg-label">계산서 발행 형태</label>
+                  <select className="preg-select" value={quoteForm.invoiceType} onChange={e => setQuoteForm(p => ({ ...p, invoiceType: e.target.value }))}>
+                    {INVOICE_TYPES.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label className="preg-label">단가 (원/시간)</label>
+                    <input className="preg-input" type="number" value={quoteForm.unitPrice} onChange={e => setQuoteForm(p => ({ ...p, unitPrice: +e.target.value }))} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label className="preg-label">기본 단위 (분)</label>
+                    <input className="preg-input" type="number" value={quoteForm.baseUnit} onChange={e => setQuoteForm(p => ({ ...p, baseUnit: +e.target.value }))} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label className="preg-label">올림 단위 (분)</label>
+                    <input className="preg-input" type="number" value={quoteForm.roundUnit} onChange={e => setQuoteForm(p => ({ ...p, roundUnit: +e.target.value }))} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label className="preg-label">n시간 이후 단가 (원/시간)</label>
+                    <input className="preg-input" type="number" value={quoteForm.overtimePrice} onChange={e => setQuoteForm(p => ({ ...p, overtimePrice: +e.target.value }))} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label className="preg-label">기본 단가 적용 (분)</label>
+                    <input
+                      className="preg-input"
+                      type="number"
+                      value={quoteForm.baseRateHours}
+                      onChange={e => setQuoteForm(p => ({ ...p, baseRateHours: +e.target.value }))}
+                      disabled={!quoteForm.overtimePrice}
+                      title={!quoteForm.overtimePrice ? 'n시간 이후 단가를 입력해야 사용할 수 있습니다' : undefined}
+                    />
+                  </div>
+                </div>
               </div>
-              {/* 견적 정보 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label className="preg-label">계산서 발행 형태</label>
-                <select className="preg-select" value={quoteForm.invoiceType} onChange={e => setQuoteForm(p => ({ ...p, invoiceType: e.target.value }))}>
-                  {INVOICE_TYPES.map(t => <option key={t}>{t}</option>)}
-                </select>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">단가 (원/시간)</label>
-                  <input className="preg-input" type="number" value={quoteForm.unitPrice} onChange={e => setQuoteForm(p => ({ ...p, unitPrice: +e.target.value }))} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">기본 단위 (분)</label>
-                  <input className="preg-input" type="number" value={quoteForm.baseUnit} onChange={e => setQuoteForm(p => ({ ...p, baseUnit: +e.target.value }))} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">올림 단위 (분)</label>
-                  <input className="preg-input" type="number" value={quoteForm.roundUnit} onChange={e => setQuoteForm(p => ({ ...p, roundUnit: +e.target.value }))} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">n시간 이후 단가 (원/시간)</label>
-                  <input className="preg-input" type="number" value={quoteForm.overtimePrice} onChange={e => setQuoteForm(p => ({ ...p, overtimePrice: +e.target.value }))} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label className="preg-label">기본 단가 적용 (분)</label>
-                  <input
-                    className="preg-input"
-                    type="number"
-                    value={quoteForm.baseRateHours}
-                    onChange={e => setQuoteForm(p => ({ ...p, baseRateHours: +e.target.value }))}
-                    disabled={!quoteForm.overtimePrice}
-                    title={!quoteForm.overtimePrice ? 'n시간 이후 단가를 입력해야 사용할 수 있습니다' : undefined}
-                  />
-                </div>
-              </div>
-            </div>
+            )}
             <div className="pm-modal-ft">
               <button className="proto-log-btn" onClick={() => setQuoteModal(false)}>취소</button>
-              <button className="proto-log-btn proto-log-btn--save" onClick={handleSaveQuote}>저장</button>
+              <button className="proto-log-btn proto-log-btn--save" onClick={handleSaveQuote} disabled={!quoteContractType}>저장</button>
             </div>
           </div>
         </div>
