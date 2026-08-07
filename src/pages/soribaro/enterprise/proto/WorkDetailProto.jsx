@@ -2825,6 +2825,9 @@ function ProjectManageTab({ s }) {
       <div style={{ marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
           <p className="proto-section-title" style={{ margin: 0 }}>프로젝트 현황</p>
+          {!isRecordingProj && (
+            <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
+          )}
         </div>
         {isRecordingProj ? (
           <>
@@ -2861,10 +2864,11 @@ function ProjectManageTab({ s }) {
             </div>
           </>
         ) : (
-          /* 새 프로젝트 + 견적서/최종산출물/알림발송 (회의록 전용) — 두 번째 줄 우측 */
+          /* 초안툴 완성 + 견적서/최종산출물/알림발송 (회의록 전용) — 두 번째 줄 우측. 새 프로젝트 버튼은 첫 번째 줄로 분리했다 */
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
             {s.bssTypeName === '회의록' && (
               <>
+                <button className="pm-doc-btn" onClick={() => window.alert('[프로토타입 안내]\n초안툴 완성 처리는 정식 서비스 단계에서 구현 예정입니다.')}>초안툴 완성</button>
                 <input ref={quoteInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) setQuoteFile(e.target.files[0].name); e.target.value = ''; }} />
                 <button className="pm-doc-btn" onClick={() => quoteInputRef.current.click()}>견적서 업로드</button>
                 <button
@@ -2880,7 +2884,6 @@ function ProjectManageTab({ s }) {
                 <button className="pm-doc-btn pm-doc-btn--notify" onClick={() => setNotifyModal('draft')}>알림 발송</button>
               </>
             )}
-            <button className="proto-file-add-btn" onClick={() => setShowAddForm(true)}>+ 새 프로젝트</button>
           </div>
         )}
       </div>
