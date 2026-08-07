@@ -4491,7 +4491,6 @@ function StenographyAssignTab({ s }) {
   };
 
   const isCancelled = workerStatus === '배정취소';
-  const isNotified = workerStatus === '업체전달완료';
 
   return (
     <div className="proto-tab-panel">
@@ -4508,27 +4507,11 @@ function StenographyAssignTab({ s }) {
           <thead>
             <tr>
               <th className="text-center">작업자</th>
-              <th className="text-center">상태</th>
-              <th className="text-center">업체알림</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td className="text-center" style={{ fontSize: '13px' }}>{isCancelled ? '-' : worker}</td>
-              <td className="text-center">
-                {workerStatus === '배정취소'
-                  ? <span className="proto-badge-cancel" style={{ fontSize: '12px' }}>배정취소</span>
-                  : workerStatus === '배정완료' || workerStatus === '업체전달완료'
-                  ? <span className="proto-status-badge proto-status-done" style={{ fontSize: '12px' }}>배정완료</span>
-                  : <span className="proto-status-badge proto-status-wait" style={{ fontSize: '12px' }}>미배정</span>
-                }
-              </td>
-              <td className="text-center">
-                {isNotified
-                  ? <span className="proto-badge-done" style={{ fontSize: '12px' }}>업체전달완료</span>
-                  : <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>-</span>
-                }
-              </td>
             </tr>
           </tbody>
         </table>
