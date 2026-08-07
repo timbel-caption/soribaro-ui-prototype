@@ -19,16 +19,16 @@ const TAB_LABELS_VOD = [
 ];
 const TAB_LABELS_MTG = [
   '기본정보', '파일관리', '프로젝트 관리', '정산확인', '업체정산', '이력/메모',
-  '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
+  '매뉴얼·용어집 세팅',
 ];
 // 녹취록은 회의록과 동일한 탭 구성을 쓰되 업체정산 탭이 없다
 const TAB_LABELS_REC = [
   '기본정보', '파일관리', '프로젝트 관리', '정산확인', '이력/메모',
-  '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
+  '매뉴얼·용어집 세팅',
 ];
 const TAB_LABELS_STG = [
   '기본정보', '배정 관리', '정산확인', '업체정산', '이력/메모',
-  '매뉴얼·용어집 세팅', 'AI QC 결과 요약',
+  '매뉴얼·용어집 세팅',
 ];
 
 const STATUS_MAP = {
@@ -3770,61 +3770,6 @@ function ManualGlossaryTab({ s }) {
   );
 }
 
-// ─── 탭 5: AI QC 결과 요약 ───
-function AiQcTab({ s }) {
-  const scoreClass = s.qcScore >= 90 ? 'proto-qc-score-good' : s.qcScore >= 80 ? 'proto-qc-score-ok' : 'proto-qc-score-bad';
-  const totalErrors = s.qcResults.reduce((acc, r) => acc + r.count, 0);
-
-  return (
-    <div className="proto-tab-panel">
-      <div className="proto-qc-summary">
-        <div className="proto-qc-score-card">
-          <span className="proto-qc-score-label">AI 품질 점수</span>
-          <span className={`proto-qc-score-value ${scoreClass}`}>{s.qcScore}</span>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>/ 100</span>
-        </div>
-        <div className="proto-qc-score-card">
-          <span className="proto-qc-score-label">총 발견 오류</span>
-          <span className="proto-qc-score-value" style={{ color: totalErrors > 10 ? '#f87171' : '#fbbf24' }}>{totalErrors}</span>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>건</span>
-        </div>
-        <div className="proto-qc-score-card">
-          <span className="proto-qc-score-label">검출 유형</span>
-          <span className="proto-qc-score-value" style={{ color: 'var(--text-muted)' }}>{s.qcResults.length}</span>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>종류</span>
-        </div>
-      </div>
-
-      <p className="proto-section-title">오류 유형별 상세</p>
-      <div className="proto-table-wrap">
-        <table className="proto-table">
-          <thead>
-            <tr>
-              <th>오류 유형</th>
-              <th className="text-center">발견 건수</th>
-              <th className="text-center">심각도</th>
-              <th>예시</th>
-            </tr>
-          </thead>
-          <tbody>
-            {s.qcResults.map((r, i) => (
-              <tr key={i}>
-                <td style={{ fontWeight: 600 }}>{r.errorType}</td>
-                <td className="text-center">{r.count}건</td>
-                <td className="text-center">{severityBadge(r.severity)}</td>
-                <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{r.example || '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-        * AI QC는 보조 도구입니다. 최종 품질 판단은 검수 담당자가 결정합니다.
-      </p>
-    </div>
-  );
-}
-
 // ─── 탭 7: 납품관리 ───
 const DELIVERY_TODAY = '2026-06-24';
 
@@ -6013,7 +5958,6 @@ export default function WorkDetailProto({ samples, backPath }) {
         <MtgSettlementTab s={sEff} />,
         <HistoryMemoTab s={sEff} />,
         <ManualGlossaryTab s={sEff} />,
-        <AiQcTab s={sEff} />,
       ]
     : isMtg
     ? [
@@ -6024,7 +5968,6 @@ export default function WorkDetailProto({ samples, backPath }) {
         <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} onReapply={handleCompanyReapply} />,
         <HistoryMemoTab s={sEff} />,
         <ManualGlossaryTab s={sEff} />,
-        <AiQcTab s={sEff} />,
       ]
     : isStenography
     ? [
@@ -6034,7 +5977,6 @@ export default function WorkDetailProto({ samples, backPath }) {
         <CompanySettlementTab s={sEff} isConfirmed={companySettled} onConfirm={handleCompanyConfirm} onReapply={handleCompanyReapply} />,
         <HistoryMemoTab s={sEff} />,
         <ManualGlossaryTab s={sEff} />,
-        <AiQcTab s={sEff} />,
       ]
     : [
         <BasicInfoTab s={s} />,
