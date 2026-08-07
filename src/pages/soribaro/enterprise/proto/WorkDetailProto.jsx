@@ -5374,10 +5374,10 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           )}
           {/* 하단 액션 버튼 영역 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
-            {/* 왼쪽: 정산 수정 / 견적서 다시 적용 버튼 */}
+            {/* 왼쪽: 정산 수정 / 견적서 다시 적용 버튼 — 업체정산 확인 후에는 "견적서 다시 적용"을 1개만 노출한다(정산 수정 닫기와 동일한 기능이라 중복 노출하지 않는다) */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button className="proto-log-btn" onClick={toggleFinalSettlement}>
-                {showFinalSettlement ? '견적서 다시 적용' : '정산 수정'}
+                {showFinalSettlement ? '닫기' : '정산 수정'}
               </button>
               {isConfirmed && !pendingReapply && (
                 <button className="proto-log-btn" onClick={handleReapply}>
