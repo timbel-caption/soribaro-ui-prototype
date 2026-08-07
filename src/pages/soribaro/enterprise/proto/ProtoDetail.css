@@ -1597,6 +1597,17 @@
   color: var(--accent-color);
 }
 
+/* 숫자 입력란의 증가/감소(스핀) 버튼 제거 — 일반 숫자 입력처럼 보이게 함 */
+.preg-input--no-spin::-webkit-outer-spin-button,
+.preg-input--no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.preg-input--no-spin[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* ─── 파일관리 탭: 파일 추가 버튼 & 드롭존 ─── */
 .proto-file-add-btn {
   padding: 6px 14px;

@@ -5194,37 +5194,40 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
 
   // frozenQs: 확인 클릭 시 고정된 견적 (업체정산 완료 상태 유지용)
   const [frozenQs, setFrozenQs] = useState(null);
-  // prevQs: '견적서 다시 적용' 클릭 직전의 frozenQs (이전 버튼용 스냅샷)
+  // prevQs: '견적서 다시 적용' 클릭 직전의 frozenQs 스냅샷
   const [prevQs, setPrevQs] = useState(null);
-  // restoredQs: '이전' 버튼 클릭 시 복원할 견적 (prevQs에서 복원)
+  // restoredQs: 복원된 견적이 있을 때 표시할 값
   const [restoredQs, setRestoredQs] = useState(null);
   // pendingReapply: '견적서 다시 적용' 이후 재확인 전 상태
   const [pendingReapply, setPendingReapply] = useState(false);
 
-  // 최종 정산(공급가액/세액 수기 입력, 총합은 자동 계산) — 업체정산 확인을 눌러야 자동 계산 금액을 대신해 적용된다 (저장만으로는 미적용)
+  // 정산 수정(총합 수기 입력, 공급가액/세액은 자동 계산) — 업체정산 확인을 눌러야 자동 계산 금액을 대신해 적용된다 (저장만으로는 미적용)
   const [showFinalSettlement, setShowFinalSettlement] = useState(false);
   const [savedFinal, setSavedFinal] = useState(s.finalSettlement || null);
   const [finalForm, setFinalForm] = useState(() => (
     s.finalSettlement
-      ? { supply: String(s.finalSettlement.supply), tax: String(s.finalSettlement.tax) }
-      : { supply: '', tax: '' }
+      ? { total: String(s.finalSettlement.total) }
+      : { total: '' }
   ));
-  const finalTotalPreview = (Number(finalForm.supply) || 0) + (Number(finalForm.tax) || 0);
+  // 공급가액 = 총합 ÷ 1.1, 세액 = 총합 - 공급가액 (총합만 입력받아 자동 계산)
+  const finalTotalInput = Number(finalForm.total) || 0;
+  const finalSupplyPreview = Math.round(finalTotalInput / 1.1);
+  const finalTaxPreview = finalTotalInput - finalSupplyPreview;
 
   // 실제 표시할 견적:
   // - 확인 완료 & 재적용 대기 아님: frozenQs (고정)
-  // - 이전 버튼으로 복원한 경우: restoredQs
+  // - 복원된 견적이 있는 경우: restoredQs
   // - 그 외: liveQs (견적서 관리 최신값)
   const qs = (isConfirmed && !pendingReapply) ? (frozenQs || liveQs)
            : (restoredQs || liveQs);
 
   const handleSaveFinal = () => {
-    // 소수점이 발생하면 올림 처리하고, 총합은 공급가액+세액으로 자동 계산한다
-    const supply = Math.ceil(Number(finalForm.supply) || 0);
-    const tax = Math.ceil(Number(finalForm.tax) || 0);
-    const total = supply + tax;
+    // 총합을 기준으로 공급가액/세액을 자동 계산한다 (공급가액 = 총합 ÷ 1.1, 세액 = 총합 - 공급가액)
+    const total = Math.round(Number(finalForm.total) || 0);
+    const supply = Math.round(total / 1.1);
+    const tax = total - supply;
     const next = { supply, tax, total };
-    setFinalForm({ supply: String(supply), tax: String(tax) });
+    setFinalForm({ total: String(total) });
     setSavedFinal(next);
     // 저장만으로는 적용되지 않는다 — 업체정산 확인을 눌러야 이 금액이 최종 확정된다.
     // 이미 확인 완료 상태였다면, 새 저장값으로 다시 확인할 수 있도록 재확인 대기 상태로 전환한다.
@@ -5300,21 +5303,19 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
     onReapply();                // 부모: companySettled 해제
   };
 
-  const handlePrev = () => {
-    setRestoredQs(prevQs);      // 직전 견적으로 복원 (확인 완료는 자동 복원 안 함)
-    setPrevQs(null);
-    setPendingReapply(false);
-  };
-
   const toggleFinalSettlement = () => {
     const next = !showFinalSettlement;
     setShowFinalSettlement(next);
-    // 최종 정산 영역을 닫으면(=자동 계산 기준으로 되돌아가면) 이미 확인 완료 상태였더라도 다시 확인할 수 있도록 전환한다
-    if (!next && isConfirmed && !pendingReapply) {
-      setPrevQs(frozenQs || qs);
-      setRestoredQs(null);
-      setPendingReapply(true);
-      onReapply();
+    // 정산 수정 영역을 닫으면(=견적서를 다시 적용하면) 수기 입력값을 지우고 업체 견적 세부 내용(자동 계산 값) 기준으로 되돌린다
+    if (!next) {
+      setSavedFinal(null);
+      setFinalForm({ total: '' });
+      if (isConfirmed && !pendingReapply) {
+        setPrevQs(frozenQs || qs);
+        setRestoredQs(null);
+        setPendingReapply(true);
+        onReapply();
+      }
     }
   };
 
@@ -5331,6 +5332,14 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
   const tdStyleAlt = { ...tdStyle, background: '#f0f4ff' };
   const tdBold = { ...tdStyle, fontWeight: 700 };
   const tdAccentAlt = { ...tdStyleAlt, fontWeight: 700, color: 'var(--accent-color)' };
+  // 정산 수정에서 저장한 금액이 있으면 견적서 자동 계산 금액과 다르다는 것을 초록색으로 표시한다
+  const tdAccentAltGreen = { ...tdStyleAlt, fontWeight: 700, color: '#22c55e' };
+
+  // 저장된 정산 수정 금액이 있으면 그 값을, 없으면 견적서 기준 자동 계산 금액을 표시한다
+  const displayTotalSupply = savedFinal ? savedFinal.supply : totalSupply;
+  const displayTotalTax = savedFinal ? savedFinal.tax : totalTax;
+  const displayGrandTotal = savedFinal ? savedFinal.total : (totalSupply + totalTax);
+  const totalsCellStyle = savedFinal ? tdAccentAltGreen : tdAccentAlt;
 
   // 최종 정산 영역이 열려 있으면 그 안(저장 버튼 오른쪽)으로, 닫혀 있으면 기존 위치(하단 액션 영역)에 표시한다
   const confirmButton = (
@@ -5401,9 +5410,9 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
                   <td style={tdStyleAlt}>{isNTimeDiscount && !noData ? fmtHM(extraMin) : '-'}</td>
                   <td style={tdStyleAlt}>{isNTimeDiscount && !noData && extraMin > 0 ? fmt(extraSupply) : '-'}</td>
                   <td style={tdStyleAlt}>{isNTimeDiscount && !noData && extraMin > 0 ? fmt(extraTax) : '-'}</td>
-                  <td style={tdAccentAlt}>{noData ? '-' : fmt(totalSupply)}</td>
-                  <td style={tdAccentAlt}>{noData ? '-' : fmt(totalTax)}</td>
-                  <td style={tdAccentAlt}>{noData ? '-' : fmt(totalSupply + totalTax)}</td>
+                  <td style={totalsCellStyle}>{noData ? '-' : fmt(displayTotalSupply)}</td>
+                  <td style={totalsCellStyle}>{noData ? '-' : fmt(displayTotalTax)}</td>
+                  <td style={totalsCellStyle}>{noData ? '-' : fmt(displayGrandTotal)}</td>
                 </tr>
               </tbody>
             </table>
@@ -5415,19 +5424,14 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
           )}
           {/* 하단 액션 버튼 영역 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
-            {/* 왼쪽: 최종 정산 수정 / 견적서 다시 적용 / 이전 버튼 */}
+            {/* 왼쪽: 정산 수정 / 견적서 다시 적용 버튼 */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button className="proto-log-btn" onClick={toggleFinalSettlement}>
-                {showFinalSettlement ? '최종 정산 닫기' : '최종 정산 수정'}
+                {showFinalSettlement ? '견적서 다시 적용' : '정산 수정'}
               </button>
               {isConfirmed && !pendingReapply && (
                 <button className="proto-log-btn" onClick={handleReapply}>
                   견적서 다시 적용
-                </button>
-              )}
-              {pendingReapply && prevQs && (
-                <button className="proto-log-btn" onClick={handlePrev}>
-                  이전
                 </button>
               )}
             </div>
@@ -5460,26 +5464,32 @@ function CompanySettlementTab({ s, isConfirmed, onConfirm, onReapply }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="preg-label">공급가액</label>
                 <input
-                  className="preg-input"
+                  className="preg-input preg-input--no-spin"
                   style={{ width: '120px' }}
                   type="number"
-                  value={finalForm.supply}
-                  onChange={e => setFinalForm(p => ({ ...p, supply: e.target.value }))}
+                  value={finalSupplyPreview}
+                  disabled
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="preg-label">세액</label>
                 <input
-                  className="preg-input"
+                  className="preg-input preg-input--no-spin"
                   style={{ width: '120px' }}
                   type="number"
-                  value={finalForm.tax}
-                  onChange={e => setFinalForm(p => ({ ...p, tax: e.target.value }))}
+                  value={finalTaxPreview}
+                  disabled
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="preg-label">총합</label>
-                <input className="preg-input" style={{ width: '120px' }} type="number" value={finalTotalPreview} disabled />
+                <input
+                  className="preg-input preg-input--no-spin"
+                  style={{ width: '120px' }}
+                  type="number"
+                  value={finalForm.total}
+                  onChange={e => setFinalForm({ total: e.target.value })}
+                />
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px' }}>
