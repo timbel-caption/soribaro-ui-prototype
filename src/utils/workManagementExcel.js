@@ -235,6 +235,54 @@ export async function downloadRecordingWorkExcel(samples, filename = '녹취록_
   await downloadWorkbook(wb, filename);
 }
 
+const STENOGRAPHY_SETTLEMENT_COLUMNS = [
+  { header: '작업자', width: 14 },
+  { header: '등급', width: 10 },
+  { header: '작업시간', width: 12 },
+  { header: '정산금액', width: 14 },
+  { header: '출장비', width: 12 },
+  { header: '실지급액', width: 14 },
+];
+
+// 현장속기 정산관리 엑셀 다운로드 — 동일 작업자가 여러 건을 수행한 경우 작업시간/정산금액/출장비/실지급액을 합산해 작업자별 1행으로 출력한다.
+function aggregateByWorker(rows) {
+  const byWorker = new Map();
+  rows.forEach((r) => {
+    const acc = byWorker.get(r.worker) || { worker: r.worker, grade: r.grade, workHours: 0, settlementAmount: 0, travelFee: 0, netAmount: 0 };
+    acc.workHours += r.workHours || 0;
+    acc.settlementAmount += r.settlementAmount || 0;
+    acc.travelFee += r.travelFee || 0;
+    acc.netAmount += r.netAmount || 0;
+    byWorker.set(r.worker, acc);
+  });
+  return [...byWorker.values()];
+}
+
+export async function downloadStenographySettlementExcel(rows, filename = '현장속기_정산관리.xlsx') {
+  const ExcelJSMod = await import('exceljs');
+  const ExcelJS = ExcelJSMod.default || ExcelJSMod;
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'SoriBaro Editor';
+  wb.created = new Date();
+
+  const ws = wb.addWorksheet('현장속기 정산관리');
+  STENOGRAPHY_SETTLEMENT_COLUMNS.forEach((c, i) => { ws.getColumn(i + 1).width = c.width; });
+
+  const headerRow = ws.addRow(STENOGRAPHY_SETTLEMENT_COLUMNS.map((c) => c.header));
+  headerRow.font = { bold: true, color: { argb: 'FF111827' } };
+  headerRow.eachCell((cell) => {
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  aggregateByWorker(rows).forEach((r) => {
+    ws.addRow([r.worker, r.grade, r.workHours, r.settlementAmount, r.travelFee, r.netAmount]);
+  });
+
+  await downloadWorkbook(wb, filename);
+}
+
 async function downloadWorkbook(wb, filename) {
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], {

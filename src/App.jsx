@@ -27,6 +27,7 @@ import MyPage from './pages/soribaro/mypage/MyPage';
 import MeetingWorkPage from './pages/soribaro/meeting/MeetingWorkPage';
 import StenographyWorkPage from './pages/soribaro/stenography/StenographyWorkPage';
 import StenographyMenuDetailProto from './pages/soribaro/stenography/StenographyMenuDetailProto';
+import StenographySettlementPage from './pages/soribaro/stenography/StenographySettlementPage';
 import EnterpriseMeetingPage from './pages/soribaro/enterprise/EnterpriseMeetingPage';
 import EnterpriseVodPage from './pages/soribaro/enterprise/EnterpriseVodPage';
 import EnterpriseWorkDetailPage from './pages/soribaro/enterprise/EnterpriseWorkDetailPage';
@@ -260,6 +261,7 @@ function AppRoutes() {
         <Route path="soribaro/meeting/work" element={<AdminRoute><MeetingWorkPage /></AdminRoute>} />
         <Route path="soribaro/stenography/work" element={<AdminRoute><StenographyWorkPage /></AdminRoute>} />
         <Route path="soribaro/stenography/detail/:id" element={<AdminRoute><StenographyMenuDetailProto /></AdminRoute>} />
+        <Route path="soribaro/stenography/settlement" element={<AdminRoute><StenographySettlementPage /></AdminRoute>} />
         <Route path="soribaro/enterprise/meeting" element={<AdminRoute><EnterpriseMeetingPage /></AdminRoute>} />
         <Route path="soribaro/enterprise/meeting/:servCd" element={<EnterpriseWorkDetailPage />} />
         <Route path="soribaro/enterprise/vod" element={<AdminRoute><EnterpriseVodPage /></AdminRoute>} />

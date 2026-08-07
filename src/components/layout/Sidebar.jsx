@@ -124,6 +124,11 @@ const menuData = [
             labelKey: "sidebar.stenographyWorkManagement",
             path: "/soribaro/stenography/work",
           },
+          {
+            id: "stenography-settlement",
+            labelKey: "sidebar.settlementManagement",
+            path: "/soribaro/stenography/settlement",
+          },
         ],
       },
       {
