@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { STENOGRAPHY_SETTLEMENT_SAMPLES } from '../enterprise/proto/stenographySettlementSampleData';
 import { downloadStenographySettlementExcel } from '../../../utils/workManagementExcel';
 import '../../../styles/notion-list.css';
 import '../enterprise/EnterpriseWorkList.css';
 import '../enterprise/proto/ProtoDetail.css';
+
+// 현장속기 상세보기 탭 순서(TAB_LABELS_STG) 상 "정산확인" 탭의 인덱스
+const STG_SETTLE_CONFIRM_TAB_INDEX = 2;
 
 function gradeBadge(grade) {
   const cls = grade === 'Master' ? 'settle-grade-master'
@@ -24,7 +28,17 @@ function formatAmount(value) {
   return `${Number(value).toLocaleString()}원`;
 }
 
+// 작업시간을 [hh]:mm 형식으로 표시 — 24시간이 넘어가도 누적 시간으로 표기한다 (예: 02:30, 105:20)
+function formatWorkHours(hours) {
+  if (hours == null || hours === '') return '-';
+  const totalMinutes = Math.round(Number(hours) * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 export default function StenographySettlementPage() {
+  const navigate = useNavigate();
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -43,6 +57,12 @@ export default function StenographySettlementPage() {
   });
 
   const handleExportExcel = () => downloadStenographySettlementExcel(filtered);
+
+  // 정산 건 더블클릭 시 해당 작업의 상세보기 > 정산확인 탭으로 이동한다
+  const handleRowDoubleClick = (row) => {
+    if (!row.workId) return;
+    navigate(`/soribaro/stenography/detail/${row.workId}`, { state: { initialTab: STG_SETTLE_CONFIRM_TAB_INDEX } });
+  };
 
   const pagination = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
@@ -129,11 +149,11 @@ export default function StenographySettlementPage() {
                   <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px' }}>해당 건이 없습니다.</td></tr>
                 ) : (
                   filtered.map((row) => (
-                    <tr key={row.id}>
+                    <tr key={row.id} style={{ cursor: 'pointer' }} onDoubleClick={() => handleRowDoubleClick(row)}>
                       <td style={{ fontWeight: 600 }}>{row.worker}</td>
                       <td className="text-center">{gradeBadge(row.grade)}</td>
                       <td className="text-center">{formatAmount(row.unitPrice)}</td>
-                      <td className="text-center">{row.workHours}시간</td>
+                      <td className="text-center">{formatWorkHours(row.workHours)}</td>
                       <td className="text-center">{formatAmount(row.settlementAmount)}</td>
                       <td className="text-center">{formatAmount(row.travelFee)}</td>
                       <td className="text-center" style={{ fontWeight: 700 }}>{formatAmount(row.netAmount)}</td>

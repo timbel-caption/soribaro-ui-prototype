@@ -4,7 +4,7 @@ import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
 import { parseMinutes, fmtHM } from './companySettlementCalc';
 import { useUserStore } from '../../../../stores/userStore';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toAppUrl } from '../../../../utils/worktoolRoute';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -5890,7 +5890,9 @@ function HistoryMemoTab({ s }) {
 export default function WorkDetailProto({ samples, backPath }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [tab, setTab] = useState(0);
+  const location = useLocation();
+  // 목록 화면에서 특정 탭으로 바로 이동하고 싶을 때 navigate(path, { state: { initialTab } })로 지정한다 (예: 정산관리 목록 더블클릭 → 정산확인 탭)
+  const [tab, setTab] = useState(() => location.state?.initialTab ?? 0);
 
   const s = samples.find((v) => v.id === id);
 
