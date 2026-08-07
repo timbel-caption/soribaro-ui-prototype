@@ -4623,8 +4623,8 @@ function sumWorkTime(rows) {
 // 현장속기 작업자/검수자 정산 시간 단가
 const STG_WORKER_RATE_PER_HOUR = 80000;
 const STG_REVIEWER_RATE_PER_HOUR = 24000;
-// 녹취록 작업자 정산 시간 단가
-const REC_WORKER_RATE_PER_HOUR = 48000;
+// 녹취록 정산확인 작업자 등급별 분당 단가
+const REC_GRADE_RATE_PER_MIN = { Pro: 833, Elite: 800, Rookie: 767 };
 
 // "H:MM" 또는 "H:MM:SS" 형식의 작업시간 문자열 → 시간(number)
 function parseWorkTimeHours(workTime) {
@@ -4936,6 +4936,7 @@ function MtgSettlementTab({ s }) {
               <tr>
                 <th>작업자</th>
                 <th className="text-center">등급</th>
+                <th className="text-center">단가</th>
                 <th className="text-center">작업시간</th>
                 <th className="text-center">정확도</th>
                 <th className="text-center">오류 수</th>
@@ -4948,6 +4949,7 @@ function MtgSettlementTab({ s }) {
               <tr>
                 <th>작업자</th>
                 <th className="text-center">등급</th>
+                <th className="text-center">단가</th>
                 <th className="text-center">작업시간</th>
                 <th className="text-center">정확도</th>
                 <th className="text-center">오류 수</th>
@@ -4993,10 +4995,11 @@ function MtgSettlementTab({ s }) {
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{row.worker}</td>
                 <td className="text-center">{settleGradeBadge(row.grade)}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{REC_GRADE_RATE_PER_MIN[row.grade]?.toLocaleString()}원</td>
                 <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
-                <td className="text-center" style={{ fontSize: '12px' }}>{Math.round(parseWorkTimeHours(row.workTime) * REC_WORKER_RATE_PER_HOUR).toLocaleString()}원</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{Math.round(parseWorkTimeHours(row.workTime) * 60 * REC_GRADE_RATE_PER_MIN[row.grade]).toLocaleString()}원</td>
                 <td style={{ fontSize: '12px' }}>{executorCell(row, i, 'worker')}</td>
                 <td className="text-center">{statusCell(row, i, 'worker')}</td>
                 {remarkCell(row, i)}
@@ -5005,6 +5008,7 @@ function MtgSettlementTab({ s }) {
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{row.worker}</td>
                 <td className="text-center">{settleGradeBadge(row.grade)}</td>
+                <td className="text-center" style={{ fontSize: '12px' }}>{MTG_GRADE_RATE_PER_MIN[row.grade]?.toLocaleString()}원</td>
                 <td className="text-center" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{row.workTime}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.accuracy}</td>
                 <td className="text-center" style={{ fontSize: '12px' }}>{row.errors}</td>
