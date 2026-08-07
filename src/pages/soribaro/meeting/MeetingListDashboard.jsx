@@ -57,6 +57,13 @@ function settleBadge(s) {
   return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>; // 정산대기
 }
 
+// 업체정산 컬럼 — 상세보기 > 업체정산의 확인 여부(settlement.companySettled)를 그대로 표시한다.
+function companySettleBadge(companySettled) {
+  return companySettled
+    ? <span className="mtg-settle-badge mtg-settle-done">완료</span>
+    : <span className="mtg-settle-badge mtg-settle-wait">정산대기</span>;
+}
+
 const CONTRACT_TYPE_COLOR = {
   '학폭위':   { bg: 'rgba(239,68,68,0.12)',   color: '#f87171',  border: 'rgba(239,68,68,0.4)' },
   '교권위':   { bg: 'rgba(99,102,241,0.12)',  color: '#818cf8',  border: 'rgba(99,102,241,0.4)' },
@@ -650,7 +657,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   // - showProgress=true(회의록 납품 일정 확인 탭)일 때만 납품기한 앞에 진행률(바) 컬럼을 표시한다.
   // - markOverdue=true(진행 전체 탭)일 때만 납품 일정 확인 대상 건의 의뢰일자 앞에 📝 메모 아이콘을 표시한다.
   const mergedTable = (items, showProgress, markOverdue = false) => {
-    const colCount = (isRecordingType ? 12 : 13) + (isStenographyType ? 2 : 0) + (showProgress ? 1 : 0);
+    const colCount = (isRecordingType ? 12 : 13) + (isStenographyType ? 2 : 0) + (showProgress ? 1 : 0) + (isRecordingType ? 0 : 1);
     const isAllSelected = items.length > 0 && items.every((it) => selectedIds.has(it.id));
     const toggleSelectAll = (checked) => {
       setSelectedIds((prev) => {
@@ -683,6 +690,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <th style={{ minWidth: '140px' }}>특이사항</th>
               <th className="text-center">상태</th>
               <th className="text-center">정산</th>
+              {!isRecordingType && <th className="text-center">업체정산</th>}
               <th className="text-center">{isRecordingType ? '초안 업로드일' : '실제 납품일'}</th>
               <th className="text-center" style={{ minWidth: '90px' }}></th>
             </tr>
@@ -803,6 +811,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                     </td>
                     <td className="text-center">{isStenographyType ? assignFilterStatusBadge(deriveStgAssignFilterStatus(s.assignStatus)) : statusBadge(s.overallStatus)}</td>
                     <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
+                    {!isRecordingType && <td className="text-center">{companySettleBadge(s.settlement?.companySettled)}</td>}
                     <td className="text-center">{(isRecordingType ? s.draftUploadDate : s.actualDeliveryDate) || '-'}</td>
                     <td className="text-center" style={{ whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                       {isStenographyType && (
@@ -822,7 +831,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
     );
   };
 
-  const flatColCount = isRecordingType ? 12 : 13;
+  const flatColCount = (isRecordingType ? 12 : 13) + (isRecordingType ? 0 : 1);
 
   const tableBody = (
     <tbody>
@@ -924,6 +933,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               </td>
               <td className="text-center">{isStenographyType ? assignFilterStatusBadge(deriveStgAssignFilterStatus(s.assignStatus)) : statusBadge(s.overallStatus)}</td>
               <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
+              {!isRecordingType && <td className="text-center">{companySettleBadge(s.settlement?.companySettled)}</td>}
               <td className="text-center">{(isRecordingType ? s.draftUploadDate : s.actualDeliveryDate) || '-'}</td>
               <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
                 {isStenography && (
@@ -960,6 +970,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
         <th style={{ minWidth: '140px' }}>특이사항</th>
         <th className="text-center">상태</th>
         <th className="text-center">정산</th>
+        {!isRecordingType && <th className="text-center">업체정산</th>}
         <th className="text-center">{isRecordingType ? '초안 업로드일' : '실제 납품일'}</th>
         <th className="text-center" style={{ minWidth: '148px' }}></th>
       </tr>
