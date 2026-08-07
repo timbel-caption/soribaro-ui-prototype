@@ -6,10 +6,14 @@ import { downloadMeetingWorkExcel, downloadRecordingWorkExcel, downloadStenograp
 import { getRequestTypes } from '../manage/manageProtoStore';
 
 const STATUS_LABEL = {
-  WORKING:    { label: '작업중',   cls: 'mtg-status-working' },
-  CHECKING:   { label: '검수중',   cls: 'mtg-status-checking' },
-  DRAFT_DONE: { label: '초안완성', cls: 'mtg-status-draft' },
-  DONE:       { label: '완료',     cls: 'mtg-status-done' },
+  WAITING:        { label: '작업대기', cls: 'mtg-status-waiting' },
+  WORKING:        { label: '작업중',   cls: 'mtg-status-working' },
+  WORK_DONE:      { label: '작업완료', cls: 'mtg-status-workdone' },
+  CHECKING:       { label: '검수중',   cls: 'mtg-status-checking' },
+  CHECK_REJECTED: { label: '검수반려', cls: 'mtg-status-checkreject' },
+  CHECK_DONE:     { label: '검수완료', cls: 'mtg-status-checkdone' },
+  DRAFT_DONE:     { label: '초안완성', cls: 'mtg-status-draft' },
+  DONE:           { label: '완료',     cls: 'mtg-status-done' },
 };
 
 function statusBadge(s) {
@@ -17,22 +21,40 @@ function statusBadge(s) {
   return <span className={`mtg-status-badge ${m.cls}`}>{m.label}</span>;
 }
 
+// 현장속기 "상태" 필터/배지 — 배정 관리(assignStatus) 기준으로 판단한다.
+// 미배정·배정취소 → 배정전, 배정완료·업체전달완료(알림 발송 전) → 배정완료, 업체전달완료(알림 발송 완료) → 완료
+function deriveStgAssignFilterStatus(assignStatus) {
+  if (assignStatus === '업체전달완료') return '완료';
+  if (assignStatus === '배정완료') return '배정완료';
+  return '배정전'; // 미배정, 배정취소
+}
+
+const STG_ASSIGN_BADGE_CLASS = {
+  '배정전':  'mtg-assign-pending',
+  '배정완료': 'mtg-assign-done',
+  '완료':    'mtg-assign-complete',
+};
+
+function assignFilterStatusBadge(status) {
+  return <span className={`mtg-assign-badge ${STG_ASSIGN_BADGE_CLASS[status] || 'mtg-assign-pending'}`}>{status}</span>;
+}
+
+// 정산 상태 — 정산확인 탭(MtgSettlementTab)에서 집행자가 "확인"을 누르면 확인중, 반려되면 반려로 집계되어 저장된다(confirmStatus).
+// 아직 정산확인 탭을 방문하지 않은 건은 기존 workerSettled/companySettled 값으로 대략 판단한다.
 function deriveSettleStatus(settlement) {
+  if (settlement?.confirmStatus) return settlement.confirmStatus;
   const ws = settlement?.workerSettled || false;
   const cs = settlement?.companySettled || false;
-  if (ws && cs)  return '완료';
-  if (ws && !cs) return '업체 정산대기';
-  if (!ws && cs) return '작업자 정산대기';
+  if (ws && cs) return '완료';
+  if (ws || cs) return '확인중';
   return '정산대기';
 }
 
 function settleBadge(s) {
-  if (s === '완료')          return <span className="mtg-settle-badge mtg-settle-done">{s}</span>;
-  if (s === '업체 정산대기') return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
-  if (s === '작업자 정산대기') return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
-  if (s === '정산대기')      return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>;
-  if (s === '부분정산')      return <span className="mtg-settle-badge mtg-settle-partial">{s}</span>;
-  return <span className="mtg-settle-badge mtg-settle-pre">{s}</span>;
+  if (s === '완료')   return <span className="mtg-settle-badge mtg-settle-done">{s}</span>;
+  if (s === '확인중') return <span className="mtg-settle-badge mtg-settle-partial">{s}</span>;
+  if (s === '반려')   return <span className="mtg-settle-badge mtg-settle-reject">{s}</span>;
+  return <span className="mtg-settle-badge mtg-settle-wait">{s}</span>; // 정산대기
 }
 
 const CONTRACT_TYPE_COLOR = {
@@ -180,18 +202,17 @@ function computeStats(samples) {
   return { inProgress, working, checking, checkDone, settleWait };
 }
 
-function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterContractType, searchCondition, searchText, showAll }) {
+function matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterContractType, searchCondition, searchText, showAll, workType }) {
   if (!showAll && s.overallStatus === 'DONE') return false;
   const date = (s.regDttm || '').slice(0, 10);
   if (filterFrom && date < filterFrom) return false;
   if (filterTo && date > filterTo) return false;
-  if (filterStatus && s.overallStatus !== filterStatus) return false;
-  if (filterSettlement) {
-    const st = deriveSettleStatus(s.settlement);
-    if (filterSettlement === '정산대기' && st === '완료') return false;
-    if (filterSettlement === '정산완료' && st !== '완료') return false;
-    if (filterSettlement !== '정산대기' && filterSettlement !== '정산완료' && st !== filterSettlement) return false;
+  if (filterStatus) {
+    if (workType === 'stenography') {
+      if (deriveStgAssignFilterStatus(s.assignStatus) !== filterStatus) return false;
+    } else if (s.overallStatus !== filterStatus) return false;
   }
+  if (filterSettlement && deriveSettleStatus(s.settlement) !== filterSettlement) return false;
   if (filterContractType && s.contractType !== filterContractType) return false;
   if (searchText.trim()) {
     const q = searchText.trim().toLowerCase();
@@ -249,7 +270,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   };
 
   const filtered = samples.filter((s) =>
-    matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterContractType, searchCondition, searchText, showAll })
+    matchesFilters(s, { filterFrom, filterTo, filterStatus, filterSettlement, filterContractType, searchCondition, searchText, showAll, workType })
   );
   const st = computeStats(samples);
   const alerts = computeAlerts(samples);
@@ -585,6 +606,42 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
   const contractTypeOptions = isRecordingType ? RECORDING_CONTRACT_TYPE_OPTIONS : CONTRACT_TYPE_OPTIONS;
   const overdueIdSet = new Set(alerts.overdueItems.map((s) => s.id));
 
+  // "상태" 검색 필터 옵션 — 서비스(의뢰유형)별로 표시할 상태 목록이 다르다.
+  const renderStatusOptions = () => {
+    if (isStenographyType) {
+      return (
+        <>
+          <option value="배정전">배정전</option>
+          <option value="배정완료">배정완료</option>
+          <option value="완료">완료</option>
+        </>
+      );
+    }
+    if (isRecordingType) {
+      return (
+        <>
+          <option value="WAITING">작업대기</option>
+          <option value="WORKING">작업중</option>
+          <option value="WORK_DONE">작업완료</option>
+          <option value="DRAFT_DONE">초안완성</option>
+          <option value="DONE">완료</option>
+        </>
+      );
+    }
+    // 회의록
+    return (
+      <>
+        <option value="WAITING">작업대기</option>
+        <option value="WORKING">작업중</option>
+        <option value="WORK_DONE">작업완료</option>
+        <option value="CHECKING">검수중</option>
+        <option value="CHECK_REJECTED">검수반려</option>
+        <option value="CHECK_DONE">검수완료</option>
+        <option value="DONE">완료</option>
+      </>
+    );
+  };
+
   // 진행 의뢰 현황 탭 공용 테이블 (진행 전체 / 금일 납품 / 납품 일정 확인 공통).
   // - 현장속기는 회차 뒤에 "시작-종료" 컬럼을 추가로 표시한다.
   // - showProgress=true(회의록 납품 일정 확인 탭)일 때만 납품기한 앞에 진행률(바) 컬럼을 표시한다.
@@ -741,7 +798,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         </div>
                       )}
                     </td>
-                    <td className="text-center">{statusBadge(s.overallStatus)}</td>
+                    <td className="text-center">{isStenographyType ? assignFilterStatusBadge(deriveStgAssignFilterStatus(s.assignStatus)) : statusBadge(s.overallStatus)}</td>
                     <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
                     <td className="text-center">{(isRecordingType ? s.draftUploadDate : s.actualDeliveryDate) || '-'}</td>
                     <td className="text-center" style={{ whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
@@ -862,7 +919,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                   </div>
                 )}
               </td>
-              <td className="text-center">{statusBadge(s.overallStatus)}</td>
+              <td className="text-center">{isStenographyType ? assignFilterStatusBadge(deriveStgAssignFilterStatus(s.assignStatus)) : statusBadge(s.overallStatus)}</td>
               <td className="text-center">{settleBadge(deriveSettleStatus(s.settlement))}</td>
               <td className="text-center">{(isRecordingType ? s.draftUploadDate : s.actualDeliveryDate) || '-'}</td>
               <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
@@ -926,18 +983,15 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
               <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
               <input className="filter-date" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} title="의뢰일 종료" />
               <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                <option value="">상태 전체</option>
-                <option value="WORKING">작업중</option>
-                <option value="CHECKING">검수중</option>
-                {isRecordingType && <option value="DRAFT_DONE">초안완성</option>}
-                <option value="DONE">완료</option>
+                <option value="">전체</option>
+                {renderStatusOptions()}
               </select>
               <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>
-                <option value="">정산 전체</option>
-                <option value="정산전">정산전</option>
+                <option value="">전체</option>
                 <option value="정산대기">정산대기</option>
-                <option value="부분정산">부분정산</option>
-                <option value="정산완료">정산완료</option>
+                <option value="확인중">확인중</option>
+                <option value="반려">반려</option>
+                <option value="완료">완료</option>
               </select>
               <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
                 <option value="">계약구분 전체</option>
@@ -1005,18 +1059,15 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
             <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
             <input className="filter-date" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} title="의뢰일 종료" />
             <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-              <option value="">상태 전체</option>
-              <option value="WORKING">작업중</option>
-              <option value="CHECKING">검수중</option>
-              {isRecordingType && <option value="DRAFT_DONE">초안완성</option>}
-              <option value="DONE">완료</option>
+              <option value="">전체</option>
+              {renderStatusOptions()}
             </select>
             <select className="filter-select" value={filterSettlement} onChange={(e) => setFilterSettlement(e.target.value)}>
-              <option value="">정산 전체</option>
-              <option value="정산전">정산전</option>
+              <option value="">전체</option>
               <option value="정산대기">정산대기</option>
-              <option value="부분정산">부분정산</option>
-              <option value="정산완료">정산완료</option>
+              <option value="확인중">확인중</option>
+              <option value="반려">반려</option>
+              <option value="완료">완료</option>
             </select>
             <select className="filter-select" value={filterContractType} onChange={(e) => setFilterContractType(e.target.value)}>
               <option value="">계약구분 전체</option>

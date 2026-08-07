@@ -1,4 +1,4 @@
-import { useState, useRef, Fragment } from 'react';
+import { useState, useRef, useEffect, Fragment } from 'react';
 import { getVodSamples, getMeetingSamples, getStenographySamples, getRecordingSamples, updateSampleFiles, updateSampleSubjects, updateSampleNoteEntries, updateSampleMemoEntries, updateSampleSpecialNote, updateStenographyWorkerAssign, updateSampleSettlement, updateSampleSessionDetails, updateSampleFileDifficulty, updateSampleOverallStatus, updateSampleDraftUploadDate, updateSampleDepositInfo, updateSampleFinalSettlement } from './protoStore';
 import { getGlossaries } from '../../manage/glossary/glossaryStore';
 import { getCompanyQuoteSettings, getCompanyQuoteSettingsByType } from './enterpriseProtoData';
@@ -32,10 +32,14 @@ const TAB_LABELS_STG = [
 ];
 
 const STATUS_MAP = {
-  WORKING:    { label: '작업중',   cls: 'proto-status-working' },
-  CHECKING:   { label: '검수중',   cls: 'proto-status-checking' },
-  DRAFT_DONE: { label: '초안완성', cls: 'proto-status-draft' },
-  DONE:       { label: '완료',     cls: 'proto-status-done' },
+  WAITING:        { label: '작업대기', cls: 'proto-status-waiting' },
+  WORKING:        { label: '작업중',   cls: 'proto-status-working' },
+  WORK_DONE:      { label: '작업완료', cls: 'proto-status-workdone' },
+  CHECKING:       { label: '검수중',   cls: 'proto-status-checking' },
+  CHECK_REJECTED: { label: '검수반려', cls: 'proto-status-checkreject' },
+  CHECK_DONE:     { label: '검수완료', cls: 'proto-status-checkdone' },
+  DRAFT_DONE:     { label: '초안완성', cls: 'proto-status-draft' },
+  DONE:           { label: '완료',     cls: 'proto-status-done' },
 };
 
 function statusBadge(overallStatus) {
@@ -4715,6 +4719,20 @@ function MtgSettlementTab({ s }) {
   const [settleHistory, setSettleHistory] = useState(() =>
     (s.settlement?.settleHistory) || SETTLE_HISTORY_SEED.map(r => ({ ...r }))
   );
+
+  // 작업관리 목록 "정산" 필터용 집계 상태 — 작업자/검수자 정산 내역 중 하나라도 반려면 반려, 확인 중(작업자 확인)인 건이 있으면 확인중,
+  // 모두 완료면 완료, 그 외에는 정산대기로 집계해 sample의 settlement.confirmStatus에 저장한다.
+  useEffect(() => {
+    if (!s?.id) return;
+    // 녹취록은 검수자 정산 내역 섹션 자체가 없으므로(reviewers는 화면에 표시되지 않는 미사용 상태) 집계에서 제외한다.
+    const rows = isRecordingSettle ? workers : [...workers, ...reviewers];
+    let confirmStatus = '정산대기';
+    if (rows.some(r => r.status === '반려')) confirmStatus = '반려';
+    else if (rows.some(r => r.status === '작업자 확인')) confirmStatus = '확인중';
+    else if (rows.length > 0 && rows.every(r => r.status === '완료')) confirmStatus = '완료';
+    updateSampleSettlement(s.id, { confirmStatus });
+  }, [workers, reviewers, s?.id]);
+
   const [confirmModal, setConfirmModal] = useState(null);
   const [rejectModal, setRejectModal] = useState(null);
   const [remarkEdit, setRemarkEdit] = useState({});  // { [rowIndex]: draft string }
@@ -4764,7 +4782,7 @@ function MtgSettlementTab({ s }) {
     const { index, table } = rejectModal;
     const reason = rejectReason.trim() || '(사유 미입력)';
     if (table === 'worker') {
-      const updated = workers.map((r, i) => i === index ? { ...r, status: '정산대기', rejectReason: reason } : r);
+      const updated = workers.map((r, i) => i === index ? { ...r, status: '반려', rejectReason: reason } : r);
       setWorkers(updated);
       setSettleHistory(prev => [{ dttm: now(), actor: workers[index].worker, event: '정산 반려', detail: reason }, ...prev]);
     }
@@ -4836,6 +4854,7 @@ function MtgSettlementTab({ s }) {
         <button className="settle-action-btn settle-action-btn--reject" onClick={() => handleRejectClick(index, table)}>반려</button>
       </span>
     );
+    if (row.status === '반려') return <span className="settle-status-badge settle-status-badge--reject">반려</span>;
     // 정산대기
     return <span className="settle-status-badge settle-status-badge--pre">{row.status || '정산대기'}</span>;
   };

@@ -218,6 +218,30 @@
   border: 1px solid var(--border-color);
 }
 
+.proto-status-waiting {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.proto-status-workdone {
+  background: rgba(45, 212, 191, 0.18);
+  color: #2dd4bf;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+}
+
+.proto-status-checkreject {
+  background: rgba(248, 113, 113, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+.proto-status-checkdone {
+  background: rgba(99, 102, 241, 0.18);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
 /* 배정/작업 상태 인라인 뱃지 */
 .proto-badge-done    { display:inline-block; padding:2px 7px; border-radius:10px; font-size:11px; background:rgba(34,197,94,0.18); color:#4ade80; }
 .proto-badge-working { display:inline-block; padding:2px 7px; border-radius:10px; font-size:11px; background:rgba(96,165,250,0.18); color:#60a5fa; }
@@ -789,6 +813,15 @@
   background: var(--bg-hover);
   color: var(--text-muted);
 }
+.settle-status-badge--reject {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(248,113,113,0.15);
+  color: #f87171;
+}
 /* 현장속기 정산관리 목록의 "확인중" 상태 — 작업자 확인 대기(ws-badge-confirm)와 동일한 톤 */
 .settle-status-badge--checking {
   display: inline-block;
@@ -1225,16 +1258,27 @@
   font-weight: 600;
   white-space: nowrap;
 }
-.mtg-status-working  { background: rgba(251,191,36,0.18);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); }
-.mtg-status-checking { background: rgba(45,212,191,0.15);  color: #2dd4bf; border: 1px solid rgba(45,212,191,0.4); }
-.mtg-status-draft    { background: rgba(168,85,247,0.18);  color: #c084fc; border: 1px solid rgba(168,85,247,0.4); }
-.mtg-status-done     { background: var(--bg-hover);         color: var(--text-muted); border: 1px solid var(--border-color); }
+.mtg-status-waiting     { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.4); }
+.mtg-status-working     { background: rgba(251,191,36,0.18);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); }
+.mtg-status-workdone    { background: rgba(96,165,250,0.18);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.4); }
+.mtg-status-checking    { background: rgba(45,212,191,0.15);  color: #2dd4bf; border: 1px solid rgba(45,212,191,0.4); }
+.mtg-status-checkreject { background: rgba(248,113,113,0.18); color: #f87171; border: 1px solid rgba(248,113,113,0.4); }
+.mtg-status-checkdone   { background: rgba(99,102,241,0.18);  color: #818cf8; border: 1px solid rgba(99,102,241,0.4); }
+.mtg-status-draft       { background: rgba(168,85,247,0.18);  color: #c084fc; border: 1px solid rgba(168,85,247,0.4); }
+.mtg-status-done        { background: var(--bg-hover);         color: var(--text-muted); border: 1px solid var(--border-color); }
 
 .mtg-settle-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .mtg-settle-done    { background: rgba(34,197,94,0.15);    color: #4ade80; }
 .mtg-settle-wait    { background: rgba(251,191,36,0.15);   color: #fbbf24; }
 .mtg-settle-partial { background: rgba(96,165,250,0.15);   color: #60a5fa; }
+.mtg-settle-reject  { background: rgba(248,113,113,0.15);  color: #f87171; }
 .mtg-settle-pre     { background: var(--bg-hover);          color: var(--text-muted); }
+
+/* 현장속기 목록 "상태"(배정 관리 기준) 배지 */
+.mtg-assign-badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.mtg-assign-pending  { background: var(--bg-hover);        color: var(--text-muted); border: 1px solid var(--border-color); }
+.mtg-assign-done     { background: rgba(251,191,36,0.18);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); }
+.mtg-assign-complete { background: rgba(34,197,94,0.15);   color: #4ade80; border: 1px solid rgba(34,197,94,0.4); }
 
 .mtg-subfile-btn {
   display: inline-flex;
