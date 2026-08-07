@@ -706,7 +706,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
                         <input type="checkbox" checked={selectedIds.has(s.id)} onChange={() => toggleSelect(s.id)} />
                       </td>
                     )}
-                    <td className="text-center">
+                    <td className="text-center" title={isStenographyType ? `신청일 : ${(s.regDttm || '').slice(0, 10)}` : undefined}>
                       {markOverdue && overdueIdSet.has(s.id) ? `📝 ${formatRegDate(s.regDttm)}` : formatRegDate(s.regDttm)}
                       {isRecordingType && formatRegTime(s.regDttm) && (
                         <span style={{ marginLeft: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>{formatRegTime(s.regDttm)}</span>
@@ -839,7 +839,7 @@ export default function MeetingListDashboard({ samples, onSamplesChange, showAll
           const isNotified = isStenography && effStatus === '업체전달완료';
           return (
             <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => navigate(toDetailPath(s.protoPath))}>
-              <td className="text-center">
+              <td className="text-center" title={isStenographyType ? `신청일 : ${(s.regDttm || '').slice(0, 10)}` : undefined}>
                 {formatRegDate(s.regDttm)}
                 {isRecordingType && formatRegTime(s.regDttm) && (
                   <span style={{ marginLeft: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>{formatRegTime(s.regDttm)}</span>
