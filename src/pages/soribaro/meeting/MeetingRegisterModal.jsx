@@ -75,7 +75,18 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     recordingLocation: '',
     specialNote: '',
     internalMemo: '',
+    // 녹취록 전용 필드
+    contactTel: '',
+    contactEmail: '',
+    receiveAddress: '',
+    paymentType: '',
+    confirmedAmount: '',
   });
+  // 화자 정보 (녹취록 전용) — 기본 2행 제공
+  const [speakers, setSpeakers] = useState([
+    { name: '', feature: '' },
+    { name: '', feature: '' },
+  ]);
   const [companySearch, setCompanySearch] = useState('');
   const [showCompanyDrop, setShowCompanyDrop] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
@@ -138,6 +149,19 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
     setFileSplitsList((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // 화자 정보 행 추가/삭제/수정 (녹취록 전용)
+  const addSpeakerRow = () => {
+    setSpeakers((prev) => [...prev, { name: '', feature: '' }]);
+  };
+
+  const removeSpeakerRow = (idx) => {
+    setSpeakers((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)));
+  };
+
+  const updateSpeaker = (idx, key, value) => {
+    setSpeakers((prev) => prev.map((sp, i) => (i === idx ? { ...sp, [key]: value } : sp)));
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
@@ -180,7 +204,7 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
 
   return (
     <div className="preg-overlay">
-      <div className="preg-modal" style={{ maxWidth: '760px' }}>
+      <div className={`preg-modal${isRecordingType ? ' preg-modal--recording' : ''}`} style={{ maxWidth: isRecordingType ? '860px' : '760px' }}>
         {/* 헤더 */}
         <div className="preg-header">
           <span className="preg-header-title">새 의뢰 등록</span>
@@ -194,35 +218,173 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
             <div className="preg-section-header">📋 기본 정보</div>
 
             {isRecordingType ? (
-              /* 의뢰자 / 계약구분 */
-              <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: '14px' }}>
-                {/* 의뢰자 */}
-                <div className="preg-field">
-                  <label className="preg-label">의뢰자 <span className="preg-required">*</span></label>
-                  <input
-                    className="preg-input"
-                    value={form.entNm}
-                    onChange={(e) => setForm((f) => ({ ...f, entNm: e.target.value }))}
-                    placeholder="의뢰자명을 입력하세요"
-                  />
+              <>
+                {/* 1행: 의뢰자 / 연락처 / 이메일 */}
+                <div className="preg-grid-3" style={{ marginBottom: '14px' }}>
+                  <div className="preg-field">
+                    <label className="preg-label">의뢰자 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      value={form.entNm}
+                      onChange={(e) => setForm((f) => ({ ...f, entNm: e.target.value }))}
+                      placeholder="의뢰자명을 입력하세요"
+                    />
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">연락처 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      value={form.contactTel}
+                      onChange={(e) => setForm((f) => ({ ...f, contactTel: e.target.value }))}
+                      placeholder="연락처를 입력하세요"
+                    />
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">이메일 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      type="email"
+                      value={form.contactEmail}
+                      onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))}
+                      placeholder="이메일을 입력하세요"
+                    />
+                  </div>
                 </div>
 
-                {/* 계약구분 */}
-                <div className="preg-field">
-                  <label className="preg-label">계약구분 <span className="preg-required">*</span></label>
-                  <select
-                    className="preg-select"
-                    value={form.contractType}
-                    onChange={(e) => setForm((f) => ({ ...f, contractType: e.target.value }))}
-                    disabled={!form.entNm}
-                  >
-                    <option value="">▼</option>
-                    {contractTypes.map((ct) => (
-                      <option key={ct} value={ct}>{ct}</option>
-                    ))}
-                  </select>
+                {/* 2행: 의뢰일 / 납품예정일 / 녹음일 */}
+                <div className="preg-grid-3" style={{ marginBottom: '14px' }}>
+                  <div className="preg-field">
+                    <label className="preg-label">의뢰일 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      type="date"
+                      value={form.regDate}
+                      onChange={(e) => setForm((f) => ({ ...f, regDate: e.target.value }))}
+                    />
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">납품예정일 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      type="date"
+                      value={form.dueDate}
+                      onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+                    />
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">녹음일</label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      type="date"
+                      value={form.recordingDate}
+                      onChange={(e) => setForm((f) => ({ ...f, recordingDate: e.target.value }))}
+                    />
+                  </div>
                 </div>
-              </div>
+
+                {/* 3행: 녹음장소 / 수령주소(2칸) */}
+                <div className="preg-grid-3" style={{ marginBottom: '14px' }}>
+                  <div className="preg-field">
+                    <label className="preg-label">녹음장소</label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      type="text"
+                      value={form.recordingLocation}
+                      onChange={(e) => setForm((f) => ({ ...f, recordingLocation: e.target.value }))}
+                      placeholder="녹음장소를 입력하세요"
+                    />
+                  </div>
+                  <div className="preg-field preg-field--span2">
+                    <label className="preg-label">수령주소 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input preg-input--tall"
+                      type="text"
+                      value={form.receiveAddress}
+                      onChange={(e) => setForm((f) => ({ ...f, receiveAddress: e.target.value }))}
+                      placeholder="수령주소를 입력하세요"
+                    />
+                  </div>
+                </div>
+
+                {/* 4행: 계약구분 / 결제유형(라디오) / 확정금액 */}
+                <div className="preg-grid-3" style={{ marginBottom: '14px' }}>
+                  <div className="preg-field">
+                    <label className="preg-label">계약구분 <span className="preg-required">*</span></label>
+                    <select
+                      className="preg-select preg-input--tall"
+                      value={form.contractType}
+                      onChange={(e) => setForm((f) => ({ ...f, contractType: e.target.value }))}
+                      disabled={!form.entNm}
+                    >
+                      <option value="">▼</option>
+                      {contractTypes.map((ct) => (
+                        <option key={ct} value={ct}>{ct}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">결제유형 <span className="preg-required">*</span></label>
+                    <div className="preg-radio-group">
+                      <label className="preg-radio-option">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          checked={form.paymentType === '계좌이체'}
+                          onChange={() => setForm((f) => ({ ...f, paymentType: '계좌이체' }))}
+                        />
+                        계좌이체
+                      </label>
+                      <label className="preg-radio-option">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          checked={form.paymentType === '신용카드'}
+                          onChange={() => setForm((f) => ({ ...f, paymentType: '신용카드' }))}
+                        />
+                        신용카드
+                      </label>
+                    </div>
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">확정금액 <span className="preg-required">*</span></label>
+                    <div className="preg-amount-input-wrap">
+                      <input
+                        className="preg-input preg-input--tall"
+                        type="number"
+                        min="0"
+                        value={form.confirmedAmount}
+                        onChange={(e) => setForm((f) => ({ ...f, confirmedAmount: e.target.value }))}
+                        placeholder="0"
+                      />
+                      <span className="preg-amount-suffix">원</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5행: 특이사항 / 의뢰인 요청사항 */}
+                <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                  <div className="preg-field">
+                    <label className="preg-label">특이사항</label>
+                    <textarea
+                      className="preg-textarea"
+                      value={form.specialNote}
+                      onChange={(e) => setForm((f) => ({ ...f, specialNote: e.target.value }))}
+                      placeholder="납품 조건, 검수 여부 등"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">의뢰인 요청사항</label>
+                    <textarea
+                      className="preg-textarea"
+                      value={form.internalMemo}
+                      onChange={(e) => setForm((f) => ({ ...f, internalMemo: e.target.value }))}
+                      placeholder="의뢰인 요청사항을 입력하세요"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 {/* 업체명 / 담당관리자 / 계약구분 */}
@@ -333,133 +495,183 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
               </>
             )}
 
-            {/* 회차 / 의뢰일 / 납품예정일 (녹취록은 회차 항목을 표시하지 않는다) */}
-            <div className="preg-form-grid" style={{ gridTemplateColumns: isRecordingType ? '1fr 1fr' : '1fr 1fr 1fr', marginBottom: '14px' }}>
-              {!isRecordingType && (
-                <div className="preg-field">
-                  <label className="preg-label">회차 <span className="preg-required">*</span></label>
-                  <input
-                    className="preg-input"
-                    value={form.round}
-                    onChange={(e) => setForm((f) => ({ ...f, round: e.target.value }))}
-                    placeholder="제OO회"
-                  />
-                  {workType === 'stenography' && (
-                    <>
-                      <label className="preg-label" style={{ marginTop: '8px' }}>회의장 주소</label>
-                      <input
-                        className="preg-input"
-                        type="text"
-                        placeholder="회의장 주소를 입력하세요"
-                        value={form.venueAddress}
-                        onChange={(e) => setForm((f) => ({ ...f, venueAddress: e.target.value }))}
-                      />
-                      <label className="preg-label" style={{ marginTop: '8px' }}>회의 장소</label>
-                      <input
-                        className="preg-input"
-                        type="text"
-                        placeholder="예: 3층 대회의실"
-                        value={form.venueName}
-                        onChange={(e) => setForm((f) => ({ ...f, venueName: e.target.value }))}
-                      />
-                      <label className="preg-label" style={{ marginTop: '8px' }}>시작-종료 시간</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {!isRecordingType && (
+              <>
+                {/* 회차 / 의뢰일 / 납품예정일 */}
+                <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', marginBottom: '14px' }}>
+                  <div className="preg-field">
+                    <label className="preg-label">회차 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input"
+                      value={form.round}
+                      onChange={(e) => setForm((f) => ({ ...f, round: e.target.value }))}
+                      placeholder="제OO회"
+                    />
+                    {workType === 'stenography' && (
+                      <>
+                        <label className="preg-label" style={{ marginTop: '8px' }}>회의장 주소</label>
                         <input
                           className="preg-input"
                           type="text"
-                          placeholder="13:00"
-                          value={form.sessionStart}
-                          onChange={(e) => setForm((f) => ({ ...f, sessionStart: e.target.value }))}
-                          style={{ flex: 1 }}
+                          placeholder="회의장 주소를 입력하세요"
+                          value={form.venueAddress}
+                          onChange={(e) => setForm((f) => ({ ...f, venueAddress: e.target.value }))}
                         />
-                        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
+                        <label className="preg-label" style={{ marginTop: '8px' }}>회의 장소</label>
                         <input
                           className="preg-input"
                           type="text"
-                          placeholder="15:00"
-                          value={form.sessionEnd}
-                          onChange={(e) => setForm((f) => ({ ...f, sessionEnd: e.target.value }))}
-                          style={{ flex: 1 }}
+                          placeholder="예: 3층 대회의실"
+                          value={form.venueName}
+                          onChange={(e) => setForm((f) => ({ ...f, venueName: e.target.value }))}
                         />
-                      </div>
-                    </>
-                  )}
+                        <label className="preg-label" style={{ marginTop: '8px' }}>시작-종료 시간</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <input
+                            className="preg-input"
+                            type="text"
+                            placeholder="13:00"
+                            value={form.sessionStart}
+                            onChange={(e) => setForm((f) => ({ ...f, sessionStart: e.target.value }))}
+                            style={{ flex: 1 }}
+                          />
+                          <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>~</span>
+                          <input
+                            className="preg-input"
+                            type="text"
+                            placeholder="15:00"
+                            value={form.sessionEnd}
+                            onChange={(e) => setForm((f) => ({ ...f, sessionEnd: e.target.value }))}
+                            style={{ flex: 1 }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">의뢰일 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input"
+                      type="date"
+                      value={form.regDate}
+                      onChange={(e) => setForm((f) => ({
+                        ...f,
+                        regDate: e.target.value,
+                        dueDate: addBusinessDays(e.target.value, 2),
+                      }))}
+                    />
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">납품예정일 <span className="preg-required">*</span></label>
+                    <input
+                      className="preg-input"
+                      type="date"
+                      value={form.dueDate}
+                      onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+                    />
+                  </div>
                 </div>
-              )}
-              <div className="preg-field">
-                <label className="preg-label">의뢰일 <span className="preg-required">*</span></label>
-                <input
-                  className="preg-input"
-                  type="date"
-                  value={form.regDate}
-                  onChange={(e) => setForm((f) => ({
-                    ...f,
-                    regDate: e.target.value,
-                    // 녹취록은 납품예정일 자동 계산을 적용하지 않는다
-                    ...(isRecordingType ? {} : { dueDate: addBusinessDays(e.target.value, 2) }),
-                  }))}
-                />
-              </div>
-              <div className="preg-field">
-                <label className="preg-label">납품예정일 <span className="preg-required">*</span></label>
-                <input
-                  className="preg-input"
-                  type="date"
-                  value={form.dueDate}
-                  onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
-                />
-              </div>
-            </div>
 
-            {/* 녹음일 / 녹음장소 (회의록·녹취록 전용) */}
-            {(workType === 'meeting' || workType === 'recording') && (
-              <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: '14px' }}>
-                <div className="preg-field">
-                  <label className="preg-label">녹음일</label>
-                  <input
-                    className="preg-input"
-                    type="date"
-                    value={form.recordingDate}
-                    onChange={(e) => setForm((f) => ({ ...f, recordingDate: e.target.value }))}
-                  />
+                {/* 녹음일 / 녹음장소 (회의록 전용) */}
+                {workType === 'meeting' && (
+                  <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: '14px' }}>
+                    <div className="preg-field">
+                      <label className="preg-label">녹음일</label>
+                      <input
+                        className="preg-input"
+                        type="date"
+                        value={form.recordingDate}
+                        onChange={(e) => setForm((f) => ({ ...f, recordingDate: e.target.value }))}
+                      />
+                    </div>
+                    <div className="preg-field">
+                      <label className="preg-label">녹음장소</label>
+                      <input
+                        className="preg-input"
+                        type="text"
+                        value={form.recordingLocation}
+                        onChange={(e) => setForm((f) => ({ ...f, recordingLocation: e.target.value }))}
+                        placeholder="녹음장소를 입력하세요"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 특이사항 / 내부 메모 */}
+                <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                  <div className="preg-field">
+                    <label className="preg-label">특이사항</label>
+                    <textarea
+                      className="preg-textarea"
+                      value={form.specialNote}
+                      onChange={(e) => setForm((f) => ({ ...f, specialNote: e.target.value }))}
+                      placeholder="납품 조건, 검수 여부 등"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="preg-field">
+                    <label className="preg-label">의뢰인 요청사항</label>
+                    <textarea
+                      className="preg-textarea"
+                      value={form.internalMemo}
+                      onChange={(e) => setForm((f) => ({ ...f, internalMemo: e.target.value }))}
+                      placeholder="내부 전달 사항"
+                      rows={3}
+                    />
+                  </div>
                 </div>
-                <div className="preg-field">
-                  <label className="preg-label">녹음장소</label>
-                  <input
-                    className="preg-input"
-                    type="text"
-                    value={form.recordingLocation}
-                    onChange={(e) => setForm((f) => ({ ...f, recordingLocation: e.target.value }))}
-                    placeholder="녹음장소를 입력하세요"
-                  />
-                </div>
-              </div>
+              </>
             )}
-
-            {/* 특이사항 / 내부 메모 */}
-            <div className="preg-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-              <div className="preg-field">
-                <label className="preg-label">특이사항</label>
-                <textarea
-                  className="preg-textarea"
-                  value={form.specialNote}
-                  onChange={(e) => setForm((f) => ({ ...f, specialNote: e.target.value }))}
-                  placeholder="납품 조건, 검수 여부 등"
-                  rows={3}
-                />
-              </div>
-              <div className="preg-field">
-                <label className="preg-label">의뢰인 요청사항</label>
-                <textarea
-                  className="preg-textarea"
-                  value={form.internalMemo}
-                  onChange={(e) => setForm((f) => ({ ...f, internalMemo: e.target.value }))}
-                  placeholder="내부 전달 사항"
-                  rows={3}
-                />
-              </div>
-            </div>
           </div>
+
+          {/* 화자 정보 섹션 (녹취록 전용) */}
+          {isRecordingType && (
+            <div className="preg-section">
+              <div className="preg-section-header">🗣 화자 정보</div>
+              <div className="preg-speaker-table-wrap">
+                <table className="preg-speaker-table">
+                  <thead>
+                    <tr>
+                      <th>화자명</th>
+                      <th>화자 특징</th>
+                      <th style={{ width: '56px' }}>삭제</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {speakers.map((sp, i) => (
+                      <tr key={i}>
+                        <td>
+                          <input
+                            className="preg-input"
+                            value={sp.name}
+                            onChange={(e) => updateSpeaker(i, 'name', e.target.value)}
+                            placeholder="예: 화자1"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="preg-input"
+                            value={sp.feature}
+                            onChange={(e) => updateSpeaker(i, 'feature', e.target.value)}
+                            placeholder="예: 남성, 진행자"
+                          />
+                        </td>
+                        <td className="text-center">
+                          <button
+                            type="button"
+                            className="preg-speaker-row-remove"
+                            onClick={() => removeSpeakerRow(i)}
+                            disabled={speakers.length <= 1}
+                          >－</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <button type="button" className="preg-speaker-add-btn" onClick={addSpeakerRow}>+ 화자 추가</button>
+            </div>
+          )}
 
           {/* 음성 파일 등록 섹션 (현장속기는 등록 단계에서 음성파일을 받지 않는다) */}
           {(workType === 'meeting' || workType === 'recording') && (
@@ -474,12 +686,12 @@ export default function MeetingRegisterModal({ onClose, onSubmit, workType = 'me
               >
                 <div className="preg-drop-icon">🎙</div>
                 <p className="preg-drop-text">파일을 드래그하거나 클릭하여 추가</p>
-                <p className="preg-drop-hint">WAV, MP3, MA4 등</p>
+                <p className="preg-drop-hint">{isRecordingType ? '지원 확장자: WAV, MP3, M4A' : 'WAV, MP3, MA4 등'}</p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept=".wav,.mp3,.mp4,.m4a,.aac,.flac"
+                  accept={isRecordingType ? '.wav,.mp3,.m4a' : '.wav,.mp3,.mp4,.m4a,.aac,.flac'}
                   style={{ display: 'none' }}
                   onChange={(e) => addFiles(e.target.files)}
                 />

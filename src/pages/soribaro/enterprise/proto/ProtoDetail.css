@@ -1320,6 +1320,9 @@
 
 .preg-modal--narrow { max-width: 400px; }
 
+/* 녹취록 새 의뢰 등록 팝업: Radius 8px */
+.preg-modal--recording { border-radius: 8px; }
+
 /* 헤더 */
 .preg-header {
   display: flex;
@@ -1458,6 +1461,140 @@
 .preg-textarea {
   resize: vertical;
   line-height: 1.55;
+}
+
+/* ─── 녹취록 새 의뢰 등록 팝업: 반응형 3열 그리드 ─── */
+.preg-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .preg-grid-3 { grid-template-columns: 1fr; }
+  .preg-field--span2 { grid-column: auto; }
+}
+
+.preg-field--span2 { grid-column: span 2; }
+
+.preg-input--tall,
+.preg-select.preg-input--tall {
+  height: 44px;
+}
+
+/* 결제유형 라디오 버튼 */
+.preg-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 44px;
+}
+
+.preg-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.preg-radio-option input[type="radio"] {
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* 확정금액: 숫자 입력 + '원' 단위 표시 */
+.preg-amount-input-wrap {
+  position: relative;
+}
+
+.preg-amount-input-wrap .preg-input--tall {
+  padding-right: 32px;
+}
+
+.preg-amount-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* 화자 정보 테이블 */
+.preg-speaker-table-wrap {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.preg-speaker-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preg-speaker-table th {
+  background: var(--surface-light);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.preg-speaker-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.preg-speaker-table tr:last-child td { border-bottom: none; }
+
+.preg-speaker-table .preg-input { font-size: 13px; }
+
+.preg-speaker-row-remove {
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.preg-speaker-row-remove:hover {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: #f87171;
+  color: #f87171;
+}
+
+.preg-speaker-row-remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.preg-speaker-add-btn {
+  margin-top: 10px;
+  padding: 6px 14px;
+  background: none;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.preg-speaker-add-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 /* ─── 파일관리 탭: 파일 추가 버튼 & 드롭존 ─── */
